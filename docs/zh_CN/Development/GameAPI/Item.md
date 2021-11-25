@@ -112,11 +112,9 @@
 
 #### 设置物品的附加值
 
-`it.setAux(item,aux)`
+`it.setAux(aux)`
 
 - 参数：
-  - item : `Item`  
-    待设置的物品对象
   - aux : `Integer`  
     物品附加值
 - 返回值：是否设置成功
