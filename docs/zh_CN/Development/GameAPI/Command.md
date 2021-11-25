@@ -80,7 +80,6 @@ mc.regPlayerCmd("fly on","Turn on the fly mode",function(pl,args){
     pl.tell("Flying enabled.");
     //......
 });
-[Lua]
 
 ```
 
@@ -111,8 +110,7 @@ mc.regPlayerCmd("fly on","Turn on the fly mode",function(pl,args){
 mc.regConsoleCmd("backup","Start the backup",function(args){
     log("ID of this backup is:",args[0]);
     //......
-},1);
-[Lua]
+});
 
 ```
 
