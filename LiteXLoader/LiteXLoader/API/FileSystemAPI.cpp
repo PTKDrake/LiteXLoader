@@ -2,11 +2,11 @@
 #include "FileSystemAPI.h"
 #include <Engine/TimeTaskSystem.h>
 #include <Engine/LocalShareData.h>
-#include <Kernel/System.h>
-#include <Kernel/Utils.h>
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include "Kernel.h"
+#include <Utils/FileHelper.h>
 using namespace script;
 using namespace std::filesystem;
 using namespace std;
@@ -249,7 +249,7 @@ Local<Value> FileClass::read(const Arguments& args)
 
     try {
         int cnt = args[0].toInt();
-        Global<Function> callbackFunc{ args[1].asFunction() };
+        script::Global<Function> callbackFunc{ args[1].asFunction() };
 
         pool.enqueue([cnt, fp{ &file }, isBinary { isBinary }, lock { &lock },
             callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }] ()
@@ -269,9 +269,9 @@ Local<Value> FileClass::read(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("FileRead Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                Error("FileRead Callback Failed!");
+                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                Error(e);
             }
         });
         return Boolean::newBoolean(true);
@@ -285,7 +285,7 @@ Local<Value> FileClass::readLine(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kFunction);
 
     try {
-        Global<Function> callbackFunc{ args[0].asFunction() };
+        script::Global<Function> callbackFunc{ args[0].asFunction() };
 
         pool.enqueue([fp{ &file }, lock{ &lock },
             callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }] ()
@@ -302,9 +302,9 @@ Local<Value> FileClass::readLine(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("FileReadLine Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                Error("FileReadLine Callback Failed!");
+                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                Error(e);
             }
         });
         return Boolean::newBoolean(true);
@@ -318,7 +318,7 @@ Local<Value> FileClass::readAll(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kFunction);
 
     try {
-        Global<Function> callbackFunc{ args[0].asFunction() };
+        script::Global<Function> callbackFunc{ args[0].asFunction() };
 
         pool.enqueue([fp{ &file }, isBinary{ isBinary }, lock{ &lock },
             callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }]()
@@ -335,9 +335,9 @@ Local<Value> FileClass::readAll(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("FileReadAll Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                Error("FileReadAll Callback Failed!");
+                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                Error(e);
             }
         });
         return Boolean::newBoolean(true);
@@ -369,7 +369,7 @@ Local<Value> FileClass::write(const Arguments& args)
             return Local<Value>();
         }
 
-        Global<Function> callbackFunc;
+        script::Global<Function> callbackFunc;
         if (args.size() >= 2) 
             callbackFunc = args[1].asFunction();
 
@@ -393,9 +393,9 @@ Local<Value> FileClass::write(const Arguments& args)
                 }
                 catch (const Exception& e)
                 {
-                    ERROR("FileWrite Callback Failed!");
-                    ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                    ERRPRINT(e);
+                    Error("FileWrite Callback Failed!");
+                    Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                    Error(e);
                 }
             }
         });
@@ -414,7 +414,7 @@ Local<Value> FileClass::writeLine(const Arguments& args)
     try {
         string data{ std::move(args[0].toStr()) };
 
-        Global<Function> callbackFunc;
+        script::Global<Function> callbackFunc;
         if (args.size() >= 2)
             callbackFunc = args[1].asFunction();
 
@@ -435,9 +435,9 @@ Local<Value> FileClass::writeLine(const Arguments& args)
                 }
                 catch (const Exception& e)
                 {
-                    ERROR("FileWriteLine Callback Failed!");
-                    ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                    ERRPRINT(e);
+                    Error("FileWriteLine Callback Failed!");
+                    Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                    Error(e);
                 }
             }
         });
@@ -551,7 +551,7 @@ Local<Value> DirCreate(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
 
     try{
-        Raw_DirCreate(args[0].asString().toString());
+        Raw_AutoCreateDirs(args[0].toStr());
         return Boolean::newBoolean(true);
     }
     catch(const filesystem_error& e)
@@ -585,7 +585,7 @@ Local<Value> PathExists(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
 
     try{
-        return Boolean::newBoolean(Raw_PathExists(args[0].asString().toString()));
+        return Boolean::newBoolean(filesystem::exists(args[0].asString().toString()));
     }
     catch(const filesystem_error& e)
     {
@@ -715,10 +715,10 @@ Local<Value> FileReadFrom(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
     
     try{
-        string texts;
-        if(!Raw_FileReadFrom(args[0].toStr(),texts))
+        auto content = ReadAllFile(args[0].toStr());
+        if(!content)
             return Local<Value>();  //Null
-        return String::newString(texts);
+        return String::newString(*content);
     }
     CATCH("Fail in FileReadAll!");
 }
@@ -732,7 +732,7 @@ Local<Value> FileWriteTo(const Arguments& args)
     try{
         string path = args[0].toStr();
         Raw_AutoCreateDirs(path);
-        return Boolean::newBoolean(Raw_FileWriteTo(path,args[1].toStr()));
+        return Boolean::newBoolean(WriteAllFile(path, args[1].toStr(), false));
     }
     CATCH("Fail in FileWriteAll!");
 }

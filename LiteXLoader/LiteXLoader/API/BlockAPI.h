@@ -2,7 +2,7 @@
 #include <ScriptX/ScriptX.h>
 using namespace script;
 
-#include <Kernel/Global.h>
+#include <Global.hpp>
 #include <string>
 
 
@@ -29,12 +29,10 @@ public:
     }
 
 
-    static Local<Object> newBlock(Block *p);
-    static Local<Object> newBlock(Block *p, BlockPos *pos);
     static Local<Object> newBlock(Block *p, BlockPos *pos, int dim);
     static Local<Object> newBlock(BlockPos* pos, int dim);
+    static Local<Object> newBlock(const BlockPos& pos, int dim);
     static Local<Object> newBlock(Block *p, BlockPos *pos, BlockSource *bs);
-    static Local<Object> newBlock(WBlock p);
     static Local<Object> newBlock(IntVec4 pos);
     static Block* extract(Local<Value> v);
     Local<Value> getRawPtr(const Arguments& args);

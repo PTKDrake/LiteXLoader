@@ -40,7 +40,7 @@ ClassDefine<CustomFormClass> CustomFormClassBuilder =
 SimpleFormClass::SimpleFormClass()
     :ScriptClass(ScriptClass::ConstructFromCpp<SimpleFormClass>{})
 {
-    form = JSON_VALUE::parse(R"({"title":"","content":"","buttons":[],"type":"form"})");
+    form = fifo_json::parse(R"({"title":"","content":"","buttons":[],"type":"form"})");
 }
 
 //生成函数
@@ -50,7 +50,7 @@ Local<Object> SimpleFormClass::newForm()
     return newp->getScriptObject();
 }
 
-JSON_ROOT* SimpleFormClass::extract(Local<Value> v)
+fifo_json* SimpleFormClass::extract(Local<Value> v)
 {
     if (EngineScope::currentEngine()->isInstanceOf<SimpleFormClass>(v))
         return EngineScope::currentEngine()->getNativeInstance<SimpleFormClass>(v)->get();
@@ -68,7 +68,7 @@ Local<Value> SimpleFormClass::setTitle(const Arguments& args)
         form["title"] = args[0].toStr();
         return this->getScriptObject();
     }
-    catch (JSON_VALUE::exception& e) {
+    catch (fifo_json::exception& e) {
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();
@@ -85,7 +85,7 @@ Local<Value> SimpleFormClass::setContent(const Arguments& args)
         form["content"] = args[0].toStr();
         return this->getScriptObject();
     }
-    catch (JSON_VALUE::exception& e) {
+    catch (fifo_json::exception& e) {
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();
@@ -101,12 +101,12 @@ Local<Value> SimpleFormClass::addButton(const Arguments& args)
         CHECK_ARG_TYPE(args[1], ValueKind::kString);
 
     try {
-        JSON_VALUE oneButton;
+        fifo_json oneButton;
         oneButton["text"] = args[0].toStr();
         if (args.size() >= 2)
         {
             string path = args[1].toStr();
-            JSON_VALUE image;
+            fifo_json image;
             image["type"] = path.find("textures/") == 0 ? "path" : "url";
             image["data"] = path;
             oneButton["image"] = image;
@@ -114,7 +114,7 @@ Local<Value> SimpleFormClass::addButton(const Arguments& args)
         form["buttons"].push_back(oneButton);
         return this->getScriptObject();
     }
-    catch (JSON_VALUE::exception& e) {
+    catch (fifo_json::exception& e) {
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();
@@ -129,7 +129,7 @@ Local<Value> SimpleFormClass::addButton(const Arguments& args)
 CustomFormClass::CustomFormClass()
     :ScriptClass(ScriptClass::ConstructFromCpp<CustomFormClass>{})
 { 
-    form = JSON_VALUE::parse(R"({ "title":"", "type":"custom_form", "content":[], "buttons":[] })");
+    form = fifo_json::parse(R"({ "title":"", "type":"custom_form", "content":[], "buttons":[] })");
 }
 
 
@@ -140,7 +140,7 @@ Local<Object> CustomFormClass::newForm()
     return newp->getScriptObject();
 }
 
-JSON_ROOT* CustomFormClass::extract(Local<Value> v)
+fifo_json* CustomFormClass::extract(Local<Value> v)
 {
     if(EngineScope::currentEngine()->isInstanceOf<CustomFormClass>(v))
         return EngineScope::currentEngine()->getNativeInstance<CustomFormClass>(v)->get();
@@ -159,7 +159,7 @@ Local<Value> CustomFormClass::setTitle(const Arguments& args)
         form["title"] = args[0].toStr();
         return this->getScriptObject();
     }
-    catch(JSON_VALUE::exception &e){
+    catch(fifo_json::exception &e){
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();
@@ -173,14 +173,14 @@ Local<Value> CustomFormClass::addLabel(const Arguments& args)
     CHECK_ARG_TYPE(args[0],ValueKind::kString)
 
     try{
-        JSON_VALUE itemAdd;
+        fifo_json itemAdd;
         itemAdd["type"] = "label";
         itemAdd["text"] = args[0].toStr();
 
         form["content"].push_back(itemAdd);
         return this->getScriptObject();
     }
-    catch(JSON_VALUE::exception &e){
+    catch(fifo_json::exception &e){
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();
@@ -198,7 +198,7 @@ Local<Value> CustomFormClass::addInput(const Arguments& args)
         CHECK_ARG_TYPE(args[2],ValueKind::kString);
 
     try{
-        JSON_VALUE itemAdd;
+        fifo_json itemAdd;
         itemAdd["type"] = "input";
         itemAdd["text"] = args[0].toStr();
         itemAdd["placeholder"] = args.size() >= 2 ? args[1].toStr() : "";
@@ -207,7 +207,7 @@ Local<Value> CustomFormClass::addInput(const Arguments& args)
         form["content"].push_back(itemAdd);
         return this->getScriptObject();
     }
-    catch(JSON_VALUE::exception &e){
+    catch(fifo_json::exception &e){
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();
@@ -223,7 +223,7 @@ Local<Value> CustomFormClass::addSwitch(const Arguments& args)
         CHECK_ARG_TYPE(args[1],ValueKind::kBoolean);
 
     try{
-        JSON_VALUE itemAdd;
+        fifo_json itemAdd;
         itemAdd["type"] = "toggle";
         itemAdd["text"] = args[0].toStr();
         if(args.size() >= 2)
@@ -232,7 +232,7 @@ Local<Value> CustomFormClass::addSwitch(const Arguments& args)
         form["content"].push_back(itemAdd);
         return this->getScriptObject();
     }
-    catch(JSON_VALUE::exception &e){
+    catch(fifo_json::exception &e){
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();
@@ -249,16 +249,16 @@ Local<Value> CustomFormClass::addDropdown(const Arguments& args)
         CHECK_ARG_TYPE(args[2],ValueKind::kNumber);
 
     try{
-        JSON_VALUE itemAdd;
+        fifo_json itemAdd;
         itemAdd["type"] = "dropdown";
         itemAdd["text"] = args[0].toStr();
-        itemAdd["options"] = JSON_VALUE::parse(ValueToJson(args[1].asArray()));
+        itemAdd["options"] = fifo_json::parse(ValueToJson(args[1].asArray()));
         itemAdd["default"] = args.size() >= 3 ? args[2].asNumber().toInt32() : 0;
         
         form["content"].push_back(itemAdd);
         return this->getScriptObject();
     }
-    catch(JSON_VALUE::exception &e){
+    catch(fifo_json::exception &e){
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();
@@ -278,7 +278,7 @@ Local<Value> CustomFormClass::addSlider(const Arguments& args)
         CHECK_ARG_TYPE(args[4],ValueKind::kNumber);
 
     try{
-        JSON_VALUE itemAdd;
+        fifo_json itemAdd;
         itemAdd["type"] = "slider";
         itemAdd["text"] = args[0].toStr();
 
@@ -302,7 +302,7 @@ Local<Value> CustomFormClass::addSlider(const Arguments& args)
         form["content"].push_back(itemAdd);
         return this->getScriptObject();
     }
-    catch(JSON_VALUE::exception &e){
+    catch(fifo_json::exception &e){
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();
@@ -319,10 +319,10 @@ Local<Value> CustomFormClass::addStepSlider(const Arguments& args)
         CHECK_ARG_TYPE(args[2],ValueKind::kNumber);
 
     try{
-        JSON_VALUE itemAdd;
+        fifo_json itemAdd;
         itemAdd["type"] = "step_slider";
         itemAdd["text"] = args[0].toStr();
-        itemAdd["steps"] = JSON_VALUE::parse(ValueToJson(args[1].asArray()));
+        itemAdd["steps"] = fifo_json::parse(ValueToJson(args[1].asArray()));
         int maxIndex = args[1].asArray().size()-1;
         if(args.size() >= 3)
         {
@@ -335,7 +335,7 @@ Local<Value> CustomFormClass::addStepSlider(const Arguments& args)
         form["content"].push_back(itemAdd);
         return this->getScriptObject();
     }
-    catch(JSON_VALUE::exception &e){
+    catch(fifo_json::exception &e){
         ERROR("Fail to Form currect Form string!");
         ERRPRINT(e.what());
         return Local<Value>();

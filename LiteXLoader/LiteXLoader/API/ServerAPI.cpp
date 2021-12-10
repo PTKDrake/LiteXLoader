@@ -1,8 +1,9 @@
 #include "APIHelp.h"
 #include <ScriptX/ScriptX.h>
-#include <Kernel/Server.h>
+#include "Kernel.h"
 #include "ServerAPI.h"
 #include "McAPI.h"
+#include <MC/ServerNetworkHandler.hpp>
 using namespace script;
 
 Local<Value> McClass::setMotd(const Arguments& args)
@@ -16,7 +17,7 @@ Local<Value> McClass::setMotd(const Arguments& args)
     CATCH("Fail in SetServerMotd!")
 }
 
-Local<Value> McClass::crashBDS(const Arguments& args)
+Local<Value> McClass::crashBDS(const Arguments& args)               //===========???
 {
     DWORD tmp;
     long long* m = (long long*)GetModuleHandle(NULL);

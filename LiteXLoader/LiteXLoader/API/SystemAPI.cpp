@@ -1,9 +1,10 @@
 #include "SystemAPI.h"
 #include "APIHelp.h"
-#include <Kernel/System.h>
 #include <Engine/TimeTaskSystem.h>
 #include <filesystem>
 #include <fstream>
+#include "Kernel.h"
+#include <Utils.h>
 using namespace script;
 using namespace std::filesystem;
 
@@ -28,7 +29,7 @@ Local<Value> SystemClass::cmd(const Arguments& args)
         CHECK_ARG_TYPE(args[2], ValueKind::kNumber);
 
     try {
-        Global<Function> callbackFunc{ args[1].asFunction() };
+        script::Global<Function> callbackFunc{ args[1].asFunction() };
 
         return Boolean::newBoolean(Raw_NewProcess("cmd /c" + args[0].toStr(),
             [callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }]
@@ -41,9 +42,9 @@ Local<Value> SystemClass::cmd(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("SystemCmd Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                Error("SystemCmd Callback Failed!");
+                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                Error(e);
             }
         }
         , args.size() >= 3 ? args[2].toInt() : -1));
@@ -60,7 +61,7 @@ Local<Value> SystemClass::newProcess(const Arguments& args)
         CHECK_ARG_TYPE(args[2], ValueKind::kNumber);
 
     try {
-        Global<Function> callbackFunc{ args[1].asFunction() };
+        script::Global<Function> callbackFunc{ args[1].asFunction() };
 
         return Boolean::newBoolean(Raw_NewProcess(args[0].toStr(),
             [callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }]
@@ -73,9 +74,9 @@ Local<Value> SystemClass::newProcess(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("SystemNewProcess Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                Error("SystemNewProcess Callback Failed!");
+                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                Error(e);
             }
         }
         , args.size() >= 3 ? args[2].toInt() : -1));

@@ -22,6 +22,7 @@
     <ClCompile Include="API\EntityAPI.cpp" />
     <ClCompile Include="API\EventAPI.cpp" />
     <ClCompile Include="API\FileSystemAPI.cpp" />
+    <ClCompile Include="API\Kernel.cpp" />
     <ClCompile Include="API\McAPI.cpp" />
     <ClCompile Include="API\ScoreboardAPI.cpp" />
     <ClCompile Include="API\GameUtilsAPI.cpp" />
@@ -55,9 +56,8 @@
     <ClCompile Include="Kernel\Data.cpp" />
     <ClCompile Include="Kernel\Entity.cpp" />
     <ClCompile Include="Kernel\Event.cpp" />
-    <ClCompile Include="Kernel\Global.cpp" />
+    <ClCompile Include="Global.cpp" />
     <ClCompile Include="Kernel\Gui.cpp" />
-    <ClCompile Include="Kernel\i18n.cpp" />
     <ClCompile Include="Kernel\Item.cpp" />
     <ClCompile Include="Kernel\NBT.cpp" />
     <ClCompile Include="Kernel\Packet.cpp" />
@@ -65,9 +65,8 @@
     <ClCompile Include="Kernel\Scoreboard.cpp" />
     <ClCompile Include="Kernel\Server.cpp" />
     <ClCompile Include="Kernel\SymbolHelper.cpp" />
-    <ClCompile Include="Kernel\System.cpp" />
     <ClCompile Include="Kernel\UnlockCmd.cpp" />
-    <ClCompile Include="Kernel\Utils.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="LiteXLoader.cpp" />
     <ClCompile Include="Loader.cpp" />
   </ItemGroup>
@@ -82,6 +81,7 @@
     <ClInclude Include="API\EntityAPI.h" />
     <ClInclude Include="API\EventAPI.h" />
     <ClInclude Include="API\FileSystemAPI.h" />
+    <ClInclude Include="API\Kernel.h" />
     <ClInclude Include="API\ScoreboardAPI.h" />
     <ClInclude Include="API\GameUtilsAPI.h" />
     <ClInclude Include="API\GuiAPI.h" />
@@ -117,18 +117,16 @@
     <ClInclude Include="Kernel\Entity.h" />
     <ClInclude Include="Kernel\Event.h" />
     <ClInclude Include="Kernel\Gui.h" />
-    <ClInclude Include="Kernel\i18n.h" />
     <ClInclude Include="Kernel\Item.h" />
     <ClInclude Include="Kernel\NBT.h" />
     <ClInclude Include="Kernel\Packet.h" />
-    <ClInclude Include="Kernel\Global.h" />
+    <ClInclude Include="Global.hpp" />
     <ClInclude Include="Kernel\Player.h" />
     <ClInclude Include="Kernel\Scoreboard.h" />
     <ClInclude Include="Kernel\Server.h" />
     <ClInclude Include="Kernel\SymbolHelper.h" />
-    <ClInclude Include="Kernel\System.h" />
-    <ClInclude Include="Kernel\ThirdParty.h" />
-    <ClInclude Include="Kernel\Utils.h" />
+    <ClInclude Include="ThirdParty.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="Loader.h" />
     <ClInclude Include="Version.h" />
   </ItemGroup>
@@ -162,7 +160,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lua|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <EnableUnitySupport>false</EnableUnitySupport>
@@ -170,7 +168,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Js|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <EnableUnitySupport>false</EnableUnitySupport>
@@ -191,13 +189,13 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Release\</OutDir>
     <TargetName>$(ProjectName).Lua</TargetName>
-    <IncludePath>$(SolutionDir)third-party\ScriptX\src\include\ScriptX;$(SolutionDir)third-party\ScriptX\src\include;$(SolutionDir)third-party\gsl;$(SolutionDir)third-party\LiteLoader;$(SolutionDir)third-party;$(SolutionDir);$(SolutionDir)LiteXLoader;$(SolutionDir)third-party\Lua\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)third-party\ScriptX\src\include\ScriptX;$(SolutionDir)third-party\ScriptX\src\include;$(SolutionDir)third-party\gsl;$(SolutionDir)third-party\LiteLoader\Header;$(SolutionDir)third-party;$(SolutionDir);$(SolutionDir)LiteXLoader;$(SolutionDir)third-party\Lua\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Js|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Release\</OutDir>
     <TargetName>$(ProjectName).Js</TargetName>
-    <IncludePath>$(SolutionDir)third-party\ScriptX\src\include\ScriptX;$(SolutionDir)third-party\ScriptX\src\include;$(SolutionDir)third-party\gsl;$(SolutionDir)third-party\LiteLoader;$(SolutionDir)third-party;$(SolutionDir);$(SolutionDir)LiteXLoader;$(SolutionDir)third-party\V8\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)third-party\ScriptX\src\include\ScriptX;$(SolutionDir)third-party\ScriptX\src\include;$(SolutionDir)third-party\gsl;$(SolutionDir)third-party\LiteLoader\Header;$(SolutionDir)third-party;$(SolutionDir);$(SolutionDir)LiteXLoader;$(SolutionDir)third-party\V8\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lua|x64'">
     <ClCompile>
@@ -205,7 +203,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;SCRIPTX_BACKEND_TRAIT_PREFIX=../backend/Lua/trait/Trait;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_AMD64_;NOMINMAX;SCRIPTX_BACKEND_TRAIT_PREFIX=../backend/Lua/trait/Trait;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -220,13 +218,26 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)third-party\LiteLoader\LiteLoader.lib;$(SolutionDir)third-party\ScriptX\lib\ScriptX-Lua.lib;$(SolutionDir)third-party\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)third-party\ScriptX\lib\ScriptX-Lua.lib;$(SolutionDir)third-party\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>bedrock_server.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>if exist $(LocalDebuggerWorkingDirectory)\plugins\ (
 copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
 )</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_api.lib goto process
+if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_var.lib goto process
+goto end
+
+:process
+cd /d $(SolutionDir)third-party\LiteLoader\Tools
+LibraryBuilder.exe -o ..\Lib
+
+:end
+</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Js|x64'">
     <ClCompile>
@@ -234,7 +245,7 @@ copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;SCRIPTX_BACKEND_TRAIT_PREFIX=../backend/V8/trait/Trait;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;_AMD64_;NOMINMAX;SCRIPTX_BACKEND_TRAIT_PREFIX=../backend/V8/trait/Trait;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -249,13 +260,26 @@ copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)third-party\LiteLoader\LiteLoader.lib;$(SolutionDir)third-party\ScriptX\lib\ScriptX-Js.lib;$(SolutionDir)third-party\V8\lib\v8.lib;$(SolutionDir)third-party\V8\lib\v8_libbase.lib;$(SolutionDir)third-party\V8\lib\v8_libplatform.lib;$(SolutionDir)third-party\V8\lib\zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>$(SolutionDir)third-party\ScriptX\lib\ScriptX-Js.lib;$(SolutionDir)third-party\V8\lib\v8.lib;$(SolutionDir)third-party\V8\lib\v8_libbase.lib;$(SolutionDir)third-party\V8\lib\v8_libplatform.lib;$(SolutionDir)third-party\V8\lib\zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>bedrock_server.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>if exist $(LocalDebuggerWorkingDirectory)\plugins\ (
 copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
 )</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_api.lib goto process
+if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_var.lib goto process
+goto end
+
+:process
+cd /d $(SolutionDir)third-party\LiteLoader\Tools
+LibraryBuilder.exe -o ..\Lib
+
+:end
+</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

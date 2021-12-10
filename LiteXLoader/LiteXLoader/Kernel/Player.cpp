@@ -271,6 +271,7 @@ int Raw_ClearItem(Player *player, std::string type)
 bool Raw_SetSidebar(Player *player, std::string title, const std::vector<std::pair<std::string,int>> &data, int sortOrder)
 {
     Raw_SendSetDisplayObjectivePacket(player, title, "FakeScoreObj", (char)sortOrder);
+    
 
     vector<ScorePacketInfo> info;
     for (auto& x : data)

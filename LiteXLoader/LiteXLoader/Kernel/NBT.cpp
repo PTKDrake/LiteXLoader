@@ -865,9 +865,9 @@ string TagToBinaryNBT(Tag* tag, bool isLittleEndian) {
 
 //////////////////// To Json ////////////////////
 
-void TagToJson_Compound_Helper(JSON_VALUE& res, Tag* nbt);
+void TagToJson_Compound_Helper(fifo_json& res, Tag* nbt);
 
-void TagToJson_List_Helper(JSON_VALUE& res, Tag* nbt)
+void TagToJson_List_Helper(fifo_json& res, Tag* nbt)
 {
     auto &list = nbt->asList();
     for (auto &tag : list)
@@ -905,13 +905,13 @@ void TagToJson_List_Helper(JSON_VALUE& res, Tag* nbt)
             break;
         }
         case TagType::List: {
-            JSON_VALUE arrJson = JSON_VALUE::array();
+            fifo_json arrJson = fifo_json::array();
             TagToJson_List_Helper(arrJson, tag);
             res.push_back(arrJson);
             break;
         }
         case TagType::Compound: {
-            JSON_VALUE arrObj = JSON_VALUE::object();
+            fifo_json arrObj = fifo_json::object();
             TagToJson_Compound_Helper(arrObj, tag);
             res.push_back(arrObj);
             break;
@@ -923,7 +923,7 @@ void TagToJson_List_Helper(JSON_VALUE& res, Tag* nbt)
     }
 }
 
-void TagToJson_Compound_Helper(JSON_VALUE& res, Tag* nbt)
+void TagToJson_Compound_Helper(fifo_json& res, Tag* nbt)
 {
     auto &list = nbt->asCompound();
     for (auto& [key,tag] : list)
@@ -961,13 +961,13 @@ void TagToJson_Compound_Helper(JSON_VALUE& res, Tag* nbt)
             break;
         }
         case TagType::List: {
-            JSON_VALUE arrJson = JSON_VALUE::array();
+            fifo_json arrJson = fifo_json::array();
             TagToJson_List_Helper(arrJson, &tag);
             res.push_back({ key,arrJson });
             break;
         }
         case TagType::Compound: {
-            JSON_VALUE arrObj = JSON_VALUE::object();
+            fifo_json arrObj = fifo_json::object();
             TagToJson_Compound_Helper(arrObj, &tag);
             res.push_back({ key,arrObj });
             break;
@@ -1015,13 +1015,13 @@ string TagToJson(Tag* nbt, int formatIndent)
         break;
     }
     case TagType::List: {
-        JSON_VALUE jsonRes = JSON_VALUE::array();
+        fifo_json jsonRes = fifo_json::array();
         TagToJson_List_Helper(jsonRes, nbt);
         result = jsonRes.dump(formatIndent);
         break;
     }
     case TagType::Compound: {
-        JSON_VALUE jsonRes = JSON_VALUE::object();
+        fifo_json jsonRes = fifo_json::object();
         TagToJson_Compound_Helper(jsonRes, nbt);
         result = jsonRes.dump(formatIndent);
         break;

@@ -1,6 +1,7 @@
 #include "PluginHotManage.h"
 #include <API/APIHelp.h>
-#include <Kernel/Utils.h>
+#include <Utils.h>
+#include <Utils/StringHelper.h>
 #include "LoaderHelper.h"
 #include "MessageSystem.h"
 #include "GlobalShareData.h"
@@ -26,7 +27,7 @@ void HotManageMessageCallback(ModuleMessage& msg)
         //lock_guard<mutex> lock(globalShareData->hotManageLock);
 
         for (auto& name : list)
-            PRINT(name);
+            Log(name);
     }
     else if (cmdList[1] == "load" && cmdList.size() == 3)
     {

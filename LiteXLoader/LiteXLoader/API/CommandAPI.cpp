@@ -8,7 +8,7 @@
 #include <Engine/EngineOwnData.h>
 #include <Engine/LoaderHelper.h>
 #include <Kernel/Base.h>
-#include <Kernel/Global.h>
+#include <Global.hpp>
 #include <filesystem>
 #include <Configs.h>
 #include <vector>
@@ -51,9 +51,9 @@ void LxlRegisterNewCmd(bool isPlayerCmd, string cmd, const string& describe, int
         cmd = cmd.erase(0, 1);
 
     if(isPlayerCmd)
-        localShareData->playerCmdCallbacks[cmd] = { EngineScope::currentEngine(),level,Global<Function>(func) };
+        localShareData->playerCmdCallbacks[cmd] = { EngineScope::currentEngine(),level,script::Global<Function>(func) };
     else
-        localShareData->consoleCmdCallbacks[cmd] = { EngineScope::currentEngine(),level,Global<Function>(func) };
+        localShareData->consoleCmdCallbacks[cmd] = { EngineScope::currentEngine(),level,script::Global<Function>(func) };
 
     //延迟注册
     if (isCmdRegisterEnabled)
@@ -149,7 +149,7 @@ void RegisterBuiltinCmds()
     Raw_RegisterCmd("lxl reload", "Reload an existing LXL plugin / all LXL plugins", 4);
     Raw_RegisterCmd("lxl version", "Get the version of LiteXLoader", 4);
 
-    INFO("Builtin Cmds Registered.");
+    Info("Builtin Cmds Registered.");
 }
 
 void ProcessRegCmdQueue()
@@ -172,13 +172,13 @@ bool ProcessDebugEngine(const string& cmd)
         if (globalDebug)
         {
             //EndDebug
-            INFO("Debug mode ended");
+            Info("Debug mode ended");
             globalDebug = false;
         }
         else
         {
             //StartDebug
-            INFO("Debug mode begin");
+            Info("Debug mode begin");
             globalDebug = true;
             OUTPUT_DEBUG_SIGN();
         }
@@ -191,7 +191,7 @@ bool ProcessDebugEngine(const string& cmd)
         {
             if (cmd == "stop")
             {
-                WARN("请先退出Debug实时调试模式再使用stop！");
+                Warn("请先退出Debug实时调试模式再使用stop！");
                 return true;
             }
             else
@@ -204,7 +204,7 @@ bool ProcessDebugEngine(const string& cmd)
         }
         catch (Exception& e)
         {
-            ERRPRINT(e);
+            Log(e);
             OUTPUT_DEBUG_SIGN();
         }
         return false;
@@ -260,9 +260,9 @@ bool CallPlayerCmdCallback(Player* player, const string& cmdPrefix, const vector
     }
     catch (const Exception& e)
     {
-        ERROR("PlayerCmd Callback Failed!");
-        ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-        ERRPRINT(e);
+        Error("PlayerCmd Callback Failed!");
+        Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+        Error(e);
     }
     if (res.isNull() || (res.isBoolean() && res.asBoolean().value() == false))
         return false;
@@ -284,9 +284,9 @@ bool CallServerCmdCallback(const string& cmdPrefix, const vector<string>& paras)
     }
     catch (const Exception& e)
     {
-        ERROR("ServerCmd Callback Failed!");
-        ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-        ERRPRINT(e);
+        Error("ServerCmd Callback Failed!");
+        Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+        Error(e);
     }
     if (res.isNull() || (res.isBoolean() && res.asBoolean().value() == false))
         return false;

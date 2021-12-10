@@ -14,7 +14,7 @@ enum class WSClientEvents : char
 struct ListenerListType
 {
     ScriptEngine* engine;
-    Global<Function> func;
+    script::Global<Function> func;
 };
 
 

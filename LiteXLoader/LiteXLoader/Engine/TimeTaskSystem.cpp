@@ -1,6 +1,5 @@
 #include <API/APIHelp.h>
 #include "TimeTaskSystem.h"
-#include <Kernel/System.h>
 #include <Engine/EngineOwnData.h>
 #include <map>
 #include <vector>
@@ -8,10 +7,10 @@ using namespace std;
 
 struct TimeTaskData
 {
-    Global<Value> func;
+    script::Global<Value> func;
     bool isFunc;
     int interval;
-    vector<Global<Value>> paras;
+    vector<script::Global<Value>> paras;
 };
 
 int timeTaskId = 0;
@@ -51,8 +50,8 @@ void HandleTimeTaskMessage(utils::Message& msg)
         bool isInterval = (nextInterval != 0);
     
         bool isFunc = data->isFunc;
-        Global<Value>* func = &data->func;
-        vector<Global<Value>>* paras = &data->paras;
+        script::Global<Value>* func = &data->func;
+        vector<script::Global<Value>>* paras = &data->paras;
 
         try
         {
@@ -79,23 +78,23 @@ void HandleTimeTaskMessage(utils::Message& msg)
         }
         catch (const Exception& e)
         {
-            ERROR(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
-            ERRPRINT(e);
-            ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); 
+            Error(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
+            Error(e);
+            Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
         }
         catch (const std::exception& e)
         {
-            ERROR(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
-            ERROR("C++ Uncaught Exception Detected!");
-            ERRPRINT(e.what());
-            ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            Error(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
+            Error("C++ Uncaught Exception Detected!");
+            Error(e.what());
+            Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
         }
         catch (const seh_exception& e)
         {
-            ERROR(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
-            ERROR("SEH Uncaught Exception Detected!");
-            ERRPRINT(e.what());
-            ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            Error(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
+            Error("SEH Uncaught Exception Detected!");
+            Error(e.what());
+            Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
         }
 
         if (isInterval)
@@ -109,8 +108,8 @@ void HandleTimeTaskMessage(utils::Message& msg)
     }
     catch (...)
     {
-        ERROR("Error occurred in TimeTask!");
-        ERROR("Uncaught Exception Detected!");
+        Error("Error occurred in TimeTask!");
+        Error("Uncaught Exception Detected!");
         return;
     }
 }
@@ -124,36 +123,36 @@ void CleanUpTimeTaskMessage(utils::Message& msg)
 
 int NewTimeout(Local<Function> func, const vector<Local<Value>> paras, int timeout)
 {
-    vector<Global<Value>> arr;
+    vector<script::Global<Value>> arr;
     for (auto& para : paras)
         arr.emplace_back(para);
 
-    timeTaskMap[++timeTaskId] = new TimeTaskData{ Global<Value>(func), true, 0, std::move(arr) };
+    timeTaskMap[++timeTaskId] = new TimeTaskData{ script::Global<Value>(func), true, 0, std::move(arr) };
     NewTimeTask(timeTaskId, timeout);
     return timeTaskId;
 }
 
 int NewTimeout(Local<String> func, int timeout)
 {
-    timeTaskMap[++timeTaskId] = new TimeTaskData{ Global<Value>(func), false, 0, {} };
+    timeTaskMap[++timeTaskId] = new TimeTaskData{ script::Global<Value>(func), false, 0, {} };
     NewTimeTask(timeTaskId, timeout);
     return timeTaskId;
 }
 
 int NewInterval(Local<Function> func, const vector<Local<Value>> paras, int timeout)
 {
-    vector<Global<Value>> arr;
+    vector<script::Global<Value>> arr;
     for (auto& para : paras)
         arr.emplace_back(para);
 
-    timeTaskMap[++timeTaskId] = new TimeTaskData{ Global<Value>(func), true, timeout, std::move(arr) };
+    timeTaskMap[++timeTaskId] = new TimeTaskData{ script::Global<Value>(func), true, timeout, std::move(arr) };
     NewTimeTask(timeTaskId, timeout);
     return timeTaskId;
 }
 
 int NewInterval(Local<String> func, int timeout)
 {
-    timeTaskMap[++timeTaskId] = new TimeTaskData{ Global<Value>(func), false, timeout, {} };
+    timeTaskMap[++timeTaskId] = new TimeTaskData{ script::Global<Value>(func), false, timeout, {} };
     NewTimeTask(timeTaskId, timeout);
     return timeTaskId;
 }

@@ -15,7 +15,7 @@ void ProcessData(int code, string body)
 	{
 		try
 		{
-			JSON_ROOT data = JSON_ROOT::parse(body);
+			fifo_json data = fifo_json::parse(body);
 
 			//公告信息
 			if (data["notice"].is_array())
@@ -24,7 +24,7 @@ void ProcessData(int code, string body)
 					INFO(element.get<string>());
 			}
 		}
-		catch (JSON_ROOT::exception& e) {
+		catch (fifo_json::exception& e) {
 			DEBUG(string("LXL通知信息解析失败。")+e.what());
 		}
 	}

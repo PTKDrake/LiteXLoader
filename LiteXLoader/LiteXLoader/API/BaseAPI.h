@@ -1,6 +1,6 @@
 #pragma once
 #include <ScriptX/ScriptX.h>
-#include <Kernel/Global.h>
+#include <Global.hpp>
 #include <string>
 using namespace script;
 

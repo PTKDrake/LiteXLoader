@@ -1,13 +1,14 @@
 #include "APIHelp.h"
 #include "LoggerAPI.h"
 #include "PlayerAPI.h"
-#include <Kernel/System.h>
-#include <Kernel/Player.h>
 #include <Engine/EngineOwnData.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <Utils.h>
+#include <MC/Player.hpp>
+#include "Kernel.h"
 using namespace std;
 using namespace script;
 
@@ -88,7 +89,7 @@ void LogToEachTarget(shared_ptr<EngineOwnData> globalConf,
         string sendStr{ preString + ostr.str() };
         StrReplace(sendStr, "[", "<");
         StrReplace(sendStr, "]", ">");
-        Raw_Tell(globalConf->player, sendStr);
+        globalConf->player->sendTextPacket(sendStr);
     }
 }
 
@@ -115,7 +116,7 @@ Local<Value> LoggerClass::debug(const Arguments& args)
             string preString{ globalConf->title };
             if (!preString.empty())
                 preString = "[" + preString + "]";
-            preString = preString + "[" + GetTimeStrHelper() + " Debug] ";
+            preString = preString + "[" + GetTimeStrHelper() + " DEBUG] ";
 
             LogToEachTarget(globalConf, preString, args, 5);
         }
@@ -135,7 +136,7 @@ Local<Value> LoggerClass::info(const Arguments& args)
             string preString{ globalConf->title };
             if (!preString.empty())
                 preString = "[" + preString + "]";
-            preString = preString + "[" + GetTimeStrHelper() + " Info] ";
+            preString = preString + "[" + GetTimeStrHelper() + " INFO] ";
 
             LogToEachTarget(globalConf, preString, args, 4);
         }
@@ -155,7 +156,7 @@ Local<Value> LoggerClass::warn(const Arguments& args)
             string preString{ globalConf->title };
             if (!preString.empty())
                 preString = "[" + preString + "]";
-            preString = preString + "[" + GetTimeStrHelper() + " Warning] ";
+            preString = preString + "[" + GetTimeStrHelper() + " WARNING] ";
 
             LogToEachTarget(globalConf, preString, args, 3);
         }
@@ -175,7 +176,7 @@ Local<Value> LoggerClass::error(const Arguments& args)
             string preString{ globalConf->title };
             if (!preString.empty())
                 preString = "[" + preString + "]";
-            preString = preString + "[" + GetTimeStrHelper() + " Error] ";
+            preString = preString + "[" + GetTimeStrHelper() + " ERROR] ";
 
             LogToEachTarget(globalConf, preString, args, 2);
         }

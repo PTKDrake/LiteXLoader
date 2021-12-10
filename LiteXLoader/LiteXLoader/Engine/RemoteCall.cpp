@@ -56,8 +56,8 @@ void RemoteCallCallback(ModuleMessage& msg)
         if (engine)
         {
             EngineScope enter(engine);
-            ERRPRINT(e);
-            ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            Error(e);
+            Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
         }
         
         //Feedback
@@ -69,13 +69,13 @@ void RemoteCallCallback(ModuleMessage& msg)
     }
     catch (...)
     {
-        WARN("Error occurred in remote engine!");
+        Warn("Error occurred in remote engine!");
 
         //Feedback
         ModuleMessage msgBack(backId, ModuleMessage::MessageType::RemoteCallReturn, "[null]");
         if (!msg.sendBack(msgBack))
         {
-            ERROR(string("Fail to post remote call result return! Error Code: ") + to_string(GetLastError()));
+            Error(string("Fail to post remote call result return! Error Code: ") + to_string(GetLastError()));
         }
     }
 }
@@ -91,7 +91,7 @@ void RemoteCallReturnCallback(ModuleMessage& msg)
 Local<Value> MakeRemoteCall(ExportedFuncData* data, const string& funcName, const string& argsList)
 {
     //Remote Call
-    DEBUG("Remote Call begin");
+    Debug("Remote Call begin");
 
     ostringstream sout;
     int backId = ModuleMessage::getNextMessageId();
@@ -101,13 +101,13 @@ Local<Value> MakeRemoteCall(ExportedFuncData* data, const string& funcName, cons
 
     if (!ModuleMessage::sendTo(msg, data->fromEngineType))
     {
-        ERROR("Fail to send remote load request!");
+        Error("Fail to send remote load request!");
         return Local<Value>();
     }
 
     if (!ModuleMessage::waitForMessage(backId, LXL_MAXWAIT_REMOTE_CALL))
     {
-        ERROR(_TRS("remoteCall.timeout.fail"));
+        Error(tr("remoteCall.timeout.fail"));
         return Local<Value>();
     }
 
@@ -120,7 +120,7 @@ bool LxlExportFunc(ScriptEngine *engine, const Local<Function> &func, const stri
 {
     ExportedFuncData* funcData = &(globalShareData->exportedFuncs)[exportName];
     funcData->engine = engine;
-    funcData->func = Global<Function>(func);
+    funcData->func = script::Global<Function>(func);
     funcData->fromEngineType = LXL_MODULE_TYPE;
     return true;
 }

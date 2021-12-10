@@ -20,7 +20,7 @@ void InitGlobalShareData()
 	HANDLE hGlobalData = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, sizeof(GlobalDataType), (LXL_GLOBAL_DATA_NAME + to_wstring(GetCurrentProcessId())).c_str());
 	if (hGlobalData == NULL)
 	{
-		ERROR(_TRS("init.fileMapping.fail"));
+		Error(tr("init.fileMapping.fail"));
 		localShareData->isFirstInstance = true;
 		return;
 	}
@@ -28,7 +28,7 @@ void InitGlobalShareData()
 	LPVOID address = MapViewOfFile(hGlobalData, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 0);
 	if (address == NULL)
 	{
-		ERROR(_TRS("init.mapFile.fail"));
+		Error(tr("init.mapFile.fail"));
 		localShareData->isFirstInstance = true;
 		return;
 	}

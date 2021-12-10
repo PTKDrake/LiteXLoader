@@ -10,14 +10,14 @@ int Raw_SendSimpleForm(Player* player,const string &title,const string &content,
     model = model.replace(model.find("%s"),2, title);
     model = model.replace(model.find("%s"),2, content);
 
-    JSON_ROOT buttonText;
+    fifo_json buttonText;
     for (int i = 0; i < buttons.size(); ++i)
     {
-        JSON_VALUE oneButton;
+        fifo_json oneButton;
         oneButton["text"] = buttons[i];
         if (!images[i].empty())
         {
-            JSON_VALUE image;
+            fifo_json image;
             image["type"] = images[i].find("textures/") == 0 ? "path" : "url";
             image["data"] = images[i];
             oneButton["image"] = image;

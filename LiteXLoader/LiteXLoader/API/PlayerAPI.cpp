@@ -11,12 +11,15 @@
 #include <API/PacketAPI.h>
 #include <Engine/EngineOwnData.h>
 #include <Engine/GlobalShareData.h>
-#include <Kernel/Player.h>
-#include <Kernel/Device.h>
-#include <Kernel/Container.h>
-#include <Kernel/Entity.h>
-#include <Kernel/Gui.h>
-#include <Kernel/Scoreboard.h>
+#include <MC/Player.hpp>
+#include <MC/NetworkIdentifier.hpp>
+#include <MC/Actor.hpp>
+#include <MC/Container.hpp>
+#include <MC/SimpleContainer.hpp>
+#include <MC/Scoreboard.hpp>
+#include <MC/Objective.hpp>
+#include <MC/ScoreboardId.hpp>
+#include "Kernel.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -135,10 +138,6 @@ Local<Object> PlayerClass::newPlayer(Player *p)
     auto newp = new PlayerClass(p);
     return newp->getScriptObject();
 }
-Local<Object> PlayerClass::newPlayer(WPlayer p)
-{
-    return PlayerClass::newPlayer(p.v);
-}
 Player* PlayerClass::extract(Local<Value> v)
 {
     if(EngineScope::currentEngine()->isInstanceOf<PlayerClass>(v))
@@ -159,16 +158,16 @@ Local<Value> McClass::getPlayer(const Arguments& args)
             return Local<Value>();
 
         transform(target.begin(), target.end(), target.begin(), ::tolower);	//lower case the string
-        auto playerList = Raw_GetOnlinePlayers();
+        auto playerList = Level::getAllPlayers();
         int delta = 2147483647;	//c++ int max
         Player* found = nullptr;
 
         for(Player *p : playerList)
         {
-            if(Raw_GetXuid(p) == target)
+            if(p->getXuid() == target)
                 return PlayerClass::newPlayer(p);
 
-            string pName = Raw_GetPlayerName(p);
+            string pName = p->getName();
             transform(pName.begin(), pName.end(), pName.begin(), ::tolower);
 
             if(pName.find(target) == 0)
@@ -192,7 +191,7 @@ Local<Value> McClass::getPlayer(const Arguments& args)
 Local<Value> McClass::getOnlinePlayers(const Arguments& args)
 {
     try{
-        auto players = Raw_GetOnlinePlayers();
+        auto players = Level::getAllPlayers();
         Local<Array> list = Array::newArray();
         for(auto p : players)
             list.add(PlayerClass::newPlayer(p));
@@ -214,7 +213,8 @@ Local<Value> McClass::broadcast(const Arguments& args)
             if (newType >= 0 && newType <= 9)
                 type = (TextType)newType;
         }
-        return Boolean::newBoolean(Raw_Broadcast(args[0].toStr(), type));
+        Level::broadcastText(args[0].toStr(), type);
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in Broadcast!")
 }
@@ -247,7 +247,7 @@ Local<Value> PlayerClass::getName()
         if (!player)
             return Local<Value>();
 
-        return String::newString(Raw_GetPlayerName(player));
+        return String::newString(player->getName());
     }
     CATCH("Fail in getPlayerName!")
 }
@@ -259,7 +259,7 @@ Local<Value> PlayerClass::getPos()
         if (!player)
             return Local<Value>();
 
-        return FloatPos::newPos(Raw_GetPlayerPos(player));
+        return FloatPos::newPos(player->getPosition(),player->getDimensionId());
     }
     CATCH("Fail in getPlayerPos!")
 }
@@ -271,7 +271,7 @@ Local<Value> PlayerClass::getBlockPos()
         if (!player)
             return Local<Value>();
 
-        return IntPos::newPos(Raw_GetPlayerBlockPos(player));
+        return IntPos::newPos(Raw_GetEntityBlockPos((Actor*)player));
     }
     CATCH("Fail in getPlayerBlockPos!")
 }
@@ -283,7 +283,7 @@ Local<Value> PlayerClass::getXuid()
         if (!player)
             return Local<Value>();
 
-        return String::newString(Raw_GetXuid(player));
+        return String::newString(player->getXuid());
     }
     CATCH("Fail in getXuid!")
 }
@@ -295,7 +295,7 @@ Local<Value> PlayerClass::getUuid()
         if (!player)
             return Local<Value>();
 
-        return String::newString(Raw_GetUuid(player));
+        return String::newString(player->getUuid());
     }
     CATCH("Fail in getXuid!")
 }
@@ -307,7 +307,7 @@ Local<Value> PlayerClass::getRealName()
         if (!player)
             return Local<Value>();
 
-        return String::newString(Raw_GetRealName(player));
+        return String::newString(player->getRealName());
     }
     CATCH("Fail in getRealName!")
 }
@@ -319,7 +319,7 @@ Local<Value> PlayerClass::getIP()
         if (!player)
             return Local<Value>();
 
-        return String::newString(Raw_GetIP(player));
+        return String::newString(player->getNetworkIdentifier()->getIP());
     }
     CATCH("Fail in GetIP!")
 }
@@ -331,7 +331,7 @@ Local<Value> PlayerClass::getPermLevel()
         if (!player)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetPlayerPermLevel(player));
+        return Number::newNumber(player->getCommandPermissionLevel());
     }
     CATCH("Fail in getPlayerPermLevel!")
 }
@@ -343,7 +343,7 @@ Local<Value> PlayerClass::getGameMode()
         if (!player)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetGameMode(player));
+        return Number::newNumber(player->getPlayerGameType());      //==========???
     }
     CATCH("Fail in getGameMode!")
 }
@@ -355,7 +355,7 @@ Local<Value> PlayerClass::getSneaking()
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_GetSneaking(player));
+        return Boolean::newBoolean(player->isSneaking());
     }
     CATCH("Fail in getSneaking!")
 }
@@ -367,7 +367,7 @@ Local<Value> PlayerClass::getSpeed()
         if (!player)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetSpeed((Actor*)player));
+        return Number::newNumber(player->getSpeed());
     }
     CATCH("Fail in getSpeed!")
 }
@@ -379,8 +379,8 @@ Local<Value> PlayerClass::getDirection()
         if (!player)
             return Local<Value>();
         
-        auto vec = Raw_GetDirction((Actor*)player);
-        return DirectionAngle::newAngle(vec->x, vec->y);
+        auto vec = ((Actor*)player)->getDirction();
+        return DirectionAngle::newAngle(vec->x, vec->z);
     }
     CATCH("Fail in getDirection!")
 }
@@ -392,7 +392,7 @@ Local<Value> PlayerClass::getMaxHealth()
         if (!player)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetMaxHealth((Actor*)player));
+        return Number::newNumber(player->getMaxHealth());
     }
     CATCH("Fail in GetMaxHealth!")
 }
@@ -404,7 +404,7 @@ Local<Value> PlayerClass::getHealth()
         if (!player)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetHealth((Actor*)player));
+        return Number::newNumber(player->getHealth());
     }
     CATCH("Fail in GetHealth!")
 }
@@ -416,7 +416,7 @@ Local<Value> PlayerClass::getInAir()
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_GetIsInAir((Actor*)player));
+        return Boolean::newBoolean(!player->isOnGround() && !player->isInWater());
     }
     CATCH("Fail in GetInAir!")
 }
@@ -428,7 +428,7 @@ Local<Value> PlayerClass::getInWater()
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_GetIsInWater((Actor*)player));
+        return Boolean::newBoolean(player->isInWater());
     }
     CATCH("Fail in getInWater!")
 }
@@ -519,7 +519,8 @@ Local<Value> PlayerClass::teleport(const Arguments& args)
         Player* player = get();
         if (!player)
             return Local<Value>();
-        return Boolean::newBoolean(Raw_TeleportPlayer(player, pos));
+        player->teleport(pos.getVec3(), pos.dim);
+        return Boolean::newBoolean(true);               //=========???
     }
     CATCH("Fail in TeleportPlayer!")
 }
@@ -531,7 +532,8 @@ Local<Value> PlayerClass::kill(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_KillPlayer(player));
+        player->kill();
+        return Boolean::newBoolean(true);           //=======???
     }
     CATCH("Fail in KillPlayer!")
 }
@@ -543,7 +545,7 @@ Local<Value> PlayerClass::isOP(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_GetPlayerPermLevel(player) >= 1);
+        return Boolean::newBoolean(player->getPlayerPermissionLevel() >= 1);        //==========???
     }
     CATCH("Fail in IsOP!")
 }
@@ -560,8 +562,11 @@ Local<Value> PlayerClass::setPermLevel(const Arguments& args)
 
         bool res = false;
         int newPerm = args[0].asNumber().toInt32();
-        if(newPerm>=0 || newPerm<=4)
-            res = Raw_SetPlayerPermLevel(player,newPerm);
+        if (newPerm >= 0 || newPerm <= 4)
+        {
+            player->setPermissions(newPerm);
+            res = true;
+        }
         return Boolean::newBoolean(res);
     }
     CATCH("Fail in setPlayerPermLevel!");
@@ -580,7 +585,10 @@ Local<Value> PlayerClass::setGameMode(const Arguments& args)
         bool res = false;
         int newMode = args[0].asNumber().toInt32();
         if (newMode >= 0 || newMode <= 3)
-            res = Raw_SetGameMode(player, newMode);
+        {
+            player->setPlayerGameType(newMode);
+            res = true;
+        }
         return Boolean::newBoolean(res);
     }
     CATCH("Fail in setGameMode!");
@@ -596,7 +604,7 @@ Local<Value> PlayerClass::runcmd(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RuncmdAs(player, args[0].toStr()));
+        return Boolean::newBoolean(player->runcmd(args[0].toStr()));
     }
     CATCH("Fail in runcmd!");
 }
@@ -615,7 +623,8 @@ Local<Value> PlayerClass::kick(const Arguments& args)
         if(args.size() >= 1)
             msg = args[0].toStr();
         
-        return Boolean::newBoolean(Raw_KickPlayer(player,msg));
+        player->kick(msg);
+        return Boolean::newBoolean(true);       //=======???
     }
     CATCH("Fail in kickPlayer!");
 }
@@ -637,7 +646,9 @@ Local<Value> PlayerClass::tell(const Arguments& args)
             if(newType >= 0 && newType <= 9)
                 type = (TextType)newType;
         }
-        return Boolean::newBoolean(Raw_Tell(player,args[0].toStr(),type));
+
+        player->sendTextPacket(args[0].toStr(), type);
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in tell!");
 }
@@ -652,7 +663,8 @@ Local<Value> PlayerClass::talkAs(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_TalkAs(player, args[0].toStr()));
+        player->sendTextTalkPacket(args[0].toStr());
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in talkAs!");
 }
@@ -664,7 +676,7 @@ Local<Value> PlayerClass::getHand(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return ItemClass::newItem(Raw_GetHand(player));
+        return ItemClass::newItem(player->getHandSlot());
     }
     CATCH("Fail in getHand!");
 }
@@ -676,7 +688,7 @@ Local<Value> PlayerClass::getOffHand(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return ItemClass::newItem(Raw_GetOffHand(player));
+        return ItemClass::newItem((ItemStack*) & player->getOffhandSlot());
     }
     CATCH("Fail in getOffHand!");
 }
@@ -688,7 +700,7 @@ Local<Value> PlayerClass::getInventory(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return ContainerClass::newContainer(Raw_GetInventory(player));
+        return ContainerClass::newContainer(&player->getInventory());
     }
     CATCH("Fail in getInventory!");
 }
@@ -700,7 +712,7 @@ Local<Value> PlayerClass::getArmor(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return ContainerClass::newContainer(Raw_GetArmor(player));
+        return ContainerClass::newContainer(&player->getArmorContainer());
     }
     CATCH("Fail in getArmor!");
 }
@@ -712,7 +724,7 @@ Local<Value> PlayerClass::getEnderChest(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return ContainerClass::newContainer(Raw_GetEnderChest(player));
+        return ContainerClass::newContainer(player->getEnderChestContainer());
     }
     CATCH("Fail in getEnderChest!");
 }
@@ -723,7 +735,8 @@ Local<Value> PlayerClass::getRespawnPosition(const Arguments& args)
         Player* player = get();
         if (!player)
             return Local<Value>();
-        return IntPos::newPos(Raw_GetPlayerRespawnPosition(player));
+        auto position = player->getRespawnPosition();
+        return IntPos::newPos(position.first,position.second);
     }
     CATCH("Fail in getRespawnPosition!")
 }
@@ -750,7 +763,7 @@ Local<Value> PlayerClass::rename(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RenamePlayer(player,args[0].toStr()));
+        return Boolean::newBoolean(player->rename(args[0].toStr()));
     }
     CATCH("Fail in RenamePlayer!");
 }
@@ -765,7 +778,8 @@ Local<Value> PlayerClass::addLevel(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_AddLevel(player, args[0].toInt()));
+        player->addLevels(args[0].toInt());
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in addLevel!");
 }
@@ -781,7 +795,7 @@ Local<Value> PlayerClass::transServer(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_TransServer(player, args[0].toStr(), (short) args[1].toInt()));
+        return Boolean::newBoolean(player->transferServer(args[0].toStr(), (short) args[1].toInt()));
     }
     CATCH("Fail in transServer!");
 }
@@ -793,7 +807,8 @@ Local<Value> PlayerClass::crash(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_CrashPlayer(player));
+        player->kick("");
+        return Boolean::newBoolean(true);                 //========???
     }
     CATCH("Fail in crashPlayer!");
 }
@@ -805,7 +820,7 @@ Local<Value> PlayerClass::getBlockStandingOn(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return BlockClass::newBlock(Raw_GetBlockStandingOn((Actor*)player));
+        return BlockClass::newBlock(player->getBlockPosCurrentlyStandingOn(nullptr),player->getDimensionId());
     }
     CATCH("Fail in getBlockStandingOn!");
 }
@@ -832,7 +847,7 @@ Local<Value> PlayerClass::getScore(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetScore(player, args[0].toStr()));
+        return Number::newNumber(::Global<Scoreboard>->getScore(player, args[0].toStr()));
     }
     CATCH("Fail in getScore!");
 }
@@ -848,7 +863,7 @@ Local<Value> PlayerClass::setScore(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_SetScore(player,args[0].toStr(), args[1].toInt()));
+        return Boolean::newBoolean(::Global<Scoreboard>->setScore(player, args[0].toStr(), args[1].toInt()));
     }
     CATCH("Fail in getScore!");
 }
@@ -864,7 +879,7 @@ Local<Value> PlayerClass::addScore(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_AddScore(player,args[0].toStr(), args[1].toInt()));
+        return Boolean::newBoolean(::Global<Scoreboard>->addScore(player, args[0].toStr(), args[1].toInt()));
     }
     CATCH("Fail in addScore!");
 }
@@ -880,7 +895,7 @@ Local<Value> PlayerClass::reduceScore(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_ReduceScore(player,args[0].toStr(), args[1].toInt()));
+        return Boolean::newBoolean(::Global<Scoreboard>->reduceScore(player, args[0].toStr(), args[1].toInt()));
     }
     CATCH("Fail in removeScore!");
 }
@@ -895,7 +910,7 @@ Local<Value> PlayerClass::deleteScore(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_DeleteScore(player, args[0].toStr()));
+        return Boolean::newBoolean(::Global<Scoreboard>->deleteScore(player, args[0].toStr()));
     }
     CATCH("Fail in removeScore!");
 }
@@ -959,9 +974,10 @@ Local<Value> PlayerClass::setBossBar(const Arguments& args)
             percent = 0;
         else if(percent > 100)
             percent = 100;
-        
         float value = (float)percent / 100;
-        return Boolean::newBoolean(Raw_SetBossBar(player,args[0].toStr(),value));
+
+        player->sendBossEventPacket(args[0].toStr(), value, 0);     //Set
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in setBossBar!")
 }
@@ -973,7 +989,8 @@ Local<Value> PlayerClass::removeBossBar(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RemoveBossBar(player));
+        player->sendBossEventPacket(args[0].toStr(), 0, 2);     //Remove
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in removeBossBar!")
 }
@@ -1053,7 +1070,7 @@ Local<Value> PlayerClass::sendCustomForm(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        string data = JSON_VALUE::parse(args[0].toStr()).dump();
+        string data = fifo_json::parse(args[0].toStr()).dump();
         int formId = Raw_SendCustomForm(player, data);
         
         ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].engine = EngineScope::currentEngine();
@@ -1061,10 +1078,10 @@ Local<Value> PlayerClass::sendCustomForm(const Arguments& args)
         
         return Number::newNumber(formId);
     }
-    catch (const JSON_VALUE::exception& e)
+    catch (const fifo_json::exception& e)
     {
-        ERROR("Fail to parse Json string in sendCustomForm!");
-        ERRPRINT(e.what());
+        Error("Fail to parse Json string in sendCustomForm!");
+        Error(e.what());
 
         return Local<Value>();
     }
@@ -1099,10 +1116,10 @@ Local<Value> PlayerClass::sendForm(const Arguments& args)
             return Local<Value>();
         }
     }
-    catch (const JSON_VALUE::exception& e)
+    catch (const fifo_json::exception& e)
     {
-        ERROR("Fail to parse Json string in sendForm!");
-        ERRPRINT(e.what());
+        Error("Fail to parse Json string in sendForm!");
+        Error(e.what());
 
         return Local<Value>();
     }
@@ -1144,7 +1161,7 @@ Local<Value> PlayerClass::setExtraData(const Arguments& args)
         if(key.empty())
             return Boolean::newBoolean(false);
     
-        ENGINE_OWN_DATA()->playerDataDB[Raw_GetPlayerName(player) + "-" + key] = args[1];
+        ENGINE_OWN_DATA()->playerDataDB[player->getRealName() + "-" + key] = args[1];
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in setExtraData!");
@@ -1165,7 +1182,7 @@ Local<Value> PlayerClass::getExtraData(const Arguments& args)
         if (key.empty())
             return Boolean::newBoolean(false);
 
-        return ENGINE_OWN_DATA()->playerDataDB.at(Raw_GetPlayerName(player) + "-" + key).get();
+        return ENGINE_OWN_DATA()->playerDataDB.at(player->getRealName() + "-" + key).get();
     }
     catch (const std::out_of_range& e)
     {
@@ -1189,7 +1206,7 @@ Local<Value> PlayerClass::delExtraData(const Arguments& args)
         if(key.empty())
             return Boolean::newBoolean(false);
     
-        ENGINE_OWN_DATA()->playerDataDB.erase(Raw_GetPlayerName(player) + "-" + key);
+        ENGINE_OWN_DATA()->playerDataDB.erase(player->getRealName() + "-" + key);
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in delExtraData!")
@@ -1206,7 +1223,7 @@ Local<Value> PlayerClass::hurt(const Arguments& args)
             return Local<Value>();
 
         int damage = args[0].toInt();
-        return Boolean::newBoolean(Raw_HurtPlayer(player, damage));
+        return Boolean::newBoolean(player->hurtEntity(damage));
     }
     CATCH("Fail in hurt!");
 }
@@ -1235,7 +1252,8 @@ Local<Value> PlayerClass::refreshChunks(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RefreshChunks(player));
+        player->resendAllChunks();
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in setOnFire!");
 }
@@ -1253,7 +1271,7 @@ Local<Value> PlayerClass::giveItem(const Arguments& args)
         if (!item)
             return Local<Value>();    //Null
 
-        return Boolean::newBoolean(Raw_GiveItem(player,item));
+        return Boolean::newBoolean(player->giveItem(item));
     }
     CATCH("Fail in giveItem!");
 }
@@ -1268,7 +1286,7 @@ Local<Value> PlayerClass::clearItem(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Number::newNumber(Raw_ClearItem(player, args[0].toStr()));
+        return Number::newNumber(player->clearItem(args[0].toStr()));
     }
     CATCH("Fail in clearItem!");
 }
@@ -1282,7 +1300,7 @@ Local<Value> PlayerClass::isSprinting(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_IsSprinting(player));
+        return Boolean::newBoolean(player->isSprinting());
     }
     CATCH("Fail in isSprinting!");
 }
@@ -1297,7 +1315,8 @@ Local<Value> PlayerClass::setSprinting(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_SetSprinting(player, args[0].asBoolean().value()));
+        player->setSprinting(args[0].asBoolean().value());
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in clearItem!");
 }
@@ -1342,7 +1361,7 @@ Local<Value> PlayerClass::addTag(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_AddTag(player, args[0].toStr()));
+        return Boolean::newBoolean(player->addTag(args[0].toStr()));
     }
     CATCH("Fail in addTag!");
 }
@@ -1357,7 +1376,7 @@ Local<Value> PlayerClass::removeTag(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RemoveTag(player, args[0].toStr()));
+        return Boolean::newBoolean(player->removeTag(args[0].toStr()));
     }
     CATCH("Fail in removeTag!");
 }
@@ -1372,7 +1391,7 @@ Local<Value> PlayerClass::hasTag(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_EntityHasTag((Actor*)player, args[0].toStr()));
+        return Boolean::newBoolean(player->hasTag(args[0].toStr()));
     }
     CATCH("Fail in hasTag!");
 }
@@ -1384,7 +1403,7 @@ Local<Value> PlayerClass::getAllTags(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        auto res = Raw_EntityGetAllTags((Actor*)player);
+        auto res = player->getAllTags();
         Local<Array> arr = Array::newArray();
         for (auto& tag : res)
             arr.add(String::newString(tag));
@@ -1452,11 +1471,11 @@ Local<Value> PlayerClass::getAllItems(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        ItemStack* hand = Raw_GetHand(player);
-        ItemStack* offHand = Raw_GetOffHand(player);
-        vector<ItemStack*> inventory = Raw_GetAllSlots(Raw_GetInventory(player));
-        vector<ItemStack*> armor = Raw_GetAllSlots(Raw_GetArmor(player));
-        vector<ItemStack*> endChest = Raw_GetAllSlots(Raw_GetEnderChest(player));
+        ItemStack* hand = player->getHandSlot();
+        ItemStack* offHand = (ItemStack*)&player->getOffhandSlot();
+        vector<const ItemStack*> inventory = player->getInventory().getAllSlots();
+        vector<const ItemStack*> armor = player->getArmorContainer().getAllSlots();
+        vector<const ItemStack*> endChest = player->getEnderChestContainer()->getAllSlots();
 
         Local<Object> result = Object::newObject();
 
@@ -1468,25 +1487,25 @@ Local<Value> PlayerClass::getAllItems(const Arguments& args)
 
         //inventory
         Local<Array> inventoryArr = Array::newArray();
-        for (ItemStack* item : inventory)
+        for (const ItemStack* item : inventory)
         {
-            inventoryArr.add(ItemClass::newItem(item));
+            inventoryArr.add(ItemClass::newItem((ItemStack*)item));
         }
         result.set("inventory", inventoryArr);
 
         //armor
         Local<Array> armorArr = Array::newArray();
-        for (ItemStack* item : armor)
+        for (const ItemStack* item : armor)
         {
-            armorArr.add(ItemClass::newItem(item));
+            armorArr.add(ItemClass::newItem((ItemStack*)item));
         }
         result.set("armor", armorArr);
 
         //endChest
         Local<Array> endChestArr = Array::newArray();
-        for (ItemStack* item : endChest)
+        for (const ItemStack* item : endChest)
         {
-            endChestArr.add(ItemClass::newItem(item));
+            endChestArr.add(ItemClass::newItem((ItemStack*)item));
         }
         result.set("endChest", endChestArr);
 
@@ -1506,8 +1525,11 @@ Local<Value> PlayerClass::removeItem(const Arguments& args)
         int inventoryId = args[0].toInt();
         int count = args[1].toInt();
 
-        bool result = Raw_RemoveItem(Raw_GetInventory(player), inventoryId, count);
-        return Boolean::newBoolean(result);
+        Container& container = player->getInventory();
+        if (inventoryId > container.getSize())
+            return Boolean::newBoolean(false);
+        container.removeItem(inventoryId, count);
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in removeItem!")
 }

@@ -8,17 +8,7 @@
 #include <sstream>
 #include <exception>
 #include <cstdarg>
-#include <Kernel/Global.h>
-#include <Kernel/Base.h>
-#include <Kernel/Block.h>
-#include <Kernel/BlockEntity.h>
-#include <Kernel/Item.h>
-#include <Kernel/Entity.h>
-#include <Kernel/Player.h>
-#include <Kernel/SymbolHelper.h>
-#include <Kernel/Scoreboard.h>
-#include <Kernel/Packet.h>
-#include <Kernel/Global.h>
+#include <Global.hpp>
 #include <Engine/TimeTaskSystem.h>
 #include <Engine/PluginHotManage.h>
 #include <Engine/EngineOwnData.h>
@@ -130,7 +120,7 @@ static const std::unordered_map<string, EVENT_TYPES> EventsMap{
 struct ListenerListType
 {
     ScriptEngine *engine;
-    Global<Function> func;
+    script::Global<Function> func;
 };
 //监听器表
 static std::list<ListenerListType> listenerList[int(EVENT_TYPES::EVENT_COUNT)];
@@ -446,9 +436,9 @@ THook(void, "?sendLoginMessageLocal@ServerNetworkHandler@@QEAAXAEBVNetworkIdenti
     }
     catch (const seh_exception& e)
     {
-        ERROR("SEH Uncaught Exception Detected!");
-        ERRPRINT(e.what());
-        ERROR("In Getting Device Information");
+        Error("SEH Uncaught Exception Detected!");
+        Error(e.what());
+        Error("In Getting Device Information");
     }
     catch (...)
     {

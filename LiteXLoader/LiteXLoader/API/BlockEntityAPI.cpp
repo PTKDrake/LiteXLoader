@@ -3,10 +3,8 @@
 #include "BlockAPI.h"
 #include "BlockEntityAPI.h"
 #include "NbtAPI.h"
-#include <Kernel/Block.h>
-#include <Kernel/BlockEntity.h>
-#include <Kernel/SymbolHelper.h>
-#include <Kernel/Nbt.h>
+#include <Global.hpp>
+#include <MC/BlockActor.hpp>
 using namespace script;
 
 //////////////////// Class Definition ////////////////////
@@ -58,7 +56,7 @@ Local<Value> BlockEntityClass::getRawPtr(const Arguments& args)
 Local<Value> BlockEntityClass::getPos()
 {
 	try {
-		return IntPos::newPos(Raw_GetBlockEntityPos(blockEntity), dim);
+		return IntPos::newPos(blockEntity->getPosition(), dim);
 	}
 	CATCH("Fail in getBlockEntityPos!")
 }
@@ -66,7 +64,7 @@ Local<Value> BlockEntityClass::getPos()
 Local<Value> BlockEntityClass::getType()
 {
 	try {
-		return Number::newNumber((int)Raw_GetBlockEntityType(blockEntity));
+		return Number::newNumber((int)blockEntity->getType());
 	}
 	CATCH("Fail in getBlockEntityType!")
 }
@@ -97,8 +95,8 @@ Local<Value> BlockEntityClass::setNbt(const Arguments& args)
 Local<Value> BlockEntityClass::getBlock(const Arguments& args)
 {
 	try {
-		BlockPos bp = Raw_GetBlockEntityPos(blockEntity);
-		return BlockClass::newBlock(Raw_GetBlockByPos(&bp, dim), &bp, dim);
+		BlockPos bp = blockEntity->getPosition();
+		return BlockClass::newBlock(Level::getBlock(bp, dim), &bp, dim);
 	}
 	CATCH("Fail in getBlock!")
 }

@@ -10,7 +10,7 @@ class PlayerClass : public ScriptClass
 private:
     ActorUniqueID id;
     bool isValid = true;
-
+    
 public:
     explicit PlayerClass(Player* p);
 
@@ -18,7 +18,6 @@ public:
     Player* get();
 
     static Local<Object> newPlayer(Player *p);
-    static Local<Object> newPlayer(WPlayer p);
     static Player* extract(Local<Value> v);
     Local<Value> getRawPtr(const Arguments& args);
 

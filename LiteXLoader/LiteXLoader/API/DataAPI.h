@@ -1,7 +1,6 @@
 #pragma once
 #include <ScriptX/ScriptX.h>
 using namespace script;
-#include <Kernel/Data.h>
 #include <string>
 #include <memory>
 
@@ -94,7 +93,7 @@ public:
 class ConfJsonClass : public ScriptClass, public ConfBaseClass
 {
 private:
-    JSON_ROOT jsonConf;
+    fifo_json jsonConf;
     bool flush() override;
     bool close() override;
     bool reload() override;

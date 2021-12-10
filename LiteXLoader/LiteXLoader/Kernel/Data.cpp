@@ -57,9 +57,9 @@ bool Raw_DBClose(DB_ROOT& db)
     return true;
 }
 
-JSON_ROOT Raw_JsonOpen(const std::string& path, const std::string& defContent)
+fifo_json Raw_JsonOpen(const std::string& path, const std::string& defContent)
 {
-    JSON_ROOT jsonConf;
+    fifo_json jsonConf;
     if (!Raw_PathExists(path))
     {
         //创建新的
@@ -69,18 +69,18 @@ JSON_ROOT Raw_JsonOpen(const std::string& path, const std::string& defContent)
         {
             try
             {
-                jsonConf = JSON_VALUE::parse(defContent);
+                jsonConf = fifo_json::parse(defContent);
             }
             catch (exception& e)
             {
                 ERROR("Fail to parse default json content!");
                 ERRPRINT(e.what());
-                jsonConf = JSON_VALUE::object();
+                jsonConf = fifo_json::object();
             }
         }
         else
         {
-            jsonConf = JSON_VALUE::object();
+            jsonConf = fifo_json::object();
         }
 
         ofstream jsonFile(path);
@@ -96,13 +96,13 @@ JSON_ROOT Raw_JsonOpen(const std::string& path, const std::string& defContent)
             jsonTexts = "";
         try
         {
-            jsonConf = JSON_VALUE::parse(jsonTexts);
+            jsonConf = fifo_json::parse(jsonTexts);
         }
         catch (exception& e)
         {
             ERROR("Fail to parse json content in file!");
             ERRPRINT(e.what());
-            jsonConf = JSON_VALUE::array();
+            jsonConf = fifo_json::array();
         }
     }
     return jsonConf;

@@ -1,6 +1,5 @@
 #include "ScriptAPI.h"
 #include "APIHelp.h"
-#include <Kernel/System.h>
 #include <Engine/EngineOwnData.h>
 #include <Engine/LocalShareData.h>
 #include <Engine/GlobalShareData.h>

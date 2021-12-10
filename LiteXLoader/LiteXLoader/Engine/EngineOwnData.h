@@ -1,5 +1,4 @@
 #pragma once
-#include <Kernel/ThirdParty.h>
 #include <Kernel/Data.h>
 #include <ScriptX/ScriptX.h>
 #include <fstream>
@@ -37,7 +36,7 @@ struct EngineOwnData
     int playerLogLevel = 4;
 
     //玩家绑定数据
-    std::unordered_map<std::string,Global<Value>> playerDataDB;
+    std::unordered_map<std::string,script::Global<Value>> playerDataDB;
 };
 
 // 引擎附加数据

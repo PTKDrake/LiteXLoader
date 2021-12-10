@@ -8,18 +8,18 @@ using namespace script;
 class SimpleFormClass : public ScriptClass
 {
 private:
-    JSON_ROOT form;
+    fifo_json form;
 
 public:
     SimpleFormClass();
 
-    JSON_ROOT *get()
+    fifo_json *get()
     {
         return &form;
     }
 
     static Local<Object> newForm();
-    static JSON_ROOT* extract(Local<Value> v);
+    static fifo_json* extract(Local<Value> v);
 
     Local<Value> setTitle(const Arguments& args);
     Local<Value> setContent(const Arguments& args);
@@ -32,18 +32,18 @@ extern ClassDefine<SimpleFormClass> SimpleFormClassBuilder;
 class CustomFormClass : public ScriptClass
 {
 private:
-    JSON_ROOT form;
+    fifo_json form;
 
 public:
     CustomFormClass();
 
-    JSON_ROOT* get()
+    fifo_json* get()
     {
         return &form;
     }
 
     static Local<Object> newForm();
-    static JSON_ROOT* extract(Local<Value> v);
+    static fifo_json* extract(Local<Value> v);
 
     Local<Value> setTitle(const Arguments& args);
 

@@ -2,7 +2,6 @@
 #include <ScriptX/ScriptX.h>
 #include <map>
 #include <string>
-#include <Kernel/ThirdParty.h>
 using namespace script;
 
 
@@ -13,7 +12,7 @@ struct CmdCallbackData
 {
 	ScriptEngine* fromEngine;
 	int perm;
-	Global<Function> func;
+	script::Global<Function> func;
 };
 
 //命令延迟注册队列

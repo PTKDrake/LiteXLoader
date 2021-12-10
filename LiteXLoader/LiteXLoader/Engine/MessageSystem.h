@@ -1,5 +1,5 @@
 #pragma once
-#include <Kernel/Global.h>
+#include <windows.h>
 #include <ScriptX/ScriptX.h>
 #include <string>
 #include <map>

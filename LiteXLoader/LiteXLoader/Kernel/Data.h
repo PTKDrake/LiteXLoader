@@ -18,7 +18,7 @@ std::vector<std::string> Raw_DBListKey(DB_ROOT &db);
 bool Raw_DBClose(DB_ROOT& db);
 
 //Json
-JSON_ROOT Raw_JsonOpen(const std::string& path, const std::string& defContent = "");
+fifo_json Raw_JsonOpen(const std::string& path, const std::string& defContent = "");
 
 //Ini
 INI_ROOT Raw_IniOpen(const std::string &path, const std::string& defContent = "");

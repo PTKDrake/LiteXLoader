@@ -123,7 +123,7 @@ bool CheckAutoUpdate(bool isUpdateManually, bool forceUpdate)
 
 		//Parse
 		string info{ response->body };
-		JSON_ROOT data = JSON_ROOT::parse(info);
+		fifo_json data = fifo_json::parse(info);
 
 		//Check Other Files config
 		if (!filesystem::exists(LXL_UPDATE_OTHER_FILES_RECORD))
@@ -358,7 +358,7 @@ bool CheckAutoUpdate(bool isUpdateManually, bool forceUpdate)
 			INFO("在你下次重启服务器的时候，LXL将自动更新为最新版本");
 		}
 	}
-	catch (JSON_ROOT::exception& e) {
+	catch (fifo_json::exception& e) {
 		if (isUpdateManually)
 		{
 			PRINT(string("LXL版本更新信息解析失败！") + e.what());

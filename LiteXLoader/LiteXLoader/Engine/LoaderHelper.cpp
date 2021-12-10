@@ -86,7 +86,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
     if (suffix != LXL_PLUGINS_SUFFIX)
     {
         //Remote Load
-        DEBUG("Remote Load begin");
+        Debug("Remote Load begin");
 
         ostringstream sout;
         int backId = ModuleMessage::getNextMessageId();
@@ -189,7 +189,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         AddToGlobalPluginsList(pluginName);
         if (isHotLoad)
             LxlCallEventsOnHotLoad(engine);
-        INFO(pluginName + " loaded.");
+        Info(pluginName + " loaded.");
         return true;
     }
     catch (const Exception& e)
@@ -201,21 +201,21 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
             EngineScope enter(deleteEngine);
 
             deleteEngine->getData().reset();
-            ERROR("Fail to load " + filePath + "!\n");
-            ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-            ERRPRINT(e);
+            Error("Fail to load " + filePath + "!\n");
+            Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            Error(e);
             ExitEngineScope exit;
         }
         deleteEngine->destroy();
     }
     catch (const std::exception& e)
     {
-        ERROR("Fail to load " + filePath + "!");
-        ERROR(e.what());
+        Error("Fail to load " + filePath + "!");
+        Error(e.what());
     }
     catch (...)
     {
-        ERROR("Fail to load " + filePath + "!");
+        Error("Fail to load " + filePath + "!");
     }
     return false;
 }
@@ -248,7 +248,7 @@ string LxlUnloadPlugin(const std::string& name)
 
             engine->destroy();
 
-            INFO(name + " unloaded.")
+            Info(name + " unloaded.");
             break;
         }
     }

@@ -14,7 +14,7 @@ struct ExportedFuncData
 {
 	std::string fromEngineType;
 	ScriptEngine* engine;
-	Global<Function> func;
+	script::Global<Function> func;
 };
 
 //远程调用信息
