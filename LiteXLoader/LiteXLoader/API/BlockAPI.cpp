@@ -10,8 +10,8 @@
 #include <MC/Block.hpp>
 #include <MC/BlockSource.hpp>
 #include <MC/BlockInstance.hpp>
+#include <MC/BlockActor.hpp>
 #include <exception>
-#include "Kernel.h"
 using namespace script;
 
 //////////////////// Class Definition ////////////////////
@@ -79,6 +79,10 @@ Local<Object> BlockClass::newBlock(IntVec4 pos)
 {
     BlockPos bp = { pos.x, pos.y, pos.z };
     return BlockClass::newBlock(Level::getBlock(bp,pos.dim), &bp, pos.dim);
+}
+Local<Object> BlockClass::newBlock(BlockInstance block)
+{
+    return BlockClass::newBlock(block.getPosition(), block.getDimensionId());
 }
 Block* BlockClass::extract(Local<Value> v)
 {
@@ -196,7 +200,8 @@ Local<Value> BlockClass::getBlockState(const Arguments& args)
 Local<Value> BlockClass::hasContainer(const Arguments& args)
 {
     try {
-        return Boolean::newBoolean(Raw_HasContainer({ (float)pos.x, (float)pos.y, (float)pos.z, pos.dim }));
+        auto bl = Level::getBlockInstance({ pos.x, pos.y, pos.z }, pos.dim);
+        return Boolean::newBoolean(bl.hasContainer());
     }
     CATCH("Fail in hasContainer!");
 }
@@ -204,7 +209,7 @@ Local<Value> BlockClass::hasContainer(const Arguments& args)
 Local<Value> BlockClass::getContainer(const Arguments& args)
 {
     try {
-        Container* container = Raw_GetContainer({ (float)pos.x, (float)pos.y, (float)pos.z, pos.dim });
+        Container *container = Level::getBlockInstance({ pos.x, pos.y, pos.z }, pos.dim).getContainer();
         return container ? ContainerClass::newContainer(container) : Local<Value>();
     }
     CATCH("Fail in getContainer!");

@@ -22,7 +22,6 @@
     <ClCompile Include="API\EntityAPI.cpp" />
     <ClCompile Include="API\EventAPI.cpp" />
     <ClCompile Include="API\FileSystemAPI.cpp" />
-    <ClCompile Include="API\Kernel.cpp" />
     <ClCompile Include="API\McAPI.cpp" />
     <ClCompile Include="API\ScoreboardAPI.cpp" />
     <ClCompile Include="API\GameUtilsAPI.cpp" />
@@ -81,7 +80,6 @@
     <ClInclude Include="API\EntityAPI.h" />
     <ClInclude Include="API\EventAPI.h" />
     <ClInclude Include="API\FileSystemAPI.h" />
-    <ClInclude Include="API\Kernel.h" />
     <ClInclude Include="API\ScoreboardAPI.h" />
     <ClInclude Include="API\GameUtilsAPI.h" />
     <ClInclude Include="API\GuiAPI.h" />

@@ -3,7 +3,6 @@
 #include <Engine/TimeTaskSystem.h>
 #include <filesystem>
 #include <fstream>
-#include "Kernel.h"
 #include <Utils.h>
 using namespace script;
 using namespace std::filesystem;
@@ -31,7 +30,7 @@ Local<Value> SystemClass::cmd(const Arguments& args)
     try {
         script::Global<Function> callbackFunc{ args[1].asFunction() };
 
-        return Boolean::newBoolean(Raw_NewProcess("cmd /c" + args[0].toStr(),
+        return Boolean::newBoolean(NewProcess("cmd /c" + args[0].toStr(),
             [callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }]
         (int exitCode, string output)
         {
@@ -63,7 +62,7 @@ Local<Value> SystemClass::newProcess(const Arguments& args)
     try {
         script::Global<Function> callbackFunc{ args[1].asFunction() };
 
-        return Boolean::newBoolean(Raw_NewProcess(args[0].toStr(),
+        return Boolean::newBoolean(NewProcess(args[0].toStr(),
             [callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }]
         (int exitCode, string output)
         {

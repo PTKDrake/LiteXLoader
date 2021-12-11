@@ -8,7 +8,6 @@
 #include <string>
 #include <Utils.h>
 #include <MC/Player.hpp>
-#include "Kernel.h"
 using namespace std;
 using namespace script;
 
@@ -81,7 +80,7 @@ void LogToEachTarget(shared_ptr<EngineOwnData> globalConf,
             globalConf->fout << preString;
         LogDataHelper(&(globalConf->fout), args);
     }
-    if(globalConf->player && globalConf->playerLogLevel >= level && Raw_IsPlayerValid(globalConf->player))
+    if(globalConf->player && globalConf->playerLogLevel >= level && Player::isValid(globalConf->player))
     {
         ostringstream ostr;
         LogDataHelper(&ostr, args);
@@ -257,7 +256,7 @@ Local<Value> LoggerClass::setFile(const Arguments& args)
 
     try {
         string newFile = args[0].asString().toString();
-        Raw_AutoCreateDirs(newFile);
+        CreateDirs(newFile);
 
         ofstream *fout = &(ENGINE_OWN_DATA()->fout);
         if(fout->is_open())

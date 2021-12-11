@@ -1,29 +1,29 @@
 #pragma once
 #include <ScriptX/ScriptX.h>
-#include <Kernel/ThirdParty.h>
 using namespace script;
+#include <MC/FormUI.hpp>
 
 //////////////////// Classes ////////////////////
 
 class SimpleFormClass : public ScriptClass
 {
 private:
-    fifo_json form;
+    Form::SimpleForm form;
 
 public:
     SimpleFormClass();
 
-    fifo_json *get()
+    Form::SimpleForm* get()
     {
         return &form;
     }
-
+    
     static Local<Object> newForm();
-    static fifo_json* extract(Local<Value> v);
+    static Form::SimpleForm* extract(Local<Value> v);
+    static bool sendForm(Form::SimpleForm* form, Player* player, script::Local<Function> &callback);
 
     Local<Value> setTitle(const Arguments& args);
     Local<Value> setContent(const Arguments& args);
-
     Local<Value> addButton(const Arguments& args);
 };
 extern ClassDefine<SimpleFormClass> SimpleFormClassBuilder;
@@ -32,21 +32,21 @@ extern ClassDefine<SimpleFormClass> SimpleFormClassBuilder;
 class CustomFormClass : public ScriptClass
 {
 private:
-    fifo_json form;
+    Form::CustomForm form;
 
 public:
     CustomFormClass();
 
-    fifo_json* get()
+    Form::CustomForm* get()
     {
         return &form;
     }
 
     static Local<Object> newForm();
-    static fifo_json* extract(Local<Value> v);
+    static Form::CustomForm* extract(Local<Value> v);
+    static bool sendForm(Form::CustomForm* form, Player* player, script::Local<Function> &callback);
 
     Local<Value> setTitle(const Arguments& args);
-
     Local<Value> addLabel(const Arguments& args);
     Local<Value> addInput(const Arguments& args);
     Local<Value> addSwitch(const Arguments& args);

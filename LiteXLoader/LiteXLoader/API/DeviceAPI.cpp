@@ -4,7 +4,6 @@
 #include <MC/Player.hpp>
 #include <MC/Level.hpp>
 #include <MC/NetworkIdentifier.hpp>
-#include "Kernel.h"
 using namespace std;
 using namespace script;
 
@@ -48,7 +47,7 @@ Player* DeviceClass::getPlayer()
     if (!isValid)
         return nullptr;
     else
-        return Raw_GetPlayerByUniqueId(id);
+        return ::Global<Level>->getPlayer(id);
 }
 
 Local<Value> DeviceClass::getIP()

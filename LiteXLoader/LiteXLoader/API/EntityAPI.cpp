@@ -7,11 +7,11 @@
 #include "McAPI.h"
 #include "ContainerAPI.h"
 #include "NbtAPI.h"
-#include "Kernel.h"
 #include <MC/Actor.hpp>
 #include <MC/Level.hpp>
 #include <MC/ItemActor.hpp>
 #include <MC/SimpleContainer.hpp>
+#include <MC/Mob.hpp>
 using namespace script;
 
 //////////////////// Class Definition ////////////////////
@@ -176,7 +176,7 @@ Local<Value> EntityClass::getBlockPos()
         if (!entity)
             return Local<Value>();
 
-        return IntPos::newPos(Raw_GetEntityBlockPos(entity));       //===========?
+        return IntPos::newPos(entity->getBlockPos());
     }
     CATCH("Fail in GetEntityBlockPos!")
 }
@@ -248,8 +248,8 @@ Local<Value> EntityClass::getDirection()
         if (!entity)
             return Local<Value>();
 
-        Vec2 *vec = entity->getDirction();
-        return DirectionAngle::newAngle(vec->x, vec->z);        //===========???
+        Vec2 *vec = entity->getDirection();
+        return DirectionAngle::newAngle(vec->x, vec->z); 
     }
     CATCH("Fail in getDirection!")
 }
@@ -430,7 +430,7 @@ Local<Value> EntityClass::refreshItems(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RefreshItems(entity));
+        return Boolean::newBoolean(((Mob*)entity)->refreshInventory());
     }
     CATCH("Fail in refreshItems!");
 }
@@ -443,7 +443,7 @@ Local<Value> EntityClass::hasContainer(const Arguments& args)
             return Local<Value>();
 
         Vec3 pos = entity->getPosition();
-        return Boolean::newBoolean(Raw_HasContainer({ pos.x, pos.y, pos.z, entity->getDimensionId() }));
+        return Boolean::newBoolean(Level::hasContainer({ pos.x, pos.y, pos.z }, entity->getDimensionId()));
     }
     CATCH("Fail in hasContainer!");
 }
@@ -456,7 +456,7 @@ Local<Value> EntityClass::getContainer(const Arguments& args)
             return Local<Value>();
 
         Vec3 pos = entity->getPosition();
-        Container* container = Raw_GetContainer({ pos.x, pos.y, pos.z, entity->getDimensionId() });
+        Container* container = Level::getContainer({ pos.x, pos.y, pos.z }, entity->getDimensionId());
         return container ? ContainerClass::newContainer(container) : Local<Value>();
     }
     CATCH("Fail in getContainer!");
@@ -489,7 +489,7 @@ Local<Value> EntityClass::setOnFire(const Arguments& args)
             return Local<Value>();
 
         int time = args[0].toInt();
-        bool result = Raw_SetOnFire(entity, time);
+        bool result = entity->setOnFire(time, true);
         return Boolean::newBoolean(result);
     }
     CATCH("Fail in setOnFire!")

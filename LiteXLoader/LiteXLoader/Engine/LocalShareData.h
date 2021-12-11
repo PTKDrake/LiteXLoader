@@ -35,13 +35,6 @@ static struct CmdCallbackMapCmp
 	}
 };
 
-//设备信息记录
-struct DeviceInfoType
-{
-	std::string DeviceId;
-	int DeviceOS;
-};
-
 //DLL本地共享数据
 struct LocalDataType
 {
@@ -53,9 +46,6 @@ struct LocalDataType
 
 	//控制台命令回调
 	std::map<std::string, CmdCallbackData, CmdCallbackMapCmp> consoleCmdCallbacks;
-
-	//设备信息记录
-	std::unordered_map<uintptr_t , DeviceInfoType> deviceInfoRecord;
 };
 
 

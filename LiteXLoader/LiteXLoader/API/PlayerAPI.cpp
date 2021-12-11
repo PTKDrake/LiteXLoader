@@ -19,7 +19,6 @@
 #include <MC/Scoreboard.hpp>
 #include <MC/Objective.hpp>
 #include <MC/ScoreboardId.hpp>
-#include "Kernel.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -237,7 +236,7 @@ Player* PlayerClass::get()
     if (!isValid)
         return nullptr;
     else
-        return Raw_GetPlayerByUniqueId(id);
+        return Level::getPlayer(id);
 }
 
 Local<Value> PlayerClass::getName()
@@ -271,7 +270,7 @@ Local<Value> PlayerClass::getBlockPos()
         if (!player)
             return Local<Value>();
 
-        return IntPos::newPos(Raw_GetEntityBlockPos((Actor*)player));
+        return IntPos::newPos(player->getBlockPos());
     }
     CATCH("Fail in getPlayerBlockPos!")
 }
@@ -379,7 +378,7 @@ Local<Value> PlayerClass::getDirection()
         if (!player)
             return Local<Value>();
         
-        auto vec = ((Actor*)player)->getDirction();
+        auto vec = ((Actor*)player)->getDirection();
         return DirectionAngle::newAngle(vec->x, vec->z);
     }
     CATCH("Fail in getDirection!")
@@ -748,7 +747,7 @@ Local<Value> PlayerClass::refreshItems(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RefreshItems(player));
+        return Boolean::newBoolean(player->refreshInventory());
     }
     CATCH("Fail in refreshItems!");
 }
@@ -941,7 +940,7 @@ Local<Value> PlayerClass::setSidebar(const Arguments& args)
         if (args.size() >= 3)
             sortOrder = args[2].toInt();
 
-        return Boolean::newBoolean(Raw_SetSidebar(player,args[0].toStr(),data,sortOrder));
+        return Boolean::newBoolean(player->setSidebar(args[0].toStr(), data, (ObjectiveSortOrder)sortOrder));
     }
     CATCH("Fail in setSidebar!")
 }
@@ -953,7 +952,7 @@ Local<Value> PlayerClass::removeSidebar(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RemoveSidebar(player));
+        return Boolean::newBoolean(player->removeSidebar());
     }
     CATCH("Fail in removeSidebar!")
 }
@@ -1098,30 +1097,23 @@ Local<Value> PlayerClass::sendForm(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        int formId = 0;
-        auto jsonForm = SimpleFormClass::extract(args[0]);
-        if(jsonForm == nullptr)
-            jsonForm = CustomFormClass::extract(args[0]);
+        bool res = false;
 
-        if (jsonForm != nullptr)
+        Form::SimpleForm* form = SimpleFormClass::extract(args[0]);
+        if (IsInstanceOf<SimpleFormClass>(args[0]))
         {
-            int formId = Raw_SendRawForm(player, jsonForm->dump());
-            ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId] = { EngineScope::currentEngine(),Global<Function>(args[1].asFunction()) };
-
-            return Number::newNumber(formId);
+            res = SimpleFormClass::sendForm(SimpleFormClass::extract(args[0]), player, args[1].asFunction());
+        }
+        else if (IsInstanceOf<CustomFormClass>(args[0]))
+        {
+            res = CustomFormClass::sendForm(CustomFormClass::extract(args[0]), player, args[1].asFunction());
         }
         else
         {
             ERROR("Unknown Type of Form Parameter!");
             return Local<Value>();
         }
-    }
-    catch (const fifo_json::exception& e)
-    {
-        Error("Fail to parse Json string in sendForm!");
-        Error(e.what());
-
-        return Local<Value>();
+        return Boolean::newBoolean(res);
     }
     CATCH("Fail in sendForm!");
 }
@@ -1239,7 +1231,7 @@ Local<Value> PlayerClass::setOnFire(const Arguments& args)
             return Local<Value>();
 
         int time = args[0].toInt();
-        bool result = Raw_SetOnFire((Actor*)player, time);
+        bool result = player->setOnFire(time, true);
         return Boolean::newBoolean(result);
     }
     CATCH("Fail in setOnFire!");

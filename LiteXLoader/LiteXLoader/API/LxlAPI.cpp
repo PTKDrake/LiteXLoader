@@ -5,7 +5,6 @@
 #include <Engine/LoaderHelper.h>
 #include <Utils/NetworkHelper.h>
 #include <Utils.h>
-#include "Kernel.h"
 #include <Version.h>
 #include <string>
 #include <filesystem>
@@ -103,7 +102,7 @@ Local<Value> LxlClass::require(const Arguments& args)
 
         //插件目录
         existing = false;
-        auto list = Raw_GetFilesList(LXL_PLUGINS_LOAD_DIR);
+        auto list = GetFileNameList(LXL_PLUGINS_LOAD_DIR);
         for (auto fileName : list)
         {
             if (fileName == require)
@@ -129,7 +128,7 @@ Local<Value> LxlClass::require(const Arguments& args)
 
         //依赖库目录
         existing = false;
-        list = Raw_GetFilesList(LXL_DEPENDS_DIR);
+        list = GetFileNameList(LXL_DEPENDS_DIR);
         for (auto fileName : list)
         {
             if (fileName == require)

@@ -187,9 +187,6 @@
     <ClCompile Include="Global.cpp">
       <Filter>Main</Filter>
     </ClCompile>
-    <ClCompile Include="API\Kernel.cpp">
-      <Filter>API</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Main</Filter>
     </ClCompile>
@@ -359,9 +356,6 @@
     </ClInclude>
     <ClInclude Include="Global.hpp">
       <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="API\Kernel.h">
-      <Filter>API</Filter>
     </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Main</Filter>

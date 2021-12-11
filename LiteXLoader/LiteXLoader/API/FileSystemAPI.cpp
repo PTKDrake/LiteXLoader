@@ -5,7 +5,6 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
-#include "Kernel.h"
 #include <Utils/FileHelper.h>
 using namespace script;
 using namespace std::filesystem;
@@ -97,7 +96,7 @@ FileClass* FileClass::constructor(const Arguments& args)
 
     try {
         string path = args[0].toStr();
-        Raw_AutoCreateDirs(path);
+        CreateDirs(path);
 
         FileOpenMode fMode = (FileOpenMode)(args[1].toInt());
         //Auto Create
@@ -551,7 +550,7 @@ Local<Value> DirCreate(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
 
     try{
-        Raw_AutoCreateDirs(args[0].toStr());
+        CreateDirs(args[0].toStr());
         return Boolean::newBoolean(true);
     }
     catch(const filesystem_error& e)
@@ -699,7 +698,7 @@ Local<Value> GetFilesList(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
 
     try {
-        auto fileList = Raw_GetFilesList(args[0].toStr());
+        auto fileList = GetFileNameList(args[0].toStr());
 
         Local<Array> arr = Array::newArray();
         for (auto& file : fileList)
@@ -731,7 +730,7 @@ Local<Value> FileWriteTo(const Arguments& args)
     
     try{
         string path = args[0].toStr();
-        Raw_AutoCreateDirs(path);
+        CreateDirs(path);
         return Boolean::newBoolean(WriteAllFile(path, args[1].toStr(), false));
     }
     CATCH("Fail in FileWriteAll!");
@@ -745,7 +744,7 @@ Local<Value> FileWriteLine(const Arguments& args)
     
     try{
         string path = args[0].toStr();
-        Raw_AutoCreateDirs(path);
+        CreateDirs(path);
 
         std::ofstream fileWrite(path,std::ios::app);
         if(!fileWrite)
@@ -769,7 +768,7 @@ Local<Value> OpenFile(const Arguments& args)
 
     try {
         string path = args[0].toStr();
-        Raw_AutoCreateDirs(path);
+        CreateDirs(path);
 
         FileOpenMode fMode = (FileOpenMode)(args[1].toInt());
         ios_base::openmode mode = ios_base::in;

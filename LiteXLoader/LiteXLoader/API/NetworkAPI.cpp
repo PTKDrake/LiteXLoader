@@ -2,12 +2,13 @@
 #include <Utils/NetworkHelper.h>
 #include <Engine/TimeTaskSystem.h>
 #include <third-party/httplib/httplib.h>
+#include <third-party/LightWebSocketClient/include/WebSocketClient.h>
 #include "NetworkAPI.h"
-#include "Kernel.h"
 #include <string>
 #include <vector>
 using namespace std;
 using namespace script;
+using namespace cyanray;
 
 //////////////////// Classes ////////////////////
 
@@ -308,7 +309,7 @@ Local<Value> NetworkClass::httpPost(const Arguments& args)
     {
         script::Global<Function> callbackFunc{ args[3].asFunction() };
 
-        return Boolean::newBoolean(Raw_HttpPost(args[0].toStr(), args[1].toStr(), args[2].toStr(),
+        return Boolean::newBoolean(HttpPost(args[0].toStr(), args[1].toStr(), args[2].toStr(),
             [callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }]
             (int status, string data)
         {
