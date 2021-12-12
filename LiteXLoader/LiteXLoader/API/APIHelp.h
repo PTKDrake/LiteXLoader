@@ -1,13 +1,42 @@
 ﻿#pragma once
 #include <ScriptX/ScriptX.h>
-using namespace script;
+using script::Local;
+using script::Value;
+using script::Number;
+using script::String;
+using script::Boolean;
+using script::ByteBuffer;
+using script::Function;
+using script::Array;
+using script::Object;
+using script::ScriptClass;
+using script::Arguments;
+using script::ClassDefine;
+using script::defineClass;
+using script::selectOverloadedFunc;
+using script::ScriptEngine;
+using script::ScriptEngineImpl;
+using script::EngineScope;
+using script::ExitEngineScope;
+using script::Exception;
+using script::ValueKind;
 
 #include <Global.hpp>
 #include <Engine/EngineOwnData.h>
+#include <Tools/JsonHelper.h>
 #include <MC/Level.hpp>
 #include <string>
 #include <vector>
 #include <exception>
+#include <sstream>
+
+// 输出异常信息
+inline void PrintException(const script::Exception& e)
+{
+    ostringstream sout;
+    sout << e << endl;
+    logger.error(sout.str());
+}
 
 // 方便提取类型
 #define toStr() asString().toString()
@@ -24,9 +53,9 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CHECK_ARGS_COUNT(ARGS,COUNT) \
     if(ARGS.size()<COUNT) \
     { \
-        ERROR("Too Few arguments!"); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Too Few arguments!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     }
 
@@ -34,9 +63,9 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CHECK_ARG_TYPE(ARG,TYPE) \
     if(ARG.getKind() != TYPE) \
     { \
-        Error("Wrong type of argument!"); \
-        Error(std::string("In API: ") + __FUNCTION__); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Wrong type of argument!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     }
 
@@ -44,31 +73,31 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CATCH(LOG) \
     catch(const Exception& e) \
     { \
-        Error(LOG##"\n"); Error(e); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error(LOG##"\n"); PrintException(e); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     } \
     catch(const std::exception &e) \
     { \
-        Error("C++ Uncaught Exception Detected!"); \
-        Error(e.what()); \
-        Error(std::string("In API: ") + __FUNCTION__); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("C++ Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     } \
     catch(const seh_exception &e) \
     { \
-        Error("SEH Uncaught Exception Detected!"); \
-        Error(e.what()); \
-        Error(std::string("In API: ") + __FUNCTION__); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("SEH Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     } \
     catch(...) \
     { \
-        Error("Uncaught Exception Detected!"); \
-        Error(std::string("In API: ") + __FUNCTION__); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Uncaught Exception Detected!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     }
 
@@ -76,9 +105,9 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CHECK_ARGS_COUNT_C(ARGS,COUNT) \
     if(ARGS.size()<COUNT) \
     { \
-        Error("Too Few arguments!"); \
-        Error(std::string("In API: ") + __FUNCTION__); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Too Few arguments!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     }
 
@@ -86,9 +115,9 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CHECK_ARG_TYPE_C(ARG,TYPE) \
     if(ARG.getKind() != TYPE) \
     { \
-        Error("Wrong type of argument!"); \
-        Error(std::string("In API: ") + __FUNCTION__); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Wrong type of argument!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     }
 
@@ -96,31 +125,31 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CATCH_C(LOG) \
     catch(const Exception& e) \
     { \
-        Error(LOG##"\n"); Error(e); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error(LOG##"\n"); PrintException(e); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     } \
     catch(const std::exception &e) \
     { \
-        Error("C++ Uncaught Exception Detected!"); \
-        Error(e.what()); \
-        Error(std::string("In API: ") + __FUNCTION__); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("C++ Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     } \
     catch(const seh_exception &e) \
     { \
-        Error("SEH Uncaught Exception Detected!"); \
-        Error(e.what()); \
-        Error(std::string("In API: ") + __FUNCTION__); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("SEH Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     } \
     catch(...) \
     { \
-        Error("Uncaught Exception Detected!"); \
-        Error(std::string("In API: ") + __FUNCTION__); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Uncaught Exception Detected!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     }
 

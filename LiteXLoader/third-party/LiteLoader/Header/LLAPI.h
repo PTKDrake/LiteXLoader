@@ -7,6 +7,8 @@
 #include <Windows.h>
 #include "Global.h"
 #include "Utils/WinHelper.h"
+#include "Utils/PluginOwnData.h"
+#include "LoggerAPI.h"
 
 //helper
 LIAPI bool RegisterPlugin(HMODULE hPlugin, std::string name, std::string introduction, std::string version,

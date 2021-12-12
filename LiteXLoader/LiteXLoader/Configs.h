@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 
 ////////////// Configs //////////////
 
@@ -44,3 +44,20 @@
 
 //线程池
 #define LXL_POOL_THREAD_COUNT 4
+
+/////////////////////// LXL AutoUpgrade ///////////////////////
+
+#define LXL_RELAY_INDEX "https://upgrade.litebds.com/id.json"
+#define LXL_UPDATE_URL_PREFIX "https://cdn.jsdelivr.net/gh/LiteLDev/Upgrade"
+#define LXL_UPDATE_URL_PATH "/LXL/LXL.json"
+
+#define LXL_UPDATE_CHECK_INTERVAL (10 * 60)
+#define LXL_UPDATE_CONNECTION_TIMEOUT 60
+
+#define LXL_UPDATE_PROGRAM "plugins/LiteXLoader/LXLAutoUpdate.dll"
+#define LXL_UPDATE_CHECK_PRELOAD "plugins/preload.conf"
+
+#define LXL_UPDATE_CACHE_PATH "plugins/LiteXLoader/Update/"
+#define LXL_UPDATE_INFO_RECORD "plugins/LiteXLoader/Update/Update.ini"
+
+#define LXL_UPDATE_OTHER_FILES_RECORD "plugins/LiteXLoader/Versions.ini"

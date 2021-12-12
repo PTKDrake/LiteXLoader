@@ -1,4 +1,3 @@
-﻿#include <ScriptX/ScriptX.h>
 #include <API/APIHelp.h>
 #include <API/EventAPI.h>
 #include <Engine/GlobalShareData.h>
@@ -15,15 +14,24 @@
 #include <filesystem>
 #include <Configs.h>
 #include <Version.h>
-using namespace script;
+#include <LoggerAPI.h>
+#include <Utils/FileHelper.h>
+#include <Tools/IniHelper.h>
+#include <TranslationAPI.h>
+#include <EconomicSystem.h>
+
 using namespace std;
+
+
 
 //主引擎表
 std::vector<ScriptEngine*> lxlModules;
 // 配置文件
-INI_ROOT iniConf;
+SimpleIni* iniConf;
 // 日志等级
 int lxlLogLevel = 1;
+
+::Logger logger("LiteXLoader");
 
 extern void LoadDepends();
 extern void LoadMain();
@@ -44,9 +52,9 @@ void Welcome()
 
 void LoaderInfo()
 {
-    INFO(std::string("LXL for ") + LXL_MODULE_TYPE + " loaded");
-    INFO(std::string("Version ") + to_string(LXL_VERSION_MAJOR) + "." + to_string(LXL_VERSION_MINOR) + "."
-        + to_string(LXL_VERSION_REVISION) + (LXL_VERSION_IS_BETA ? " Beta" : ""));
+    logger.info(std::string("LXL for ") + LXL_MODULE_TYPE + " loaded");
+    logger.info(std::string("Version ") + to_string(LXL_VERSION_MAJOR) + "." + to_string(LXL_VERSION_MINOR) + "."
+        + to_string(LXL_VERSION_REVISION) + LXL_VERSION_STATUS_STRING);
 }
 
 void entry()
@@ -54,15 +62,18 @@ void entry()
     //设置全局SEH处理
     _set_se_translator(seh_exception::TranslateSEHtoCE);
 
+    LL::registerPlugin("LiteXLoader", "LiteXLoader Script Plugin Loader", "",
+        "github.com/LiteLDev/LiteXLoader", "GPL-3", "www.litebds.com");
+
     //读取配置文件
-    Raw_DirCreate(std::filesystem::path(LXL_CONFIG_PATH).remove_filename().u8string());
-    iniConf = Raw_IniOpen(LXL_CONFIG_PATH);
+    CreateDirs(std::filesystem::path(LXL_CONFIG_PATH).remove_filename().u8string());
+    iniConf = SimpleIni::create(LXL_CONFIG_PATH,"");
     if (!iniConf)
-        ERROR("Fail to Load config file of LiteXLoader! Default settings applied.");
-    lxlLogLevel = Raw_IniGetInt(iniConf,"Main","LxlLogLevel",1);
+        logger.error("Fail to Load config file of LiteXLoader! Default settings applied.");
+    lxlLogLevel = iniConf->getInt("Main","LxlLogLevel",1);
 
     //国际化
-    InitI18n(LXL_LANGPACK_DIR + Raw_IniGetString(iniConf, "Main", "Language", "en_US") + ".json");
+    Translation::load(LXL_LANGPACK_DIR + iniConf->getString("Main", "Language", "en_US") + ".json");
 
     //初始化全局数据
     InitLocalShareData();
@@ -77,7 +88,7 @@ void entry()
     LoaderInfo();
 
     //初始化经济系统
-    Raw_InitEcnonmicSystem(MoneyEventCallback);
+    EconomySystem::init(MoneyEventCallback);
 
     //预加载库
     LoadDepends();
@@ -93,7 +104,7 @@ void entry()
 
     //UnlockCmd
     extern bool isUnlockCmdEnabled;
-    isUnlockCmdEnabled = Raw_IniGetBool(iniConf, "Modules", "BuiltInUnlockCmd", true);
+    isUnlockCmdEnabled = iniConf->getBool("Modules", "BuiltInUnlockCmd", true);
 
-    Raw_IniClose(iniConf);
+    delete iniConf;
 }

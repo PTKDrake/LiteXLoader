@@ -15,7 +15,7 @@
 #include <MC/StringTag.hpp>
 #include <MC/ListTag.hpp>
 #include <MC/CompoundTag.hpp>
-using namespace script;
+
 using namespace std;
 
 
@@ -1671,7 +1671,7 @@ Local<Value> NbtCompoundClass::setDouble(const Arguments& args)
 		auto key = args[0].toStr();
 		auto data = args[1].asNumber().toDouble();
 
-		list[key].asDoubleTag()->value() = data;
+		list.at(key).asDoubleTag()->value() = data;
 		return this->getScriptObject();
 	}
 	CATCH("Fail in NBT SetDouble!");
@@ -1722,47 +1722,47 @@ Local<Value> NbtCompoundClass::setTag(const Arguments& args)
 
 		if (IsInstanceOf<NbtEndClass>(args[1]))
 		{
-			nbt->put(key, NbtEndClass::extract(args[1]));
+			nbt->put(key, std::move(NbtEndClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtByteClass>(args[1]))
 		{
-			nbt->put(key, NbtByteClass::extract(args[1]));
+			nbt->put(key, std::move(NbtByteClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtShortClass>(args[1]))
 		{
-			nbt->put(key, NbtShortClass::extract(args[1]));
+			nbt->put(key, std::move(NbtShortClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtIntClass>(args[1]))
 		{
-			nbt->put(key, NbtIntClass::extract(args[1]));
+			nbt->put(key, std::move(NbtIntClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtLongClass>(args[1]))
 		{
-			nbt->put(key, NbtLongClass::extract(args[1]));
+			nbt->put(key, std::move(NbtLongClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtFloatClass>(args[1]))
 		{
-			nbt->put(key, NbtFloatClass::extract(args[1]));
+			nbt->put(key, std::move(NbtFloatClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtDoubleClass>(args[1]))
 		{
-			nbt->put(key, NbtDoubleClass::extract(args[1]));
+			nbt->put(key, std::move(NbtDoubleClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtStringClass>(args[1]))
 		{
-			nbt->put(key, NbtStringClass::extract(args[1]));
+			nbt->put(key, std::move(NbtStringClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtByteArrayClass>(args[1]))
 		{
-			nbt->put(key, NbtByteArrayClass::extract(args[1]));
+			nbt->put(key, std::move(NbtByteArrayClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtListClass>(args[1]))
 		{
-			nbt->put(key, NbtListClass::extract(args[1]));
+			nbt->put(key, std::move(NbtListClass::extract(args[1])->copy()));
 		}
 		else if (IsInstanceOf<NbtCompoundClass>(args[1]))
 		{
-			nbt->put(key, NbtCompoundClass::extract(args[1]));
+			nbt->put(key, std::move(NbtCompoundClass::extract(args[1])->copy()));
 		}
 		else
 		{
@@ -2340,7 +2340,7 @@ bool TagSetValue_ListHelper(ListTag* listNbt, Tag::Type listType, Local<Array> v
 				{
 					if (IsNbtClass(obj.get(keys[0])))
 					{
-						TagSetValue_CompoundHelper(objTag, obj);
+						TagSetValue_CompoundHelper(objTag->asCompoundTag(), obj);
 					}
 					else
 					{
@@ -2374,26 +2374,26 @@ bool TagSetValue_CompoundHelper(CompoundTag* compNbt, Local<Object> value)
 		if (IsInstanceOf<NbtEndClass>(data))
 			compNbt->putEnd(key);
 		else if (IsInstanceOf<NbtByteClass>(data))
-			compNbt->put(key, NbtByteClass::extract(data));
+			compNbt->put(key, std::move(NbtByteClass::extract(data)->copy()));
 		else if (IsInstanceOf<NbtShortClass>(data))
-			compNbt->put(key, NbtShortClass::extract(data));
+			compNbt->put(key, std::move(NbtShortClass::extract(data)->copy()));
 		else if (IsInstanceOf<NbtIntClass>(data))
-			compNbt->put(key, NbtIntClass::extract(data));
+			compNbt->put(key, std::move(NbtIntClass::extract(data)->copy()));
 		else if (IsInstanceOf<NbtLongClass>(data))
-			compNbt->put(key, NbtLongClass::extract(data));
+			compNbt->put(key, std::move(NbtLongClass::extract(data)->copy()));
 		else if (IsInstanceOf<NbtFloatClass>(data))
-			compNbt->put(key, NbtFloatClass::extract(data));
+			compNbt->put(key, std::move(NbtFloatClass::extract(data)->copy()));
 		else if (IsInstanceOf<NbtDoubleClass>(data))
-			compNbt->put(key, NbtDoubleClass::extract(data));
+			compNbt->put(key, std::move(NbtDoubleClass::extract(data)->copy()));
 		else if (IsInstanceOf<NbtStringClass>(data))
-			compNbt->put(key, NbtStringClass::extract(data));
+			compNbt->put(key, std::move(NbtStringClass::extract(data)->copy()));
 		else if (IsInstanceOf<NbtByteArrayClass>(data))
-			compNbt->put(key, NbtByteArrayClass::extract(data));
+			compNbt->put(key, std::move(NbtByteArrayClass::extract(data)->copy()));
 
 		else if (IsInstanceOf<NbtListClass>(data))
-			compNbt->put(key, NbtListClass::extract(data));
+			compNbt->put(key, std::move(NbtListClass::extract(data)->copy()));
 		else if (IsInstanceOf<NbtCompoundClass>(data))
-			compNbt->put(key, NbtCompoundClass::extract(data));
+			compNbt->put(key, std::move(NbtCompoundClass::extract(data)->copy()));
 		else if (data.isArray())
 		{
 			Tag* arrTag = Tag::createTag(Tag::Type::List);
@@ -2429,7 +2429,7 @@ bool TagSetValue_CompoundHelper(CompoundTag* compNbt, Local<Object> value)
 				}
 			}
 
-			compNbt->put(key, arrTag);
+			compNbt->put(key, std::move(arrTag->copy()));
 		}
 		else if (data.isObject())
 		{
@@ -2450,7 +2450,7 @@ bool TagSetValue_CompoundHelper(CompoundTag* compNbt, Local<Object> value)
 				}
 			}
 
-			compNbt->put(key, objTag);
+			compNbt->put(key, std::move(objTag->copy()));
 		}
 		else
 		{

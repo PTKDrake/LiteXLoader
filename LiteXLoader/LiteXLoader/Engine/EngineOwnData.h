@@ -1,6 +1,5 @@
 #pragma once
-#include <Kernel/Data.h>
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 #include <fstream>
 #include <string>
 #include <fstream>

@@ -12,9 +12,11 @@
 #include <LoggerAPI.h>
 #include <vector>
 #include <string>
-using namespace Logger;
+#include <LoggerAPI.h>
 using std::string;
 using std::vector;
+
+extern ::Logger logger;
 
 typedef unsigned long long QWORD;
 
