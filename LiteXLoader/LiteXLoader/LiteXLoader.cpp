@@ -63,7 +63,8 @@ void entry()
     //设置全局SEH处理
     _set_se_translator(seh_exception::TranslateSEHtoCE);
 
-    LL::registerPlugin("LiteXLoader", "LiteXLoader Script Plugin Loader", "",
+    LL::registerPlugin("LiteXLoader", "LiteXLoader Script Plugin Loader",
+        LL::Version(LXL_VERSION_MAJOR, LXL_VERSION_MINOR, LXL_VERSION_REVISION, LL::Version::LXL_VERSION_STATUS),
         "github.com/LiteLDev/LiteXLoader", "GPL-3", "www.litebds.com");
 
     //读取配置文件

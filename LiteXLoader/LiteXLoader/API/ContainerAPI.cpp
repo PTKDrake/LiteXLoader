@@ -86,7 +86,7 @@ Local<Value> ContainerClass::addItem(const Arguments& args)
 			ERROR("Wrong type of argument in addItem!");
 			return Local<Value>();
 		}
-		return Boolean::newBoolean(container->addItem(item));
+		return Boolean::newBoolean(container->addItem_s(item));
 	}
 	CATCH("Fail in addItem!");
 }
@@ -102,7 +102,7 @@ Local<Value> ContainerClass::addItemToFirstEmptySlot(const Arguments& args)
 			ERROR("Wrong type of argument in addItemToFirstEmptySlot!");
 			return Local<Value>();
 		}
-		return Boolean::newBoolean(container->addItemToFirstEmptySlot(item));
+		return Boolean::newBoolean(container->addItemToFirstEmptySlot_s(item));
 	}
 	CATCH("Fail in addItemToFirstEmptySlot!");
 }
