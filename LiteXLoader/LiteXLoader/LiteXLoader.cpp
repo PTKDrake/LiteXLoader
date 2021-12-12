@@ -6,9 +6,6 @@
 #include <Engine/LocalShareData.h>
 #include <Engine/RemoteCall.h>
 #include <Engine/MessageSystem.h>
-#include <Kernel/Data.h>
-#include <Kernel/System.h>
-#include <Kernel/i18n.h>
 #include <windows.h>
 #include <string>
 #include <exception>

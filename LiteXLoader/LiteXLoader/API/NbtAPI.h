@@ -12,7 +12,7 @@ public:
     bool canDelete = false;
 
     //virtual Local<Value> getType(const Arguments& args) = 0;
-    Local<Value> toString(const Arguments& args);
+    virtual Local<Value> toString(const Arguments& args) = 0;
     Local<Value> destroy(const Arguments& args);
 };
 
@@ -45,11 +45,12 @@ public:
     ~NbtEndClass() = default;
     static NbtEndClass* constructor(const Arguments& args);
     static EndTag* extract(Local<Value> v);
-    static Local<Value> pack(Tag* tag, bool canDelete = false);
+    static Local<Value> pack(EndTag* tag, bool canDelete = false);
 
     Local<Value> getType(const Arguments& args);
     Local<Value> set(const Arguments& args);
     Local<Value> get(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtEndClass> NbtEndClassBuilder;
 
@@ -69,6 +70,7 @@ public:
     Local<Value> getType(const Arguments& args);
     Local<Value> set(const Arguments& args);
     Local<Value> get(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtByteClass> NbtByteClassBuilder;
 
@@ -88,6 +90,7 @@ public:
     Local<Value> getType(const Arguments& args);
     Local<Value> set(const Arguments& args);
     Local<Value> get(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtShortClass> NbtShortClassBuilder;
 
@@ -107,6 +110,7 @@ public:
     Local<Value> getType(const Arguments& args);
     Local<Value> set(const Arguments& args);
     Local<Value> get(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtIntClass> NbtIntClassBuilder;
 
@@ -126,6 +130,7 @@ public:
     Local<Value> getType(const Arguments& args);
     Local<Value> set(const Arguments& args);
     Local<Value> get(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtLongClass> NbtLongClassBuilder;
 
@@ -145,6 +150,7 @@ public:
     Local<Value> getType(const Arguments& args);
     Local<Value> set(const Arguments& args);
     Local<Value> get(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtFloatClass> NbtFloatClassBuilder;
 
@@ -164,6 +170,7 @@ public:
     Local<Value> getType(const Arguments& args);
     Local<Value> set(const Arguments& args);
     Local<Value> get(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtDoubleClass> NbtDoubleClassBuilder;
 
@@ -183,6 +190,7 @@ public:
     Local<Value> getType(const Arguments& args);
     Local<Value> set(const Arguments& args);
     Local<Value> get(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtStringClass> NbtStringClassBuilder;
 
@@ -202,6 +210,7 @@ public:
     Local<Value> getType(const Arguments& args);
     Local<Value> set(const Arguments& args);
     Local<Value> get(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtByteArrayClass> NbtByteArrayClassBuilder;
 
@@ -239,6 +248,7 @@ public:
     Local<Value> getTag(const Arguments& args);
 
     Local<Value> toArray(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtListClass> NbtListClassBuilder;
 
@@ -277,6 +287,7 @@ public:
     Local<Value> toObject(const Arguments& args);
     Local<Value> toSNBT(const Arguments& args);
     Local<Value> toBinaryNBT(const Arguments& args);
+    Local<Value> toString(const Arguments& args);
 };
 extern ClassDefine<NbtCompoundClass> NbtCompoundClassBuilder;
 
