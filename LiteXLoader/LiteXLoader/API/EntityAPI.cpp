@@ -12,7 +12,7 @@
 #include <MC/ItemActor.hpp>
 #include <MC/SimpleContainer.hpp>
 #include <MC/Mob.hpp>
-using namespace script;
+
 
 //////////////////// Class Definition ////////////////////
 
@@ -502,7 +502,7 @@ Local<Value> EntityClass::getNbt(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return NbtCompoundClass::pack(Tag::fromActor(entity));
+        return NbtCompoundClass::pack(entity->getNbt());
     }
     CATCH("Fail in getNbt!")
 }
@@ -520,7 +520,7 @@ Local<Value> EntityClass::setNbt(const Arguments& args)
         if (!nbt)
             return Local<Value>();    //Null
 
-        return Boolean::newBoolean(nbt->setActor(entity));
+        return Boolean::newBoolean(entity->setNbt(nbt));
     }
     CATCH("Fail in setNbt!")
 }

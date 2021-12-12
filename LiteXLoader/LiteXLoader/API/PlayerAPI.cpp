@@ -8,7 +8,6 @@
 #include "ItemAPI.h"
 #include "GuiAPI.h"
 #include "NbtAPI.h"
-#include <API/PacketAPI.h>
 #include <Engine/EngineOwnData.h>
 #include <Engine/GlobalShareData.h>
 #include <MC/Player.hpp>
@@ -19,13 +18,14 @@
 #include <MC/Scoreboard.hpp>
 #include <MC/Objective.hpp>
 #include <MC/ScoreboardId.hpp>
+#include <MC/ListTag.hpp>
+#include <MC/CompoundTag.hpp>
 #include <string>
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
-#include <LiteXLoader/Kernel/Packet.h>
 using namespace std;
-using namespace script;
+
 
 //////////////////// Class Definition ////////////////////
 
@@ -99,7 +99,7 @@ ClassDefine<PlayerClass> PlayerClassBuilder =
         .instanceFunction("sendModalForm", &PlayerClass::sendModalForm)
         .instanceFunction("sendCustomForm", &PlayerClass::sendCustomForm)
         .instanceFunction("sendForm", &PlayerClass::sendForm)
-        .instanceFunction("sendPacket",&PlayerClass::sendPacket)
+        //.instanceFunction("sendPacket",&PlayerClass::sendPacket)
 
         .instanceFunction("setExtraData", &PlayerClass::setExtraData)
         .instanceFunction("getExtraData", &PlayerClass::getExtraData)
@@ -1024,7 +1024,7 @@ Local<Value> PlayerClass::sendSimpleForm(const Arguments& args)
             images.push_back(imagesArr.get(i).toStr());
         }
 
-        int formId = Raw_SendSimpleForm(player, args[0].toStr(), args[1].toStr(), texts, images);
+        int formId = SendSimpleForm(player, args[0].toStr(), args[1].toStr(), texts, images);
 
         
         ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].engine = EngineScope::currentEngine();
@@ -1049,7 +1049,7 @@ Local<Value> PlayerClass::sendModalForm(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        int formId = Raw_SendModalForm(player, args[0].toStr(), args[1].toStr(), args[2].toStr(), args[3].toStr());
+        int formId = SendModalForm(player, args[0].toStr(), args[1].toStr(), args[2].toStr(), args[3].toStr());
         ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].engine = EngineScope::currentEngine();
         ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].func = args[4].asFunction();
 
@@ -1070,7 +1070,7 @@ Local<Value> PlayerClass::sendCustomForm(const Arguments& args)
             return Local<Value>();
 
         string data = fifo_json::parse(args[0].toStr()).dump();
-        int formId = Raw_SendCustomForm(player, data);
+        int formId = SendCustomForm(player, data);
         
         ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].engine = EngineScope::currentEngine();
         ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].func = args[1].asFunction();
@@ -1079,8 +1079,8 @@ Local<Value> PlayerClass::sendCustomForm(const Arguments& args)
     }
     catch (const fifo_json::exception& e)
     {
-        Error("Fail to parse Json string in sendCustomForm!");
-        Error(e.what());
+        logger.error("Fail to parse Json string in sendCustomForm!");
+        logger.error(e.what());
 
         return Local<Value>();
     }
@@ -1102,11 +1102,13 @@ Local<Value> PlayerClass::sendForm(const Arguments& args)
         Form::SimpleForm* form = SimpleFormClass::extract(args[0]);
         if (IsInstanceOf<SimpleFormClass>(args[0]))
         {
-            res = SimpleFormClass::sendForm(SimpleFormClass::extract(args[0]), player, args[1].asFunction());
+            Local<Function> callback = args[1].asFunction();
+            res = SimpleFormClass::sendForm(SimpleFormClass::extract(args[0]), player, callback);
         }
         else if (IsInstanceOf<CustomFormClass>(args[0]))
         {
-            res = CustomFormClass::sendForm(CustomFormClass::extract(args[0]), player, args[1].asFunction());
+            Local<Function> callback = args[1].asFunction();
+            res = CustomFormClass::sendForm(CustomFormClass::extract(args[0]), player, callback);
         }
         else
         {
@@ -1117,7 +1119,7 @@ Local<Value> PlayerClass::sendForm(const Arguments& args)
     }
     CATCH("Fail in sendForm!");
 }
-
+/*
 Local<Value> PlayerClass::sendPacket(const Arguments& args)
 {
     CHECK_ARGS_COUNT(args, 1);
@@ -1136,7 +1138,7 @@ Local<Value> PlayerClass::sendPacket(const Arguments& args)
     }
     CATCH("Fail in sendPacket");
     return Local<Value>();
-}
+}*/
 
 Local<Value> PlayerClass::setExtraData(const Arguments& args)
 {
@@ -1320,7 +1322,7 @@ Local<Value> PlayerClass::getNbt(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return NbtCompoundClass::pack(Tag::fromActor((Actor*)player));
+        return NbtCompoundClass::pack(player->getNbt());
     }
     CATCH("Fail in getNbt!")
 }
@@ -1338,7 +1340,7 @@ Local<Value> PlayerClass::setNbt(const Arguments& args)
         if (!nbt)
             return Local<Value>();    //Null
 
-        return Boolean::newBoolean(nbt->setPlayer(player));
+        return Boolean::newBoolean(player->setNbt(nbt));
     }
     CATCH("Fail in setNbt!")
 }
@@ -1411,10 +1413,10 @@ Local<Value> PlayerClass::getAbilities(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        auto list = Tag::fromActor(player)->asCompound();
+        auto list = player->getNbt();
         try
         {
-            return Tag2Value(&list.at("abilities"), true);
+            return Tag2Value((Tag*)list->getCompoundTag("abilities"), true);
         }
         catch (...)
         {
@@ -1433,13 +1435,13 @@ Local<Value> PlayerClass::getAttributes(const Arguments& args)
 
         Local<Array> res = Array::newArray();
 
-        auto list = Tag::fromActor(player)->asCompound();
+        CompoundTag* list = player->getNbt();
         try
         {
-            auto attr = list.at("Attributes").asList();
+            ListTag* attr = (ListTag*)list->getListTag("Attributes");
 
             Local<Array> arr = Array::newArray();
-            for (auto& tag : attr)
+            for (auto& tag : attr->value())
             {
                 arr.add(Tag2Value(tag, true));
             }

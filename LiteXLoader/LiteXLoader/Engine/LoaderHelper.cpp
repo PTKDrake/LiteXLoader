@@ -1,9 +1,7 @@
 #include <API/APIHelp.h>
-#include <ScriptX/ScriptX.h>
 #include <Engine/GlobalShareData.h>
 #include <Engine/EngineOwnData.h>
 #include <API/EventAPI.h>
-#include <Kernel/Data.h>
 #include <list>
 #include <string>
 #include <vector>
@@ -19,7 +17,7 @@
 #include <Engine/RemoteCall.h>
 #include <Engine/MessageSystem.h>
 #include <API/CommandAPI.h>
-using namespace script;
+
 using namespace std;
 
 //读取辅助函数
@@ -86,7 +84,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
     if (suffix != LXL_PLUGINS_SUFFIX)
     {
         //Remote Load
-        Debug("Remote Load begin");
+        logger.debug("Remote Load begin");
 
         ostringstream sout;
         int backId = ModuleMessage::getNextMessageId();
@@ -189,7 +187,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         AddToGlobalPluginsList(pluginName);
         if (isHotLoad)
             LxlCallEventsOnHotLoad(engine);
-        Info(pluginName + " loaded.");
+        logger.info(pluginName + " loaded.");
         return true;
     }
     catch (const Exception& e)
@@ -201,21 +199,21 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
             EngineScope enter(deleteEngine);
 
             deleteEngine->getData().reset();
-            Error("Fail to load " + filePath + "!\n");
-            Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-            Error(e);
+            logger.error("Fail to load " + filePath + "!\n");
+            logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            PrintException(e);
             ExitEngineScope exit;
         }
         deleteEngine->destroy();
     }
     catch (const std::exception& e)
     {
-        Error("Fail to load " + filePath + "!");
-        Error(e.what());
+        logger.error("Fail to load " + filePath + "!");
+        logger.error(e.what());
     }
     catch (...)
     {
-        Error("Fail to load " + filePath + "!");
+        logger.error("Fail to load " + filePath + "!");
     }
     return false;
 }
@@ -248,7 +246,7 @@ string LxlUnloadPlugin(const std::string& name)
 
             engine->destroy();
 
-            Info(name + " unloaded.");
+            logger.info(name + " unloaded.");
             break;
         }
     }

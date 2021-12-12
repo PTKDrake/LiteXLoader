@@ -2,18 +2,27 @@
 #include "APIHelp.h"
 #include "McAPI.h"
 #include "PlayerAPI.h"
-#include <Utils.h>
+#include <Tools/Utils.h>
 #include <Engine/GlobalShareData.h>
 #include <Engine/LocalShareData.h>
 #include <Engine/EngineOwnData.h>
 #include <Engine/LoaderHelper.h>
-#include <Kernel/Base.h>
+#include <RegCommandAPI.h>
 #include <Global.hpp>
 #include <filesystem>
 #include <Configs.h>
 #include <vector>
 #include <string>
 using namespace std;
+
+//////////////////// Helper ////////////////////
+
+bool RegisterCmd(const string& cmd, const string& describe, int cmdLevel)
+{
+    ::Global<CommandRegistry>->registerCommand(cmd, describe.c_str(), (CommandPermissionLevel)cmdLevel, { (CommandFlagValue)0 },
+        { (CommandFlagValue)0x40 });
+    return true;
+}
 
 //////////////////// APIs ////////////////////
 
@@ -23,7 +32,7 @@ Local<Value> McClass::runcmd(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString)
 
     try {
-        return Boolean::newBoolean(Raw_Runcmd(args[0].asString().toString()));
+        return Boolean::newBoolean(Level::runcmd(args[0].asString().toString()));
     }
     CATCH("Fail in RunCmd!")
 }
@@ -34,7 +43,7 @@ Local<Value> McClass::runcmdEx(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString)
 
     try {
-        std::pair<bool, string> result = Raw_RuncmdEx(args[0].asString().toString());
+        std::pair<bool, string> result = Level::runcmdEx(args[0].asString().toString());
         Local<Object> resObj = Object::newObject();
         resObj.set("success", result.first);
         resObj.set("output", result.second);
@@ -57,7 +66,7 @@ void LxlRegisterNewCmd(bool isPlayerCmd, string cmd, const string& describe, int
 
     //延迟注册
     if (isCmdRegisterEnabled)
-        Raw_RegisterCmd(cmd, describe, level);
+        RegisterCmd(cmd, describe, level);
     else
         toRegCmdQueue.push_back({ cmd, describe, level });
 }
@@ -123,13 +132,26 @@ Local<Value> McClass::regConsoleCmd(const Arguments& args)
     CATCH("Fail in RegisterConsoleCmd!");
 }
 
+//Helper
+bool SendCmdOutput(const std::string& output)
+{
+    string finalOutput(output);
+    finalOutput += "\r\n";
+
+    SymCall("??$_Insert_string@DU?$char_traits@D@std@@_K@std@@YAAEAV?$basic_ostream@DU?$char_traits@D@std@@@0@AEAV10@QEBD_K@Z",
+        ostream&, ostream&, const char*, unsigned)
+        (cout, finalOutput.c_str(), finalOutput.size());
+    return true;
+}
+//Helper
+
 Local<Value> McClass::sendCmdOutput(const Arguments& args)
 {
     CHECK_ARGS_COUNT(args, 1);
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
 
     try {
-        return Boolean::newBoolean(Raw_SendCmdOutput(args[0].toStr()));
+        return Boolean::newBoolean(SendCmdOutput(args[0].toStr()));
     }
     CATCH("Fail in SendCmdOutput!");
 }
@@ -140,23 +162,23 @@ Local<Value> McClass::sendCmdOutput(const Arguments& args)
 void RegisterBuiltinCmds()
 {
     //调试引擎
-    Raw_RegisterCmd(LXL_DEBUG_CMD, "LXL " + string(LXL_MODULE_TYPE) + " Engine Real-time Debugging", 4);
+    RegisterCmd(LXL_DEBUG_CMD, "LXL " + string(LXL_MODULE_TYPE) + " Engine Real-time Debugging", 4);
     
     //热管理
-    Raw_RegisterCmd("lxl list", "List current loaded LXL plugins", 4);
-    Raw_RegisterCmd("lxl load", "Load a new LXL plugin", 4);
-    Raw_RegisterCmd("lxl unload", "Unload an existing LXL plugin", 4);
-    Raw_RegisterCmd("lxl reload", "Reload an existing LXL plugin / all LXL plugins", 4);
-    Raw_RegisterCmd("lxl version", "Get the version of LiteXLoader", 4);
+    RegisterCmd("lxl list", "List current loaded LXL plugins", 4);
+    RegisterCmd("lxl load", "Load a new LXL plugin", 4);
+    RegisterCmd("lxl unload", "Unload an existing LXL plugin", 4);
+    RegisterCmd("lxl reload", "Reload an existing LXL plugin / all LXL plugins", 4);
+    RegisterCmd("lxl version", "Get the version of LiteXLoader", 4);
 
-    Info("Builtin Cmds Registered.");
+    logger.info("Builtin Cmds Registered.");
 }
 
 void ProcessRegCmdQueue()
 {
     for (auto& cmdData : toRegCmdQueue)
     {
-        Raw_RegisterCmd(cmdData.cmd, cmdData.describe, cmdData.level);
+        RegisterCmd(cmdData.cmd, cmdData.describe, cmdData.level);
     }
     toRegCmdQueue.clear();
 }
@@ -172,13 +194,13 @@ bool ProcessDebugEngine(const string& cmd)
         if (globalDebug)
         {
             //EndDebug
-            Info("Debug mode ended");
+            logger.info("Debug mode ended");
             globalDebug = false;
         }
         else
         {
             //StartDebug
-            Info("Debug mode begin");
+            logger.info("Debug mode begin");
             globalDebug = true;
             OUTPUT_DEBUG_SIGN();
         }
@@ -191,7 +213,7 @@ bool ProcessDebugEngine(const string& cmd)
         {
             if (cmd == "stop")
             {
-                Warn("请先退出Debug实时调试模式再使用stop！");
+                logger.warn("请先退出Debug实时调试模式再使用stop！");
                 return true;
             }
             else
@@ -204,7 +226,7 @@ bool ProcessDebugEngine(const string& cmd)
         }
         catch (Exception& e)
         {
-            Log(e);
+            PrintException(e);
             OUTPUT_DEBUG_SIGN();
         }
         return false;
@@ -260,9 +282,9 @@ bool CallPlayerCmdCallback(Player* player, const string& cmdPrefix, const vector
     }
     catch (const Exception& e)
     {
-        Error("PlayerCmd Callback Failed!");
-        Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-        Error(e);
+        logger.error("PlayerCmd Callback Failed!");
+        logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+        logger.error << e << logger.endl;
     }
     if (res.isNull() || (res.isBoolean() && res.asBoolean().value() == false))
         return false;
@@ -284,9 +306,9 @@ bool CallServerCmdCallback(const string& cmdPrefix, const vector<string>& paras)
     }
     catch (const Exception& e)
     {
-        Error("ServerCmd Callback Failed!");
-        Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-        Error(e);
+        logger.error("ServerCmd Callback Failed!");
+        logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+        logger.error << e << logger.endl;
     }
     if (res.isNull() || (res.isBoolean() && res.asBoolean().value() == false))
         return false;

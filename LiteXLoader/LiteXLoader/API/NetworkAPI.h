@@ -1,7 +1,9 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
-using namespace script;
+#include "APIHelp.h"
+
 #include <list>
+#include <third-party/LightWebSocketClient/include/WebSocketClient.h>
+using namespace cyanray;
 
 //////////////////// Types ////////////////////
 

@@ -1,8 +1,7 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
+#include "APIHelp.h"
 #include <string>
 #include <vector>
-using namespace script;
 
 //////////////////// LXL Event Callbacks ////////////////////
 

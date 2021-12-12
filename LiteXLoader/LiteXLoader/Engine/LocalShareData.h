@@ -1,8 +1,9 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 #include <map>
 #include <string>
-using namespace script;
+#include <third-party/ThreadPool/ThreadPool.hpp>
+
 
 
 //////////////////// Structs ////////////////////

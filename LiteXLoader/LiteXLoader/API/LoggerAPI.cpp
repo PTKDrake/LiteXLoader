@@ -6,10 +6,10 @@
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <Utils.h>
+#include <Tools/Utils.h>
 #include <MC/Player.hpp>
 using namespace std;
-using namespace script;
+
 
 #define LOGGER_CHECK_DEBUG(level) (level >= 5)
 #define LOGGER_CHECK_INFO(level) (level >= 4)

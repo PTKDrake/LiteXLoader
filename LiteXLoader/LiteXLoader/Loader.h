@@ -1,8 +1,8 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 #include <string>
 #include <vector>
-using namespace script;
+
 
 //基础库 & 依赖库
 extern std::vector<std::string> depends;

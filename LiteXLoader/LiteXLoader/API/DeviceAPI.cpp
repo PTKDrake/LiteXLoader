@@ -5,7 +5,7 @@
 #include <MC/Level.hpp>
 #include <MC/NetworkIdentifier.hpp>
 using namespace std;
-using namespace script;
+
 
 //////////////////// Class Definition ////////////////////
 

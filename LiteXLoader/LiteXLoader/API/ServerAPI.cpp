@@ -1,10 +1,10 @@
 #include "APIHelp.h"
-#include <ScriptX/ScriptX.h>
+#include "APIHelp.h"
 #include "ServerAPI.h"
 #include <ServerAPI.h>
 #include "McAPI.h"
 #include <MC/ServerNetworkHandler.hpp>
-using namespace script;
+
 
 Local<Value> McClass::setMotd(const Arguments& args)
 {

@@ -5,7 +5,7 @@
 #include "NbtAPI.h"
 #include <Global.hpp>
 #include <MC/BlockActor.hpp>
-using namespace script;
+#include <MC/CompoundTag.hpp>
 
 //////////////////// Class Definition ////////////////////
 
@@ -72,7 +72,7 @@ Local<Value> BlockEntityClass::getType()
 Local<Value> BlockEntityClass::getNbt(const Arguments& args)
 {
 	try {
-		return NbtCompoundClass::pack(Tag::fromBlockEntity(blockEntity), true);
+		return NbtCompoundClass::pack(blockEntity->getNbt(), true);
 	}
 	CATCH("Fail in getNbt!")
 }
@@ -86,7 +86,7 @@ Local<Value> BlockEntityClass::setNbt(const Arguments& args)
 		if (!nbt)
 			return Local<Value>();    //Null
 
-		nbt->setBlockEntity(blockEntity);
+		blockEntity->setNbt(nbt);
 		return Boolean::newBoolean(true);
 	}
 	CATCH("Fail in setNbt!")

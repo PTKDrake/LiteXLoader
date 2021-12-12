@@ -24,18 +24,19 @@
 #include "PlayerAPI.h"
 #include <Loader.h>
 #include <Configs.h>
-#include <AutoUpdate.h>
-#include <CheckNotice.h>
+#include <AutoUpgrade.h>
 #include <EventAPI.h>
 #include <ScheduleAPI.h>
 #include <MC/Player.hpp>
+#include <MC/BlockSource.hpp>
+#include <MC/Actor.hpp>
 #include <MC/ActorDamageSource.hpp>
 #include <MC/MobEffectInstance.hpp>
 #include <MC/HashedString.hpp>
 #include <MC/Objective.hpp>
 #include <MC/BlockInstance.hpp>
 using namespace std;
-using namespace script;
+
 
 //////////////////// Listeners ////////////////////
 
@@ -145,26 +146,26 @@ string EventTypeToString(EVENT_TYPES e)
 #define LISTENER_CATCH(TYPE) \
     catch(const Exception& e) \
     { \
-        Error("Event Callback Failed!"); \
-        Error(e); \
-        Error("In Event: " + EventTypeToString(TYPE)); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Event Callback Failed!"); \
+        logger.error << e << logger.endl; \
+        logger.error("In Event: " + EventTypeToString(TYPE)); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
     } \
     catch (const std::exception& e) \
     { \
-        Error("Event Callback Failed!"); \
-        Error("C++ Uncaught Exception Detected!"); \
-        Error(e.what()); \
-        Error("In Event: " + EventTypeToString(TYPE)); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Event Callback Failed!"); \
+        logger.error("C++ Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error("In Event: " + EventTypeToString(TYPE)); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
     } \
     catch (const seh_exception& e) \
     { \
-        Error("Event Callback Failed!"); \
-        Error("SEH Uncaught Exception Detected!"); \
-        Error(e.what()); \
-        Error("In Event: " + EventTypeToString(TYPE)); \
-        Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Event Callback Failed!"); \
+        logger.error("SEH Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error("In Event: " + EventTypeToString(TYPE)); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
     } \
 
 //调用事件监听函数，拦截不执行original
@@ -242,9 +243,9 @@ string EventTypeToString(EVENT_TYPES e)
 #define IF_LISTENED_END(TYPE) \
     catch(...) \
     { \
-        Error("Event Callback Failed!"); \
-        Error("Uncaught Exception Detected!"); \
-        Error("In Event: " + EventTypeToString(TYPE)); \
+        logger.error("Event Callback Failed!"); \
+        logger.error("Uncaught Exception Detected!"); \
+        logger.error("In Event: " + EventTypeToString(TYPE)); \
     } } return true;
 
 
@@ -274,7 +275,7 @@ bool LxlAddEventListener(ScriptEngine *engine, const string &eventName, const Lo
     }
     catch (const std::logic_error& e)
     {
-        Error("Event \"" + eventName + "\" No Found!\n");
+        logger.error("Event \"" + eventName + "\" No Found!\n");
         return false;
     }
 }
@@ -644,10 +645,11 @@ void InitEventListeners()
         }
         catch (...)
         {
-            Error("Event Callback Failed!");
-            Error("Uncaught Exception Detected!");
-            Error("In Event: onPlayerCmd");
+            logger.error("Event Callback Failed!");
+            logger.error("Uncaught Exception Detected!");
+            logger.error("In Event: onPlayerCmd");
         }
+        return true;
     });
 
     Event::EntityRideEvent::subscribe([](const EntityRideEvent& ev) {
@@ -672,8 +674,17 @@ void InitEventListeners()
     Event::CmdBlockExecuteEvent::subscribe([](const CmdBlockExecuteEvent& ev) {
         IF_LISTENED(EVENT_TYPES::onCmdBlockExecute)
         {
-            CallEvent(EVENT_TYPES::onCmdBlockExecute, String::newString(ev.mCommand),
-                FloatPos::newPos(), isMinecart);
+            if (ev.mIsMinecart)
+            {
+                CallEvent(EVENT_TYPES::onCmdBlockExecute, String::newString(ev.mCommand),
+                    FloatPos::newPos(ev.mMinecart->getPosition(), ev.mMinecart->getDimensionId()), true);
+            }
+            else
+            {
+                BlockInstance bl = ev.mBlockInstance;
+                CallEvent(EVENT_TYPES::onCmdBlockExecute, String::newString(ev.mCommand),
+                    FloatPos::newPos(bl.getPosition().toVec3(), bl.getDimensionId()), true);
+            }
         }
         IF_LISTENED_END(EVENT_TYPES::onCmdBlockExecute);
     });
@@ -743,8 +754,12 @@ void InitEventListeners()
     {
         IF_LISTENED(EVENT_TYPES::onMobDie)
         {
+            Actor* source = nullptr;
+            if (ev.mDamageSource->getCause() == ActorDamageCause::EntityAttack)
+                source = Level::getEntity(ev.mDamageSource->getDamagingEntityUniqueID());
+
             CallEvent(EVENT_TYPES::onMobDie, EntityClass::newEntity((Actor*)ev.mMob),
-                (ev.mSource ? EntityClass::newEntity(ev.mSource) : Local<Value>()));
+                (source ? EntityClass::newEntity(source) : Local<Value>()));
         }
         IF_LISTENED_END(EVENT_TYPES::onMobDie);
     });
@@ -838,10 +853,18 @@ void InitEventListeners()
         IF_LISTENED_END(EVENT_TYPES::onPistonPush);
     });
 
-    Event::HopperBlockSearchItemEvent::subscribe([](const HopperBlockSearchItemEvent &ev) {
+    Event::HopperSearchItemEvent::subscribe([](const HopperSearchItemEvent &ev) {
         IF_LISTENED(EVENT_TYPES::onHopperSearchItem)
         {
-            CallEvent(EVENT_TYPES::onHopperSearchItem, FloatPos::newPos(*pos, Raw_GetBlockDimensionId(bs)), isMinecart);
+            if (ev.isMinecart)
+            {
+                CallEvent(EVENT_TYPES::onHopperSearchItem, FloatPos::newPos(ev.mMinecartPos, ev.mDimensionId), ev.isMinecart);
+            }
+            else
+            {
+                BlockInstance bl = ev.mHopperBlock;
+                CallEvent(EVENT_TYPES::onHopperSearchItem, FloatPos::newPos(bl.getPosition().toVec3(), ev.mDimensionId), ev.isMinecart);
+            }
         }
         IF_LISTENED_END(EVENT_TYPES::onHopperSearchItem);
     });
@@ -857,8 +880,7 @@ void InitEventListeners()
     Event::FireSpreadEvent::subscribe([](const FireSpreadEvent& ev) {
         IF_LISTENED(EVENT_TYPES::onFireSpread)
         {
-            BlockInstance bl(ev.mBlockInstance);
-            CallEvent(EVENT_TYPES::onFireSpread, IntPos::newPos());
+            CallEvent(EVENT_TYPES::onFireSpread, IntPos::newPos(ev.mTarget,ev.mDimensionId));
         }
         IF_LISTENED_END(EVENT_TYPES::onFireSpread);
     });
@@ -931,10 +953,11 @@ void InitEventListeners()
         }
         catch (...)
         {
-            Error("Event Callback Failed!");
-            Error("Uncaught Exception Detected!");
-            Error("In Event: onConsoleCmd");
+            logger.error("Event Callback Failed!");
+            logger.error("Uncaught Exception Detected!");
+            logger.error("In Event: onConsoleCmd");
         }
+        return true;
     });
 
 // For RegisterCmd...
@@ -963,7 +986,6 @@ void InitEventListeners()
             if (localShareData->isFirstInstance)
             {
                 InitAutoUpdateCheck();
-                CheckNotice();
             }
 
             IF_LISTENED(EVENT_TYPES::onServerStarted)
@@ -972,6 +994,7 @@ void InitEventListeners()
             }
             IF_LISTENED_END(EVENT_TYPES::onServerStarted);
         }
+        return true;
     });
 }
 
@@ -993,13 +1016,13 @@ THook(void, "?tick@ServerLevel@@UEAAXXZ",
         for (auto engine : lxlModules)
         {
             EngineScope enter(engine);
-            engine->messageQueue()->loopQueue(utils::MessageQueue::LoopType::kLoopOnce);
+            engine->messageQueue()->loopQueue(script::utils::MessageQueue::LoopType::kLoopOnce);
         }
     }
     catch (...)
     {
-        Error("Error occurred in Engine Message Loop!");
-        Error("Uncaught Exception Detected!");
+        logger.error("Error occurred in Engine Message Loop!");
+        logger.error("Uncaught Exception Detected!");
     }
 
     CallTickEvent();
@@ -1070,7 +1093,7 @@ bool MoneyEventCallback(LLMoneyEvent type, xuid_t from, xuid_t to, money_t value
         {
             IF_LISTENED(EVENT_TYPES::onMoneyAdd)
             {
-                CallEvent(EVENT_TYPES::onMoneyAdd, String::newString(to_string(to)), Number::newNumber(value));
+                CallEvent(EVENT_TYPES::onMoneyAdd, String::newString(to), Number::newNumber(value));
             }
             IF_LISTENED_END(EVENT_TYPES::onMoneyAdd);
             break;
@@ -1079,7 +1102,7 @@ bool MoneyEventCallback(LLMoneyEvent type, xuid_t from, xuid_t to, money_t value
         {
             IF_LISTENED(EVENT_TYPES::onMoneyReduce)
             {
-                CallEvent(EVENT_TYPES::onMoneyReduce, String::newString(to_string(to)), Number::newNumber(value));
+                CallEvent(EVENT_TYPES::onMoneyReduce, String::newString(to), Number::newNumber(value));
             }
             IF_LISTENED_END(EVENT_TYPES::onMoneyReduce);
             break;
@@ -1088,7 +1111,7 @@ bool MoneyEventCallback(LLMoneyEvent type, xuid_t from, xuid_t to, money_t value
         {
             IF_LISTENED(EVENT_TYPES::onMoneyTrans)
             {
-                CallEvent(EVENT_TYPES::onMoneyTrans, String::newString(to_string(from)), String::newString(to_string(to)), Number::newNumber(value));
+                CallEvent(EVENT_TYPES::onMoneyTrans, String::newString(from), String::newString(to), Number::newNumber(value));
             }
             IF_LISTENED_END(EVENT_TYPES::onMoneyTrans);
             break;
@@ -1097,7 +1120,7 @@ bool MoneyEventCallback(LLMoneyEvent type, xuid_t from, xuid_t to, money_t value
         {
             IF_LISTENED(EVENT_TYPES::onMoneySet)
             {
-                CallEvent(EVENT_TYPES::onMoneySet, String::newString(to_string(to)), Number::newNumber(value));
+                CallEvent(EVENT_TYPES::onMoneySet, String::newString(to), Number::newNumber(value));
             }
             IF_LISTENED_END(EVENT_TYPES::onMoneySet);
             break;

@@ -21,7 +21,7 @@
 #include <API/PlayerAPI.h>
 #include <Global.hpp>
 #include <Engine/EngineOwnData.h>
-using namespace script;
+
 using namespace std;
 
 //////////////////// APIs ////////////////////
@@ -346,7 +346,7 @@ Local<Value> JsonToValue(std::string jsonStr)
     }
     catch (const fifo_json::exception &e)
     {
-        Warn(tr("api.parseJson.fail") + e.what());
+        logger.warn(tr("api.parseJson.fail") + e.what());
         return String::newString(jsonStr);
     }
 }

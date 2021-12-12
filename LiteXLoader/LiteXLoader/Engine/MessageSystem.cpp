@@ -1,6 +1,6 @@
 #include "MessageSystem.h"
 #include <API/APIHelp.h>
-#include <Utils.h>
+#include <Tools/Utils.h>
 #include "GlobalShareData.h"
 #include <process.h>
 #include <exception>
@@ -197,7 +197,7 @@ unsigned __stdcall ModuleMessageLoop(void* pParam)
     {
         if (bRet == -1)
         {
-            Fatal(string("ERROR Ocurred in MessageSystem! Error Code: ") + std::to_string(GetLastError()));
+            logger.fatal(string("ERROR Ocurred in MessageSystem! Error Code: ") + std::to_string(GetLastError()));
             return -1;
         }
         else

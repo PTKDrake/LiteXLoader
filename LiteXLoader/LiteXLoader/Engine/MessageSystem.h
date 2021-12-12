@@ -1,8 +1,9 @@
 #pragma once
 #include <windows.h>
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 #include <string>
 #include <map>
+using std::string;
 
 //////////////////// Class ////////////////////
 

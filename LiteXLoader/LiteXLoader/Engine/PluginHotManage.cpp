@@ -1,11 +1,11 @@
 #include "PluginHotManage.h"
 #include <API/APIHelp.h>
-#include <Utils.h>
+#include <Tools/Utils.h>
 #include <Utils/StringHelper.h>
 #include "LoaderHelper.h"
 #include "MessageSystem.h"
 #include "GlobalShareData.h"
-#include <AutoUpdate.h>
+#include <AutoUpgrade.h>
 #include <Configs.h>
 #include <Version.h>
 #include <string>
@@ -27,13 +27,13 @@ void HotManageMessageCallback(ModuleMessage& msg)
         //lock_guard<mutex> lock(globalShareData->hotManageLock);
 
         for (auto& name : list)
-            Log(name);
+            logger.info(name);
     }
     else if (cmdList[1] == "load" && cmdList.size() == 3)
     {
         //load
         if (!filesystem::exists(cmdList[2]))
-            ERROR("Plugin no found!");
+            logger.error("Plugin no found!");
         if (filesystem::path(cmdList[2]).extension() == LXL_PLUGINS_SUFFIX)
             LxlLoadPlugin(cmdList[2], true);
     }
@@ -42,7 +42,7 @@ void HotManageMessageCallback(ModuleMessage& msg)
         //unload
         if (filesystem::path(cmdList[2]).extension() == LXL_PLUGINS_SUFFIX)
             if (LxlUnloadPlugin(cmdList[2]) == "")
-                ERROR("Plugin no found!");
+                logger.error("Plugin no found!");
     }
     else if (cmdList[1] == "reload")
     {
@@ -56,13 +56,13 @@ void HotManageMessageCallback(ModuleMessage& msg)
             //reload one
             if (filesystem::path(cmdList[2]).extension() == LXL_PLUGINS_SUFFIX)
                 if (!LxlReloadPlugin(cmdList[2]))
-                    ERROR("Plugin no found!");
+                    logger.error("Plugin no found!");
         }
         else
-            ERROR("Bad Command!");
+            logger.error("Bad Command!");
     }
     else
-        ERROR("Bad Command!");
+        logger.error("Bad Command!");
 }
 
 bool ProcessHotManageCmd(const std::string& cmd)

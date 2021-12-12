@@ -1,6 +1,5 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
-using namespace script;
+#include "APIHelp.h"
 #include <MC/BlockInstance.hpp>
 #include <Global.hpp>
 #include <string>

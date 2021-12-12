@@ -1,6 +1,6 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
-using namespace script;
+#include "APIHelp.h"
+
 
 //////////////////// Classes ////////////////////
 class Player;
@@ -84,7 +84,7 @@ public:
     Local<Value> sendModalForm(const Arguments& args);
     Local<Value> sendCustomForm(const Arguments& args);
     Local<Value> sendForm(const Arguments& args);
-    Local<Value> sendPacket(const Arguments& args);
+    //Local<Value> sendPacket(const Arguments& args);
 
     Local<Value> setExtraData(const Arguments& args);
     Local<Value> getExtraData(const Arguments& args);

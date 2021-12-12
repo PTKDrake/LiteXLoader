@@ -7,7 +7,7 @@
 #include <MC/ItemStack.hpp>
 #include <vector>
 #include <string>
-using namespace script;
+
 
 //////////////////// Class Definition ////////////////////
 
@@ -206,7 +206,7 @@ Local<Value> ItemClass::setLore(const Arguments& args)
 Local<Value> ItemClass::getNbt(const Arguments& args)
 {
     try {
-        return NbtCompoundClass::pack(Tag::fromItem(item));
+        return NbtCompoundClass::pack(item->getNbt());
     }
     CATCH("Fail in getNbt!");
 }
@@ -220,7 +220,7 @@ Local<Value> ItemClass::setNbt(const Arguments& args)
         if (!nbt)
             return Local<Value>();    //Null
 
-        nbt->setItem(item);
+        item->setNbt(nbt);
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in setNbt!");

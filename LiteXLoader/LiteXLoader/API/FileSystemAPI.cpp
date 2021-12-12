@@ -6,7 +6,7 @@
 #include <fstream>
 #include <string>
 #include <Utils/FileHelper.h>
-using namespace script;
+
 using namespace std::filesystem;
 using namespace std;
 
@@ -268,9 +268,9 @@ Local<Value> FileClass::read(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                Error("FileRead Callback Failed!");
-                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                Error(e);
+                logger.error("FileRead Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                logger.error << e << logger.endl;
             }
         });
         return Boolean::newBoolean(true);
@@ -301,9 +301,9 @@ Local<Value> FileClass::readLine(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                Error("FileReadLine Callback Failed!");
-                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                Error(e);
+                logger.error("FileReadLine Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                logger.error << e << logger.endl;
             }
         });
         return Boolean::newBoolean(true);
@@ -334,9 +334,9 @@ Local<Value> FileClass::readAll(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                Error("FileReadAll Callback Failed!");
-                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                Error(e);
+                logger.error("FileReadAll Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                logger.error << e << logger.endl;
             }
         });
         return Boolean::newBoolean(true);
@@ -392,9 +392,9 @@ Local<Value> FileClass::write(const Arguments& args)
                 }
                 catch (const Exception& e)
                 {
-                    Error("FileWrite Callback Failed!");
-                    Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                    Error(e);
+                    logger.error("FileWrite Callback Failed!");
+                    logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                    logger.error << e << logger.endl;
                 }
             }
         });
@@ -434,9 +434,9 @@ Local<Value> FileClass::writeLine(const Arguments& args)
                 }
                 catch (const Exception& e)
                 {
-                    Error("FileWriteLine Callback Failed!");
-                    Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                    Error(e);
+                    logger.error("FileWriteLine Callback Failed!");
+                    logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                    logger.error << e << logger.endl;
                 }
             }
         });

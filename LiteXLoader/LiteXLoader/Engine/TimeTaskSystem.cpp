@@ -18,19 +18,19 @@ std::unordered_map<int, TimeTaskData*> timeTaskMap;
 
 #define TIMETASK_ID data0
 
-void HandleTimeTaskMessage(utils::Message& msg);
-void CleanUpTimeTaskMessage(utils::Message& msg);
+void HandleTimeTaskMessage(script::utils::Message& msg);
+void CleanUpTimeTaskMessage(script::utils::Message& msg);
 
 
 void NewTimeTask(int timeTaskId, int timeout)
 {
-    utils::Message timeTask(HandleTimeTaskMessage, CleanUpTimeTaskMessage);
+    script::utils::Message timeTask(HandleTimeTaskMessage, CleanUpTimeTaskMessage);
     timeTask.TIMETASK_ID = timeTaskId;
 
     EngineScope::currentEngine()->messageQueue()->postMessage(timeTask, std::chrono::milliseconds(timeout));
 }
 
-void HandleTimeTaskMessage(utils::Message& msg)
+void HandleTimeTaskMessage(script::utils::Message& msg)
 {
     try
     {
@@ -78,23 +78,23 @@ void HandleTimeTaskMessage(utils::Message& msg)
         }
         catch (const Exception& e)
         {
-            Error(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
-            Error(e);
-            Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            logger.error(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
+            PrintException(e);
+            logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
         }
         catch (const std::exception& e)
         {
-            Error(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
-            Error("C++ Uncaught Exception Detected!");
-            Error(e.what());
-            Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            logger.error(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
+            logger.error("C++ Uncaught Exception Detected!");
+            logger.error(e.what());
+            logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
         }
         catch (const seh_exception& e)
         {
-            Error(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
-            Error("SEH Uncaught Exception Detected!");
-            Error(e.what());
-            Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            logger.error(string("Error occurred in ") + (isInterval ? "setInterval" : "setTimeout"));
+            logger.error("SEH Uncaught Exception Detected!");
+            logger.error(e.what());
+            logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
         }
 
         if (isInterval)
@@ -108,13 +108,13 @@ void HandleTimeTaskMessage(utils::Message& msg)
     }
     catch (...)
     {
-        Error("Error occurred in TimeTask!");
-        Error("Uncaught Exception Detected!");
+        logger.error("Error occurred in TimeTask!");
+        logger.error("Uncaught Exception Detected!");
         return;
     }
 }
 
-void CleanUpTimeTaskMessage(utils::Message& msg)
+void CleanUpTimeTaskMessage(script::utils::Message& msg)
 {
     ;
 }

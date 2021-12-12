@@ -8,11 +8,11 @@
 #include "NbtAPI.h"
 #include <MC/Level.hpp>
 #include <MC/Block.hpp>
+#include <MC/CompoundTag.hpp>
 #include <MC/BlockSource.hpp>
 #include <MC/BlockInstance.hpp>
 #include <MC/BlockActor.hpp>
 #include <exception>
-using namespace script;
 
 //////////////////// Class Definition ////////////////////
 
@@ -157,7 +157,7 @@ Local<Value> BlockClass::getRawPtr(const Arguments& args)
 Local<Value> BlockClass::getNbt(const Arguments& args)
 {
     try {
-        return NbtCompoundClass::pack(Tag::fromBlock(block),false);
+        return NbtCompoundClass::pack(block->getNbt(), false);
     }
     CATCH("Fail in getNbt!");
 }
@@ -171,7 +171,7 @@ Local<Value> BlockClass::setNbt(const Arguments& args)
         if (!nbt)
             return Local<Value>();    //Null
         
-        nbt->setBlock(block);
+        block->setNbt(nbt);
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in setNbt!")
@@ -180,10 +180,10 @@ Local<Value> BlockClass::setNbt(const Arguments& args)
 Local<Value> BlockClass::getBlockState(const Arguments& args)
 {
     try {
-        auto list = Tag::fromBlock(block)->asCompound();
+        CompoundTag* list = block->getNbt();
         try
         {
-            return Tag2Value(&list.at("states"), true);
+            return Tag2Value((Tag*)list->get<Tag>("states"), true);
         }
         catch (...)
         {

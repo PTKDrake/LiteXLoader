@@ -1,6 +1,6 @@
 ﻿#pragma once
-#include <ScriptX/ScriptX.h>
-using namespace script;
+#include "APIHelp.h"
+
 #include <MC/Tag.hpp>
 
 extern struct Tag;

@@ -1,11 +1,10 @@
 #include "BaseAPI.h"
 #include "APIHelp.h"
 #include <Global.hpp>
-#include <Kernel/Base.h>
-#include <Kernel/SymbolHelper.h>
+#include <MC/BlockSource.hpp>
+#include <ServerAPI.h>
 #include "McAPI.h"
 #include <cmath>
-using namespace script;
 
 //////////////////// Class Definition ////////////////////
 
@@ -81,7 +80,7 @@ Local<Object> IntPos::newPos(const BlockPos* b, int dim)
 
 Local<Object> IntPos::newPos(const BlockPos* b, BlockSource* bs)
 {
-    return IntPos::newPos(b->x, b->y, b->z, Raw_GetBlockDimensionId(bs));
+    return IntPos::newPos(b->x, b->y, b->z, (int)bs->getDimensionId());
 }
 
 IntPos* IntPos::extractPos(Local<Value> v)
@@ -238,7 +237,7 @@ Local<Value> McClass::getBDSVersion(const Arguments& args)
 {
     try
     {
-        return String::newString(Raw_GetBDSVersion());
+        return String::newString(LL::getBdsVersion());
     }
     CATCH("Fail in GetBDSVersion!")
 }

@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 using namespace std;
-using namespace script;
+
 using namespace cyanray;
 
 //////////////////// Classes ////////////////////
@@ -288,9 +288,9 @@ Local<Value> NetworkClass::httpGet(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                Error("HttpGet Callback Failed!");
-                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                Error(e);
+                logger.error("HttpGet Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                PrintException(e);
             }
         }));
     }
@@ -320,9 +320,9 @@ Local<Value> NetworkClass::httpPost(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                Error("HttpPost Callback Failed!");
-                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                Error(e);
+                logger.error("HttpPost Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                PrintException(e);
             }
         }));
     }

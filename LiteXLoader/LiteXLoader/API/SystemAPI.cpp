@@ -3,8 +3,8 @@
 #include <Engine/TimeTaskSystem.h>
 #include <filesystem>
 #include <fstream>
-#include <Utils.h>
-using namespace script;
+#include <Tools/Utils.h>
+
 using namespace std::filesystem;
 
 //////////////////// Classes ////////////////////
@@ -41,9 +41,9 @@ Local<Value> SystemClass::cmd(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                Error("SystemCmd Callback Failed!");
-                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                Error(e);
+                logger.error("SystemCmd Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                logger.error << e << ::Logger::endl;
             }
         }
         , args.size() >= 3 ? args[2].toInt() : -1));
@@ -73,9 +73,9 @@ Local<Value> SystemClass::newProcess(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                Error("SystemNewProcess Callback Failed!");
-                Error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                Error(e);
+                logger.error("SystemNewProcess Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                PrintException(e);
             }
         }
         , args.size() >= 3 ? args[2].toInt() : -1));

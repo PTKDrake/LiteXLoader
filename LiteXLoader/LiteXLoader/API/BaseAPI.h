@@ -1,8 +1,8 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
+#include "APIHelp.h"
 #include <Global.hpp>
 #include <string>
-using namespace script;
+class BlockSource;
 
 //////////////////// Classes ////////////////////
 class IntPos : public IntVec4, public ScriptClass

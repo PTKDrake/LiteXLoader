@@ -6,9 +6,10 @@
 #include <Engine/LocalShareData.h>
 #include <Engine/EngineOwnData.h>
 #include <Engine/LoaderHelper.h>
+#include <SendPacketAPI.h>
 #include <MC/Player.hpp>
 #include <iostream>
-using namespace script;
+
 using namespace std;
 using namespace Form;
 
@@ -74,9 +75,9 @@ bool SimpleFormClass::sendForm(Form::SimpleForm* form, Player* player, script::L
             }
             catch (const Exception& e)
             {
-                Error("Fail in form callback!");
-                Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                Error(e);
+                logger.error("Fail in form callback!");
+                logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                PrintException(e);
             }
         });
 }
@@ -174,6 +175,7 @@ vector<string> CustomFormResultToString(const std::map<string, std::shared_ptr<C
             break;
         }
     }
+    return res;
 }
 
 //成员函数
@@ -198,9 +200,9 @@ bool CustomFormClass::sendForm(Form::CustomForm* form, Player* player, script::L
         }
         catch (const Exception& e)
         {
-            Error("Fail in form callback!");
-            Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-            Error(e);
+            logger.error("Fail in form callback!");
+            logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            logger.error << e << ::Logger::endl;
         }
     });
 }
@@ -378,9 +380,9 @@ bool CallFormCallback(Player* player, unsigned formId, const string& data)
             }
             catch (const Exception& e)
             {
-                Error("Form Callback Failed!");
-                Error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                Error(e);
+                logger.error("Form Callback Failed!");
+                logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                logger.error << e << ::Logger::endl;
             }
             if (res.isNull() || (res.isBoolean() && res.asBoolean().value() == false))
                 passToBDS = false;
@@ -394,4 +396,60 @@ bool CallFormCallback(Player* player, unsigned formId, const string& data)
     }
 
     return passToBDS;
+}
+
+
+//////////////////// Helper ////////////////////
+
+bool SendFormPacket(Player* player, const string& data)
+{
+    BinaryStream wp;
+    wp.reserve(32 + data.size());
+    wp.writeUnsignedInt((unsigned)((rand() << 16) + rand()));       //?????????
+    wp.writeString(data);   
+
+    NetworkPacket<100> pkt{ wp.getAndReleaseData() };
+    player->sendNetworkPacket(pkt);
+    return true;
+}
+
+int SendSimpleForm(Player* player, const string& title, const string& content, const vector<string>& buttons, const std::vector<std::string>& images)
+{
+    string model = u8R"({"title":"%s","content":"%s","buttons":%s,"type":"form"})";
+    model = model.replace(model.find("%s"), 2, title);
+    model = model.replace(model.find("%s"), 2, content);
+
+    fifo_json buttonText;
+    for (int i = 0; i < buttons.size(); ++i)
+    {
+        fifo_json oneButton;
+        oneButton["text"] = buttons[i];
+        if (!images[i].empty())
+        {
+            fifo_json image;
+            image["type"] = images[i].find("textures/") == 0 ? "path" : "url";
+            image["data"] = images[i];
+            oneButton["image"] = image;
+        }
+        buttonText.push_back(oneButton);
+    }
+    model = model.replace(model.find("%s"), 2, buttonText.dump());
+
+    return SendFormPacket(player, model);
+}
+
+int SendModalForm(Player* player, const string& title, const string& content, const string& button1, const string& button2)
+{
+    string model = R"({"title":"%s","content":"%s","button1":"%s","button2":"%s","type":"modal"})";
+    model = model.replace(model.find("%s"), 2, title);
+    model = model.replace(model.find("%s"), 2, content);
+    model = model.replace(model.find("%s"), 2, button1);
+    model = model.replace(model.find("%s"), 2, button2);
+
+    return SendFormPacket(player, model);
+}
+
+int SendCustomForm(Player* player, const std::string& data)
+{
+    return SendFormPacket(player, data);
 }

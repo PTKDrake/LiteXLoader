@@ -1,10 +1,10 @@
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 #include <vector>
 #include <list>
 #include <string>
 #include <map>
 #include <mutex>
-using namespace script;
+
 
 
 //////////////////// Structs ////////////////////
