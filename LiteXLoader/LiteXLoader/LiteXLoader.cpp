@@ -52,9 +52,10 @@ void Welcome()
 
 void LoaderInfo()
 {
+    bool isNotRelease = LL::Version::Status::LXL_VERSION_STATUS != LL::Version::Status::Release;
     logger.info(std::string("LXL for ") + LXL_MODULE_TYPE + " loaded");
     logger.info(std::string("Version ") + to_string(LXL_VERSION_MAJOR) + "." + to_string(LXL_VERSION_MINOR) + "."
-        + to_string(LXL_VERSION_REVISION) + LXL_VERSION_STATUS_STRING);
+        + to_string(LXL_VERSION_REVISION) + (isNotRelease ? string(" ") + LXL_VERSION_STATUS_STRING : string("")));
 }
 
 void entry()
