@@ -145,7 +145,6 @@ ClassDefine<NbtListClass> NbtListClassBuilder =
 		.instanceFunction("getData", &NbtListClass::getData)
 		.instanceFunction("getTag", &NbtListClass::getTag)
 		.instanceFunction("toArray", &NbtListClass::toArray)
-		.instanceFunction("destroy", &NbtListClass::destroy)
 		.build();
 
 ClassDefine<NbtCompoundClass> NbtCompoundClassBuilder =
@@ -171,51 +170,28 @@ ClassDefine<NbtCompoundClass> NbtCompoundClassBuilder =
 		.instanceFunction("toObject", &NbtCompoundClass::toObject)
 		.instanceFunction("toSNBT", &NbtCompoundClass::toSNBT)
 		.instanceFunction("toBinaryNBT", &NbtCompoundClass::toBinaryNBT)
-		.instanceFunction("destroy", &NbtCompoundClass::destroy)
 		.build();
-
-
-//////////////////// Classes NbtBase ////////////////////
-
-Local<Value> NbtBase::destroy(const Arguments& args)
-{
-	//if (canDelete)
-	//{
-	//    nbt->destroy();
-		//delete nbt;
-	//}
-	return Boolean::newBoolean(true);
-}
 
 
 //////////////////// Classes NbtEnd ////////////////////
 
-NbtEndClass::NbtEndClass(const Local<Object>& scriptObj, EndTag* p, bool canDelete)
+NbtEndClass::NbtEndClass(const Local<Object>& scriptObj, EndTag* p)
 	:ScriptClass(scriptObj)
 {
-	this->nbt = p;
-	this->canDelete = canDelete;
+	this->nbt.reset(p);
 }
 
-NbtEndClass::NbtEndClass(EndTag* p, bool canDelete)
+NbtEndClass::NbtEndClass(EndTag* p)
 	:ScriptClass(ScriptClass::ConstructFromCpp<NbtEndClass>{})
 {
-	this->nbt = p;
-	this->canDelete = canDelete;
+	this->nbt.reset(p);
 }
 
 NbtEndClass* NbtEndClass::constructor(const Arguments& args)
 {
 	try {
-		EndTag* tag = EndTag::create();
-
-		if (args.size() >= 1)
-			if (!TagSetValue(Tag::Type::End, tag, args[0]))
-			{
-				ERROR("Fail to Set value of EndTag!");
-			}
-
-		return new NbtEndClass(args.thiz(), tag, true);
+		auto tag = Tag::newTag(Tag::Type::End);
+		return new NbtEndClass(args.thiz(), std::dynamic_pointer_cast<EndTag>(tag), true);
 	}
 	CATCH_C("Fail in Create EndTag!");
 }
@@ -223,7 +199,7 @@ NbtEndClass* NbtEndClass::constructor(const Arguments& args)
 EndTag* NbtEndClass::extract(Local<Value> v)
 {
 	if (EngineScope::currentEngine()->isInstanceOf<NbtEndClass>(v))
-		return EngineScope::currentEngine()->getNativeInstance<NbtEndClass>(v)->nbt;
+		return EngineScope::currentEngine()->getNativeInstance<NbtEndClass>(v)->nbt.get();
 	else
 		return nullptr;
 }

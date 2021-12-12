@@ -2,6 +2,7 @@
 #include <ScriptX/ScriptX.h>
 using namespace script;
 #include <MC/Tag.hpp>
+#include <memory>
 
 extern struct Tag;
 extern ClassDefine<void> NbtStaticBuilder;
@@ -9,11 +10,8 @@ extern ClassDefine<void> NbtStaticBuilder;
 class NbtBase
 {
 public:
-    bool canDelete = false;
-
     //virtual Local<Value> getType(const Arguments& args) = 0;
     virtual Local<Value> toString(const Arguments& args) = 0;
-    Local<Value> destroy(const Arguments& args);
 };
 
 
@@ -39,9 +37,9 @@ class EndTag;
 class NbtEndClass : public NbtBase, public ScriptClass
 {
 public:
-    EndTag* nbt;
-    explicit NbtEndClass(const Local<Object>& scriptObj, EndTag* p, bool canDelete = false);
-    explicit NbtEndClass(EndTag* p, bool canDelete = false);
+    std::unique_ptr<EndTag> nbt;
+    explicit NbtEndClass(const Local<Object>& scriptObj, EndTag* p);
+    explicit NbtEndClass(EndTag* p);
     ~NbtEndClass() = default;
     static NbtEndClass* constructor(const Arguments& args);
     static EndTag* extract(Local<Value> v);
@@ -59,7 +57,7 @@ extern ClassDefine<NbtEndClass> NbtEndClassBuilder;
 class NbtByteClass : public NbtBase, public ScriptClass
 {
 public:
-    ByteTag* nbt;
+    std::unique_ptr<ByteTag> nbt;
     explicit NbtByteClass(const Local<Object>& scriptObj, ByteTag* p, bool canDelete = false);
     explicit NbtByteClass(ByteTag* p, bool canDelete = false);
     NbtByteClass() = default;
@@ -79,7 +77,7 @@ extern ClassDefine<NbtByteClass> NbtByteClassBuilder;
 class NbtShortClass : public NbtBase, public ScriptClass
 {
 public:
-    ShortTag* nbt;
+    std::unique_ptr<ShortTag> nbt;
     explicit NbtShortClass(const Local<Object>& scriptObj, ShortTag* p, bool canDelete = false);
     explicit NbtShortClass(ShortTag* p, bool canDelete = false);
     ~NbtShortClass() = default;
@@ -99,7 +97,7 @@ extern ClassDefine<NbtShortClass> NbtShortClassBuilder;
 class NbtIntClass : public NbtBase, public ScriptClass
 {
 public:
-    IntTag* nbt;
+    std::unique_ptr<IntTag> nbt;
     explicit NbtIntClass(const Local<Object>& scriptObj, IntTag* p, bool canDelete = false);
     explicit NbtIntClass(IntTag* p, bool canDelete = false);
     ~NbtIntClass() = default;
@@ -119,7 +117,7 @@ extern ClassDefine<NbtIntClass> NbtIntClassBuilder;
 class NbtLongClass : public NbtBase, public ScriptClass
 {
 public:
-    Int64Tag* nbt;
+    std::unique_ptr<Int64Tag> nbt;
     explicit NbtLongClass(const Local<Object>& scriptObj, Int64Tag* p, bool canDelete = false);
     explicit NbtLongClass(Int64Tag* p, bool canDelete = false);
     ~NbtLongClass() = default;
@@ -139,7 +137,7 @@ extern ClassDefine<NbtLongClass> NbtLongClassBuilder;
 class NbtFloatClass : public NbtBase, public ScriptClass
 {
 public:
-    FloatTag* nbt;
+    std::unique_ptr<FloatTag> nbt;
     explicit NbtFloatClass(const Local<Object>& scriptObj, FloatTag* p, bool canDelete = false);
     explicit NbtFloatClass(FloatTag* p, bool canDelete = false);
     ~NbtFloatClass() = default;
@@ -159,7 +157,7 @@ extern ClassDefine<NbtFloatClass> NbtFloatClassBuilder;
 class NbtDoubleClass : public NbtBase, public ScriptClass
 {
 public:
-    DoubleTag* nbt;
+    std::unique_ptr<DoubleTag> nbt;
     explicit NbtDoubleClass(const Local<Object>& scriptObj, DoubleTag* p, bool canDelete = false);
     explicit NbtDoubleClass(DoubleTag* p, bool canDelete = false);
     ~NbtDoubleClass() = default;
@@ -179,7 +177,7 @@ extern ClassDefine<NbtDoubleClass> NbtDoubleClassBuilder;
 class NbtStringClass : public NbtBase, public ScriptClass
 {
 public:
-    StringTag* nbt;
+    std::unique_ptr<StringTag> nbt;
     explicit NbtStringClass(const Local<Object>& scriptObj, StringTag* p, bool canDelete = false);
     explicit NbtStringClass(StringTag* p, bool canDelete = false);
     ~NbtStringClass() = default;
@@ -199,7 +197,7 @@ extern ClassDefine<NbtStringClass> NbtStringClassBuilder;
 class NbtByteArrayClass : public NbtBase, public ScriptClass
 {
 public:
-    ByteArrayTag* nbt;
+    std::unique_ptr<ByteArrayTag> nbt;
     explicit NbtByteArrayClass(const Local<Object>& scriptObj, ByteArrayTag* p, bool canDelete = false);
     explicit NbtByteArrayClass(ByteArrayTag* p, bool canDelete = false);
     ~NbtByteArrayClass() = default;
@@ -219,7 +217,7 @@ extern ClassDefine<NbtByteArrayClass> NbtByteArrayClassBuilder;
 class NbtListClass : public NbtBase, public ScriptClass
 {
 public:
-    ListTag* nbt;
+    std::unique_ptr<ListTag> nbt;
     explicit NbtListClass(const Local<Object>& scriptObj, ListTag* p, bool canDelete = false);
     explicit NbtListClass(ListTag* p, bool canDelete = false);
     ~NbtListClass() = default;
@@ -257,7 +255,7 @@ extern ClassDefine<NbtListClass> NbtListClassBuilder;
 class NbtCompoundClass : public NbtBase, public ScriptClass
 {
 public:
-    CompoundTag* nbt;
+    std::unique_ptr<CompoundTag> nbt;
     explicit NbtCompoundClass(const Local<Object>& scriptObj, CompoundTag* p, bool canDelete = false);
     explicit NbtCompoundClass(CompoundTag* p, bool canDelete = false);
     ~NbtCompoundClass() = default;
