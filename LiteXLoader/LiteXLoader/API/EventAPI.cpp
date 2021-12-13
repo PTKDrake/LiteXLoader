@@ -358,7 +358,7 @@ void InitEventListeners()
     {
         IF_LISTENED(EVENT_TYPES::onChangeDim)
         {
-            CallEvent(EVENT_TYPES::onChangeDim, PlayerClass::newPlayer(ev.mPlayer), Number::newNumber(0));      //======???
+            CallEvent(EVENT_TYPES::onChangeDim, PlayerClass::newPlayer(ev.mPlayer), Number::newNumber(ev.mToDimensionId));      //======???
         }
         IF_LISTENED_END(EVENT_TYPES::onChangeDim);
     });
