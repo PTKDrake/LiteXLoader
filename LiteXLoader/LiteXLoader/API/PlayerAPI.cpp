@@ -1016,21 +1016,25 @@ Local<Value> PlayerClass::sendSimpleForm(const Arguments& args)
         auto imagesArr = args[3].asArray();
         if (imagesArr.size() != textsArr.size() || !imagesArr.get(0).isString())
             return Local<Value>();
-
+        Form::SimpleForm form(args[0].toStr(), args[1].toStr());
         vector<string> texts, images;
         for (int i = 0; i < textsArr.size(); ++i)
         {
-            texts.push_back(textsArr.get(i).toStr());
-            images.push_back(imagesArr.get(i).toStr());
+            form.append(Form::Button(textsArr.get(i).toStr(), imagesArr.get(i).toStr()));
+            //texts.push_back(textsArr.get(i).toStr());
+            //images.push_back(imagesArr.get(i).toStr());
         }
+        Local<Function> callback = args[4].asFunction();
+        SimpleFormClass::sendForm(&form, player, callback);
+        return Number::newNumber(1);
 
-        int formId = SendSimpleForm(player, args[0].toStr(), args[1].toStr(), texts, images);
+        //int formId = SendSimpleForm(player, args[0].toStr(), args[1].toStr(), texts, images);
 
-        
-        ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].engine = EngineScope::currentEngine();
-        ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].func = args[4].asFunction();
+        //ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].engine = EngineScope::currentEngine();
+        //ENGINE_OWN_DATA()->formCallbacks[(unsigned)formId].func = args[4].asFunction();
 
-        return Number::newNumber(formId);
+        //return Number::newNumber(formId);
+
     }
     CATCH("Fail in sendSimpleForm!");
 }

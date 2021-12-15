@@ -405,7 +405,7 @@ bool SendFormPacket(Player* player, const string& data)
 {
     BinaryStream wp;
     wp.reserve(32 + data.size());
-    wp.writeUnsignedInt((unsigned)((rand() << 16) + rand()));       //?????????
+    wp.writeUnsignedVarInt((unsigned)((rand() << 16) + rand()));       //?????????
     wp.writeString(data);   
 
     NetworkPacket<100> pkt{ wp.getAndReleaseData() };
@@ -415,7 +415,7 @@ bool SendFormPacket(Player* player, const string& data)
 
 int SendSimpleForm(Player* player, const string& title, const string& content, const vector<string>& buttons, const std::vector<std::string>& images)
 {
-    string model = u8R"({"title":"%s","content":"%s","buttons":%s,"type":"form"})";
+    string model = u8R"({"title": "%s","content":"%s","buttons":%s,"type":"form"})";
     model = model.replace(model.find("%s"), 2, title);
     model = model.replace(model.find("%s"), 2, content);
 

@@ -17,6 +17,7 @@
 #include <Engine/RemoteCall.h>
 #include <Engine/MessageSystem.h>
 #include <API/CommandAPI.h>
+#include <Utils/StringHelper.h>
 
 using namespace std;
 
@@ -148,6 +149,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         //setData
         ENGINE_OWN_DATA()->pluginName = pluginName;
         ENGINE_OWN_DATA()->pluginPath = filePath;
+        ENGINE_OWN_DATA()->logger.title = SplitStrWithPattern(pluginName,"\.")[0];
 
         //绑定API
         try {

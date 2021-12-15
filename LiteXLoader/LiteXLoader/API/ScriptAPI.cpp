@@ -21,8 +21,8 @@ Local<Value> Log(const Arguments& args)
 
     try {
         for (int i = 0; i < args.size(); ++i)
-            PrintValue(std::cout, args[i]);
-        std::cout << std::endl;
+            PrintValue(logger.info, args[i]);
+        logger.info << Logger::endl;
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in Log!");
