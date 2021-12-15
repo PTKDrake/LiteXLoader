@@ -45,7 +45,7 @@ bool ProcessHotManageCmd(const std::string& cmd)
         logger.info("=== LiteXLoader-{} Plugins ===");
         auto list = LxlListLocalAllPlugins();
         for (auto& name : list)
-            logger.info(name);
+            logger.info("{}", name);
         break;
     }
 
@@ -119,16 +119,17 @@ bool ProcessHotManageCmd(const std::string& cmd)
 
             if (EndsWith(cmdList[2], LXL_PLUGINS_SUFFIX))
             {
-                if (LxlUnloadPlugin(cmdList[2]) == "")
-                    logger.error("Plugin no found! Use \"lxl list\" to show plugins loaded currently.");
-                else
+                if (LxlUnloadPlugin(cmdList[2]) != "")
                     succeeded.done();
             }
 
             if (cnt.hasReachMaxBackendCount())
             {
                 if (succeeded.get() == 0)
-                    logger.error("Fail to unload any plugin named <" + cmdList[2] + "> !");
+                {
+                    logger.error("Fail to unload any plugin named <" + cmdList[2] + ">!");
+                    logger.error("Use command \"lxl list\" to show plugins loaded currently.");
+                }
                 cnt.clear();
                 succeeded.clear();
             }
@@ -166,7 +167,7 @@ bool ProcessHotManageCmd(const std::string& cmd)
         {
             //Reload All
             LxlReloadAllPlugins();
-            logger.info("=== LiteXLoader-{} All plugins reloaded. ===", LXL_SCRIPT_LANG_TYPE);
+            logger.info("All plugins reloaded.", LXL_SCRIPT_LANG_TYPE);
         }
         break;
     }
