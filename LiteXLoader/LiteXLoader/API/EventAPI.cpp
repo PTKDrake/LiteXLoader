@@ -616,7 +616,8 @@ void InitEventListeners()
             Player* player = ev.mPlayer;
 
             vector<string> paras;
-            string prefix = LxlFindCmdReg(true, cmd, paras);
+            bool isFromOtherEngine = false;
+            string prefix = LxlFindCmdReg(true, cmd, paras, &isFromOtherEngine);
 
             if (!prefix.empty())
             {
@@ -637,6 +638,9 @@ void InitEventListeners()
             }
             else
             {
+                if (isFromOtherEngine)
+                    return false;
+
                 //Other Cmd
                 IF_LISTENED(EVENT_TYPES::onPlayerCmd)
                 {
@@ -928,7 +932,8 @@ void InitEventListeners()
 
             //CallEvents
             vector<string> paras;
-            string prefix = LxlFindCmdReg(false, cmd, paras);
+            bool isFromOtherEngine = false;
+            string prefix = LxlFindCmdReg(false, cmd, paras, &isFromOtherEngine);
 
             if (!prefix.empty())
             {
@@ -945,6 +950,9 @@ void InitEventListeners()
             }
             else
             {
+                if (isFromOtherEngine)
+                    return false;
+
                 //Other Cmd
                 IF_LISTENED(EVENT_TYPES::onConsoleCmd)
                 {
