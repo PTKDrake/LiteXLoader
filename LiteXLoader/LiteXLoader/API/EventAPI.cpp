@@ -800,7 +800,7 @@ void InitEventListeners()
         IF_LISTENED_END(EVENT_TYPES::onProjectileHitBlock);
     });
 
-    Event::LiquidFlowEvent::subscribe([](const LiquidFlowEvent &ev) {
+    Event::LiquidSpreadEvent::subscribe([](const LiquidSpreadEvent &ev) {
         IF_LISTENED(EVENT_TYPES::onLiquidFlow)
         {
             CallEvent(EVENT_TYPES::onLiquidFlow, BlockClass::newBlock(ev.mBlockInstance), IntPos::newPos(ev.mTarget));

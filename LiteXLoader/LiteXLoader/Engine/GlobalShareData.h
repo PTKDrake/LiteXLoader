@@ -51,6 +51,9 @@ struct GlobalDataType
 
 	//fastlog多线程锁
 	std::mutex fastlogLock;
+
+	//OperationCount
+	std::map<std::string, int> operationCountData;
 };
 
 

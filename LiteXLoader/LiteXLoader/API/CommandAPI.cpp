@@ -20,7 +20,7 @@ using namespace std;
 bool RegisterCmd(const string& cmd, const string& describe, int cmdLevel)
 {
     ::Global<CommandRegistry>->registerCommand(cmd, describe.c_str(), (CommandPermissionLevel)cmdLevel, { (CommandFlagValue)0 },
-        { (CommandFlagValue)0x40 });
+        { (CommandFlagValue)0x80 });
     return true;
 }
 
@@ -213,7 +213,6 @@ bool ProcessDebugEngine(const string& cmd)
         {
             if (cmd == "stop")
             {
-                logger.warn("请先退出Debug实时调试模式再使用stop！");
                 return true;
             }
             else
