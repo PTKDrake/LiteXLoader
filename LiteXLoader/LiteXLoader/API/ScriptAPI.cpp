@@ -23,7 +23,7 @@ Local<Value> Log(const Arguments& args)
         auto globalConf = ENGINE_OWN_DATA();
         for (int i = 0; i < args.size(); ++i)
             PrintValue(globalConf->logger.info, args[i]);
-        globalConf.logger->info << Logger::endl;
+        globalConf->logger.info << Logger::endl;
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in Log!");
