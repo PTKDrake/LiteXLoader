@@ -148,11 +148,12 @@ CustomForm* CustomFormClass::extract(Local<Value> v)
         return nullptr;
 }
 
-vector<string> CustomFormResultToString(const std::map<string, std::shared_ptr<CustomFormElement>>& data, Local<Array> &arr)
+vector<string> CustomFormResultToString(std::shared_ptr<Form::CustomForm> form, const std::map<string, std::shared_ptr<CustomFormElement>>& data, Local<Array> &arr)
 {
     vector<string> res;
-    for (auto& [k, v] : data)
+    for (auto &item : form->elements)
     {
+        const std::shared_ptr<CustomFormElement> &v = data.at(item.first);
         switch (v->getType())
         {
         case CustomFormElement::Type::Label:
@@ -184,7 +185,8 @@ bool CustomFormClass::sendForm(Form::CustomForm* form, Player* player, script::L
     script::Global<Function> callbackFunc{ callback };
 
     return form->sendTo((ServerPlayer*)player,
-        [id{ player->getUniqueID() }, engine{ EngineScope::currentEngine() }, callback{ std::move(callbackFunc) }]
+        [form {make_shared<Form::CustomForm>(*form)}, id{player->getUniqueID()}, engine{EngineScope::currentEngine()},
+        callback{std::move(callbackFunc)}]
     (const std::map<string, std::shared_ptr<CustomFormElement>>& data)
     {
         Player* pl = Level::getPlayer(id);
@@ -195,7 +197,7 @@ bool CustomFormClass::sendForm(Form::CustomForm* form, Player* player, script::L
         try
         {
             Local<Array> arr = Array::newArray();
-            CustomFormResultToString(data, arr);        //========================= Change =========================
+            CustomFormResultToString(form, data, arr);        //========================= Change =========================
             callback.get().call({}, PlayerClass::newPlayer(pl), arr);
         }
         catch (const Exception& e)
