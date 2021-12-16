@@ -1122,7 +1122,8 @@ Local<Value> PlayerClass::sendCustomForm(const Arguments& args)
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), JsonToValue(result));
+                callback.get().call({}, PlayerClass::newPlayer(pl),
+                    result != "null" ? JsonToValue(result) : Local<Value>());
             }
             catch (const Exception& e)
             {
