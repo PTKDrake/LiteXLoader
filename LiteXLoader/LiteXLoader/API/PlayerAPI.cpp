@@ -270,7 +270,7 @@ Local<Value> PlayerClass::getBlockPos()
         if (!player)
             return Local<Value>();
 
-        return IntPos::newPos(player->getBlockPos());
+        return IntPos::newPos(player->getBlockPos(),player->getDimensionId());
     }
     CATCH("Fail in getPlayerBlockPos!")
 }
