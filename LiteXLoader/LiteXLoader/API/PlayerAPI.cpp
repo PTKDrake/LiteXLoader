@@ -1039,7 +1039,8 @@ Local<Value> PlayerClass::sendSimpleForm(const Arguments& args)
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), Number::newNumber(chosen));
+                callback.get().call({}, PlayerClass::newPlayer(pl),
+                    chosen >= 0 ? Number::newNumber(chosen) : Local<Value>());
             }
             catch (const Exception& e)
             {
