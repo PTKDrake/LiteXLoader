@@ -150,6 +150,9 @@ CustomForm* CustomFormClass::extract(Local<Value> v)
 
 vector<string> CustomFormResultToString(std::shared_ptr<Form::CustomForm> form, const std::map<string, std::shared_ptr<CustomFormElement>>& data, Local<Array> &arr)
 {
+    if (data.empty())
+        return { "null" };
+
     vector<string> res;
     for (auto &item : form->elements)
     {
