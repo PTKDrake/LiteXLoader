@@ -62,11 +62,6 @@ jobs:
         run: MSBuild.exe ./LiteXLoader/LiteXLoader.sln -property:Configuration=Js
         shell: bash
 
-      - name: Build LiteXLoader.Lua
-        working-directory: ${{env.GITHUB_WORKSPACE}}
-        run: MSBuild.exe ./LiteXLoader/LiteXLoader.sln -property:Configuration=Lua
-        shell: bash
-
       - name: MkDirs
         run: |
           mkdir D:/build
