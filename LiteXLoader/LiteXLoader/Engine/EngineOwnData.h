@@ -1,7 +1,5 @@
 #pragma once
-#include <Kernel/ThirdParty.h>
-#include <Kernel/Data.h>
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 #include <fstream>
 #include <string>
 #include <fstream>
@@ -28,16 +26,15 @@ struct EngineOwnData
 
     //LoggerAPI
     bool toConsole = true;
-    std::ofstream fout;
-    Player *player = nullptr;
-    std::string title = "";
+    Logger logger = Logger("");
     int maxLogLevel = 4;
-    int consoleLogLevel = 4;
-    int fileLogLevel = 4;
-    int playerLogLevel = 4;
-
+    //struct EngineOwnData() {
+    //    logger.consoleLevel = 4;
+    //    logger.fileLevel = 4;
+    //    logger.playerLevel = 4;
+    //}
     //玩家绑定数据
-    std::unordered_map<std::string,Global<Value>> playerDataDB;
+    std::unordered_map<std::string,script::Global<Value>> playerDataDB;
 };
 
 // 引擎附加数据

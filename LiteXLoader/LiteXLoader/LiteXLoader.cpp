@@ -1,4 +1,3 @@
-﻿#include <ScriptX/ScriptX.h>
 #include <API/APIHelp.h>
 #include <API/EventAPI.h>
 #include <Engine/GlobalShareData.h>
@@ -6,9 +5,6 @@
 #include <Engine/LocalShareData.h>
 #include <Engine/RemoteCall.h>
 #include <Engine/MessageSystem.h>
-#include <Kernel/Data.h>
-#include <Kernel/System.h>
-#include <Kernel/i18n.h>
 #include <windows.h>
 #include <string>
 #include <exception>
@@ -18,15 +14,24 @@
 #include <filesystem>
 #include <Configs.h>
 #include <Version.h>
-using namespace script;
+#include <LoggerAPI.h>
+#include <Utils/FileHelper.h>
+#include <Tools/IniHelper.h>
+#include <TranslationAPI.h>
+#include <EconomicSystem.h>
+
 using namespace std;
+
+
 
 //主引擎表
 std::vector<ScriptEngine*> lxlModules;
 // 配置文件
-INI_ROOT iniConf;
+SimpleIni* iniConf;
 // 日志等级
 int lxlLogLevel = 1;
+
+::Logger logger("LiteXLoader");
 
 extern void LoadDepends();
 extern void LoadMain();
@@ -35,21 +40,24 @@ extern void LoadDebugEngine();
 
 void Welcome()
 {
-    cout << R"(     _       _  _         __   __  _                        _             )" << endl
-         << R"(    | |     (_)| |        \ \ / / | |                      | |            )" << endl
-         << R"(    | |      _ | |_  ___   \ V /  | |      ___    __ _   __| |  ___  _ __ )" << endl
-         << R"(    | |     | || __|/ _ \   > <   | |     / _ \  / _` | / _` | / _ \| '__|)" << endl
-         << R"(    | |____ | || |_|  __/  / . \  | |____| (_) || (_| || (_| ||  __/| |   )" << endl
-         << R"(    |______||_| \__|\___| /_/ \_\ |______|\___/  \__,_| \__,_| \___||_|   )" << endl;
-
-    cout << "\n\n      =========   LiteXLoader Script Plugin Loader   =========\n" << endl;
+    cout << "\r" << R"(     _       _  _         __   __  _                        _             )" << endl
+         << "\r" << R"(    | |     (_)| |        \ \ / / | |                      | |            )" << endl
+         << "\r" << R"(    | |      _ | |_  ___   \ V /  | |      ___    __ _   __| |  ___  _ __ )" << endl
+         << "\r" << R"(    | |     | || __|/ _ \   > <   | |     / _ \  / _` | / _` | / _ \| '__|)" << endl
+         << "\r" << R"(    | |____ | || |_|  __/  / . \  | |____| (_) || (_| || (_| ||  __/| |   )" << endl
+         << "\r" << R"(    |______||_| \__|\___| /_/ \_\ |______|\___/  \__,_| \__,_| \___||_|   )" << endl
+         << "\r" << R"(                                                                          )" << endl
+         << "\r" << R"(                                                                          )" << endl
+         << "\r" << R"(        =========   LiteXLoader Script Plugin Loader   =========          )" << endl
+         << "\r" << R"(                                                                          )" << endl;
 }
 
 void LoaderInfo()
 {
-    INFO(std::string("LXL for ") + LXL_MODULE_TYPE + " loaded");
-    INFO(std::string("Version ") + to_string(LXL_VERSION_MAJOR) + "." + to_string(LXL_VERSION_MINOR) + "."
-        + to_string(LXL_VERSION_REVISION) + (LXL_VERSION_IS_BETA ? " Beta" : ""));
+    bool isNotRelease = LL::Version::Status::LXL_VERSION_STATUS != LL::Version::Status::Release;
+    logger.info(std::string("LXL for ") + LXL_MODULE_TYPE + " loaded");
+    logger.info(std::string("Version ") + to_string(LXL_VERSION_MAJOR) + "." + to_string(LXL_VERSION_MINOR) + "."
+        + to_string(LXL_VERSION_REVISION) + (isNotRelease ? string(" ") + LXL_VERSION_STATUS_STRING : string("")));
 }
 
 void entry()
@@ -57,15 +65,19 @@ void entry()
     //设置全局SEH处理
     _set_se_translator(seh_exception::TranslateSEHtoCE);
 
+    LL::registerPlugin(LXL_LOADER_NAME, LXL_LOADER_DESCRIPTION,
+        LL::Version(LXL_VERSION_MAJOR, LXL_VERSION_MINOR, LXL_VERSION_REVISION, LL::Version::LXL_VERSION_STATUS),
+        "github.com/LiteLDev/LiteXLoader", "GPL-3", "www.litebds.com");
+
     //读取配置文件
-    Raw_DirCreate(std::filesystem::path(LXL_CONFIG_PATH).remove_filename().u8string());
-    iniConf = Raw_IniOpen(LXL_CONFIG_PATH);
+    CreateDirs(std::filesystem::path(LXL_CONFIG_PATH).remove_filename().u8string());
+    iniConf = SimpleIni::create(LXL_CONFIG_PATH,"");
     if (!iniConf)
-        ERROR("Fail to Load config file of LiteXLoader! Default settings applied.");
-    lxlLogLevel = Raw_IniGetInt(iniConf,"Main","LxlLogLevel",1);
+        logger.error("Fail to Load config file of LiteXLoader! Default settings applied.");
+    lxlLogLevel = iniConf->getInt("Main","LxlLogLevel",1);
 
     //国际化
-    InitI18n(LXL_LANGPACK_DIR + Raw_IniGetString(iniConf, "Main", "Language", "en_US") + ".json");
+    Translation::load(LXL_LANGPACK_DIR + iniConf->getString("Main", "Language", "en_US") + ".json");
 
     //初始化全局数据
     InitLocalShareData();
@@ -80,7 +92,7 @@ void entry()
     LoaderInfo();
 
     //初始化经济系统
-    Raw_InitEcnonmicSystem(MoneyEventCallback);
+    EconomySystem::init(MoneyEventCallback);
 
     //预加载库
     LoadDepends();
@@ -96,7 +108,7 @@ void entry()
 
     //UnlockCmd
     extern bool isUnlockCmdEnabled;
-    isUnlockCmdEnabled = Raw_IniGetBool(iniConf, "Modules", "BuiltInUnlockCmd", true);
+    isUnlockCmdEnabled = iniConf->getBool("Modules", "BuiltInUnlockCmd", true);
 
-    Raw_IniClose(iniConf);
+    delete iniConf;
 }

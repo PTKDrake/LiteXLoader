@@ -4,9 +4,6 @@
     <Filter Include="API">
       <UniqueIdentifier>{2ffc71f3-f140-445c-a964-5eb48b90fc50}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Kernel">
-      <UniqueIdentifier>{b3f49dbe-3a2c-4e91-bf58-0c4b932dc587}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Main">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
@@ -16,6 +13,9 @@
     </Filter>
     <Filter Include="Engine">
       <UniqueIdentifier>{4af0e4d7-d5c3-479b-8390-dd767fa049b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{c322c5ad-e260-4fba-b9d5-f73c3fcbe583}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -67,51 +67,6 @@
     <ClCompile Include="API\ServerAPI.cpp">
       <Filter>API</Filter>
     </ClCompile>
-    <ClCompile Include="Kernel\Base.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Block.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Data.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Entity.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Event.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Global.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Gui.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\i18n.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Item.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\NBT.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Packet.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Player.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Server.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\SymbolHelper.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\System.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
     <ClCompile Include="BindAPIs.cpp">
       <Filter>Main</Filter>
     </ClCompile>
@@ -127,9 +82,6 @@
     <ClCompile Include="API\ScriptAPI.cpp">
       <Filter>API</Filter>
     </ClCompile>
-    <ClCompile Include="Kernel\UnlockCmd.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
     <ClCompile Include="API\SystemAPI.cpp">
       <Filter>API</Filter>
     </ClCompile>
@@ -142,26 +94,14 @@
     <ClCompile Include="Engine\RemoteCall.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Kernel\Device.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
     <ClCompile Include="Engine\LocalShareData.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
     <ClCompile Include="API\DeviceAPI.cpp">
       <Filter>API</Filter>
     </ClCompile>
-    <ClCompile Include="CheckNotice.cpp">
-      <Filter>Main</Filter>
-    </ClCompile>
     <ClCompile Include="API\ScoreboardAPI.cpp">
       <Filter>API</Filter>
-    </ClCompile>
-    <ClCompile Include="AutoUpdate.cpp">
-      <Filter>Main</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Utils.cpp">
-      <Filter>Kernel</Filter>
     </ClCompile>
     <ClCompile Include="Engine\MessageSystem.cpp">
       <Filter>Engine</Filter>
@@ -169,23 +109,11 @@
     <ClCompile Include="Engine\PluginHotManage.cpp">
       <Filter>Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Kernel\Container.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
     <ClCompile Include="API\ContainerAPI.cpp">
       <Filter>API</Filter>
     </ClCompile>
     <ClCompile Include="Engine\TimeTaskSystem.cpp">
       <Filter>Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\Scoreboard.cpp">
-      <Filter>Kernel</Filter>
-    </ClCompile>
-    <ClCompile Include="API\PacketAPI.cpp">
-      <Filter>API</Filter>
-    </ClCompile>
-    <ClCompile Include="Kernel\BlockEntity.cpp">
-      <Filter>Kernel</Filter>
     </ClCompile>
     <ClCompile Include="API\BlockEntityAPI.cpp">
       <Filter>API</Filter>
@@ -195,6 +123,24 @@
     </ClCompile>
     <ClCompile Include="API\McAPI.cpp">
       <Filter>API</Filter>
+    </ClCompile>
+    <ClCompile Include="Global.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\Utils.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="Tools\IniHelper.cpp">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="EconomySystem.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoUpgrade.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\OperationCount.cpp">
+      <Filter>Engine</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -246,54 +192,6 @@
     <ClInclude Include="API\ServerAPI.h">
       <Filter>API</Filter>
     </ClInclude>
-    <ClInclude Include="Kernel\Base.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Block.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Data.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Entity.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Event.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Gui.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\i18n.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Item.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\NBT.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Packet.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Global.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Player.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Server.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\SymbolHelper.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\System.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\ThirdParty.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
     <ClInclude Include="Configs.h">
       <Filter>Main</Filter>
     </ClInclude>
@@ -318,35 +216,20 @@
     <ClInclude Include="Engine\RemoteCall.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Kernel\Device.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
     <ClInclude Include="Engine\LocalShareData.h">
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="API\DeviceAPI.h">
       <Filter>API</Filter>
     </ClInclude>
-    <ClInclude Include="CheckNotice.h">
-      <Filter>Main</Filter>
-    </ClInclude>
     <ClInclude Include="API\ScoreboardAPI.h">
       <Filter>API</Filter>
-    </ClInclude>
-    <ClInclude Include="AutoUpdate.h">
-      <Filter>Main</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Utils.h">
-      <Filter>Kernel</Filter>
     </ClInclude>
     <ClInclude Include="Engine\MessageSystem.h">
       <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Engine\PluginHotManage.h">
       <Filter>Engine</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\Container.h">
-      <Filter>Kernel</Filter>
     </ClInclude>
     <ClInclude Include="API\ContainerAPI.h">
       <Filter>API</Filter>
@@ -357,15 +240,6 @@
     <ClInclude Include="Engine\TimeTaskSystem.h">
       <Filter>Engine</Filter>
     </ClInclude>
-    <ClInclude Include="Kernel\Scoreboard.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
-    <ClInclude Include="API\PacketAPI.h">
-      <Filter>API</Filter>
-    </ClInclude>
-    <ClInclude Include="Kernel\BlockEntity.h">
-      <Filter>Kernel</Filter>
-    </ClInclude>
     <ClInclude Include="API\BlockEntityAPI.h">
       <Filter>API</Filter>
     </ClInclude>
@@ -374,6 +248,27 @@
     </ClInclude>
     <ClInclude Include="API\GameUtilsAPI.h">
       <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="Global.hpp">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\Utils.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\IniHelper.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="EconomicSystem.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="AutoUpgrade.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="Tools\JsonHelper.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\OperationCount.h">
+      <Filter>Engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -392,9 +287,6 @@
     <Library Include="..\third-party\V8\lib\zlib.lib">
       <Filter>Lib</Filter>
     </Library>
-    <Library Include="..\third-party\LiteLoader\LiteLoader.lib">
-      <Filter>Lib</Filter>
-    </Library>
     <Library Include="..\third-party\ScriptX\lib\ScriptX-Js.lib">
       <Filter>Lib</Filter>
     </Library>
@@ -410,12 +302,6 @@
     <Library Include="..\third-party\dyncall\lib\libdynload_s.lib">
       <Filter>Lib</Filter>
     </Library>
-    <Library Include="..\third-party\LiteLoader\libcrypto.lib">
-      <Filter>Lib</Filter>
-    </Library>
-    <Library Include="..\third-party\LiteLoader\libssl.lib">
-      <Filter>Lib</Filter>
-    </Library>
     <Library Include="..\third-party\nbt-cpp\lib\nbt-cpp.lib">
       <Filter>Lib</Filter>
     </Library>
@@ -423,6 +309,12 @@
       <Filter>Lib</Filter>
     </Library>
     <Library Include="..\third-party\cpp-base64\lib\cpp-base64.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\third-party\openssl\libcrypto.lib">
+      <Filter>Lib</Filter>
+    </Library>
+    <Library Include="..\third-party\openssl\libssl.lib">
       <Filter>Lib</Filter>
     </Library>
   </ItemGroup>

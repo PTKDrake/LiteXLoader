@@ -1,12 +1,14 @@
 #include "APIHelp.h"
-#include <Kernel/ThirdParty.h>
-#include <Kernel/System.h>
+#include <Utils/NetworkHelper.h>
 #include <Engine/TimeTaskSystem.h>
+#include <third-party/httplib/httplib.h>
+#include <third-party/LightWebSocketClient/include/WebSocketClient.h>
 #include "NetworkAPI.h"
 #include <string>
 #include <vector>
 using namespace std;
-using namespace script;
+
+using namespace cyanray;
 
 //////////////////// Classes ////////////////////
 
@@ -143,13 +145,13 @@ WSClientClass* WSClientClass::constructor(const Arguments& args)
 void WSClientClass::addListener(const string& event, Local<Function> func)
 {
     if (event == "onTextReceived")
-        listeners[(int)WSClientEvents::onTextReceived].push_back({ EngineScope::currentEngine(), Global<Function>(func) });
+        listeners[(int)WSClientEvents::onTextReceived].push_back({ EngineScope::currentEngine(), script::Global<Function>(func) });
     else if (event == "onBinaryReceived")
-        listeners[(int)WSClientEvents::onBinaryReceived].push_back({ EngineScope::currentEngine(), Global<Function>(func) });
+        listeners[(int)WSClientEvents::onBinaryReceived].push_back({ EngineScope::currentEngine(), script::Global<Function>(func) });
     else if (event == "onError")
-        listeners[(int)WSClientEvents::onError].push_back({ EngineScope::currentEngine(), Global<Function>(func) });
+        listeners[(int)WSClientEvents::onError].push_back({ EngineScope::currentEngine(), script::Global<Function>(func) });
     else if (event == "onLostConnection")
-        listeners[(int)WSClientEvents::onLostConnection].push_back({ EngineScope::currentEngine(), Global<Function>(func) });
+        listeners[(int)WSClientEvents::onLostConnection].push_back({ EngineScope::currentEngine(), script::Global<Function>(func) });
     else
     {
         ERROR("WSClient Event \"" + event + "\" No Found!\n");
@@ -273,9 +275,9 @@ Local<Value> NetworkClass::httpGet(const Arguments& args)
 
     try
     {
-        Global<Function> callbackFunc{ args[1].asFunction() };
+        script::Global<Function> callbackFunc{ args[1].asFunction() };
 
-        return Boolean::newBoolean(Raw_HttpGet(args[0].toStr(),
+        return Boolean::newBoolean(HttpGet(args[0].toStr(),
             [callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }]
             (int status, string body)
         {
@@ -286,9 +288,9 @@ Local<Value> NetworkClass::httpGet(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("HttpGet Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                logger.error("HttpGet Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                PrintException(e);
             }
         }));
     }
@@ -305,9 +307,9 @@ Local<Value> NetworkClass::httpPost(const Arguments& args)
 
     try
     {
-        Global<Function> callbackFunc{ args[3].asFunction() };
+        script::Global<Function> callbackFunc{ args[3].asFunction() };
 
-        return Boolean::newBoolean(Raw_HttpPost(args[0].toStr(), args[1].toStr(), args[2].toStr(),
+        return Boolean::newBoolean(HttpPost(args[0].toStr(), args[1].toStr(), args[2].toStr(),
             [callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }]
             (int status, string data)
         {
@@ -318,9 +320,9 @@ Local<Value> NetworkClass::httpPost(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("HttpPost Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                logger.error("HttpPost Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                PrintException(e);
             }
         }));
     }
@@ -335,7 +337,7 @@ Local<Value> NetworkClass::httpGetSync(const Arguments& args)
     try {
         int status;
         string result;
-        Raw_HttpGetSync(args[0].toStr(), &status, &result);
+        HttpGetSync(args[0].toStr(), &status, &result);
         Local<Object> res = Object::newObject();
         res.set("status", status);
         res.set("data", result);

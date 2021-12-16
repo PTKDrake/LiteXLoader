@@ -7,9 +7,12 @@
 #include "McAPI.h"
 #include "ContainerAPI.h"
 #include "NbtAPI.h"
-#include <Kernel/Entity.h>
-#include <Kernel/Container.h>
-using namespace script;
+#include <MC/Actor.hpp>
+#include <MC/Level.hpp>
+#include <MC/ItemActor.hpp>
+#include <MC/SimpleContainer.hpp>
+#include <MC/Mob.hpp>
+
 
 //////////////////// Class Definition ////////////////////
 
@@ -65,10 +68,6 @@ Local<Object> EntityClass::newEntity(Actor *p)
     auto newp = new EntityClass(p);
     return newp->getScriptObject();
 }
-Local<Object> EntityClass::newEntity(WActor p)
-{
-    return EntityClass::newEntity(p.v);
-}
 Actor* EntityClass::extract(Local<Value> v)
 {
     if(EngineScope::currentEngine()->isInstanceOf<EntityClass>(v))
@@ -95,7 +94,7 @@ Actor* EntityClass::get()
     if (!isValid)
         return nullptr;
     else
-        return Raw_GetEntityByUniqueId(id);
+        return Level::getEntity(id);
 }
 
 Local<Value> EntityClass::getRawPtr(const Arguments& args)
@@ -121,7 +120,7 @@ Local<Value> EntityClass::getUniqueID()
     }
     CATCH("Fail in getUniqueID!")
 }
-
+#include <MC/CommandUtils.hpp>
 Local<Value> EntityClass::getName()
 { 
     try{
@@ -129,7 +128,7 @@ Local<Value> EntityClass::getName()
         if (!entity)
             return Local<Value>();
 
-        return String::newString(Raw_GetEntityName(entity));
+        return String::newString(CommandUtils::getActorName(*entity));
     }
     CATCH("Fail in getEntityName!")
 }
@@ -141,7 +140,7 @@ Local<Value> EntityClass::getType()
         if (!entity)
             return Local<Value>();
 
-        return String::newString(Raw_GetEntityTypeName(entity));
+        return String::newString(entity->getTypeName());
     }
     CATCH("Fail in getEntityType!")
 }
@@ -153,7 +152,7 @@ Local<Value> EntityClass::getId()
         if (!entity)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetEntityTypeId(entity));
+        return Number::newNumber(entity->getEntityTypeId());
     }
     CATCH("Fail in getEntityId!")
 }
@@ -165,7 +164,7 @@ Local<Value> EntityClass::getPos()
         if (!entity)
             return Local<Value>();
 
-        return FloatPos::newPos(Raw_GetEntityPos(entity));
+        return FloatPos::newPos(entity->getPosition(), entity->getDimensionId());
     }
     CATCH("Fail in GetEntityPos!")
 }
@@ -177,7 +176,7 @@ Local<Value> EntityClass::getBlockPos()
         if (!entity)
             return Local<Value>();
 
-        return IntPos::newPos(Raw_GetEntityBlockPos(entity));
+        return IntPos::newPos(entity->getBlockPos(), entity->getDimensionId());
     }
     CATCH("Fail in GetEntityBlockPos!")
 }
@@ -189,7 +188,7 @@ Local<Value> EntityClass::getMaxHealth()
         if (!entity)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetMaxHealth(entity));
+        return Number::newNumber(entity->getMaxHealth());
     }
     CATCH("Fail in GetMaxHealth!")
 }
@@ -201,7 +200,7 @@ Local<Value> EntityClass::getHealth()
         if (!entity)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetHealth(entity));
+        return Number::newNumber(entity->getHealth());
     }
     CATCH("Fail in GetHealth!")
 }
@@ -213,7 +212,7 @@ Local<Value> EntityClass::getInAir()
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_GetIsInAir(entity));
+        return Boolean::newBoolean(!entity->isOnGround() && !entity->isInWater());
     }
     CATCH("Fail in getInAir!")
 }
@@ -225,7 +224,7 @@ Local<Value> EntityClass::getInWater()
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_GetIsInWater(entity));
+        return Boolean::newBoolean(entity->isInWater());
     }
     CATCH("Fail in getInWater!")
 }
@@ -237,7 +236,7 @@ Local<Value> EntityClass::getSpeed()
         if (!entity)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetSpeed(entity));
+        return Number::newNumber(entity->getSpeedInMetersPerSecond());
     }
     CATCH("Fail in getSpeed!")
 }
@@ -249,8 +248,8 @@ Local<Value> EntityClass::getDirection()
         if (!entity)
             return Local<Value>();
 
-        auto vec = Raw_GetDirction(entity);
-        return DirectionAngle::newAngle(vec->x, vec->y);
+        Vec2 *vec = entity->getDirection();
+        return DirectionAngle::newAngle(vec->x, vec->z); 
     }
     CATCH("Fail in getDirection!")
 }
@@ -324,7 +323,9 @@ Local<Value> EntityClass::teleport(const Arguments& args)
         Actor* entity = get();
         if (!entity)
             return Local<Value>();
-        return Boolean::newBoolean(Raw_TeleportEntity(entity,pos));
+
+        entity->teleport(pos.getVec3(), pos.dim);
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in teleportEntity!")
 }
@@ -336,7 +337,8 @@ Local<Value> EntityClass::kill(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_KillEntity(entity));
+        entity->kill();
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in killEntity!")
 }
@@ -348,7 +350,7 @@ Local<Value> EntityClass::isPlayer(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_IsPlayer(entity));
+        return Boolean::newBoolean(entity->isPlayer());
     }
     CATCH("Fail in isPlayer!")
 }
@@ -357,10 +359,10 @@ Local<Value> EntityClass::toPlayer(const Arguments& args)
 {
     try {
         Actor* entity = get();
-        if (!entity)
+        if (!entity || !entity->isPlayer())
             return Local<Value>();
 
-        auto pl = Raw_ToPlayer(entity);
+        auto pl = (Player*)entity;
         if (!pl)
             return Local<Value>();
         else
@@ -376,7 +378,7 @@ Local<Value> EntityClass::isItemEntity(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_IsItemEntity(entity));
+        return Boolean::newBoolean(entity->isItemActor());
     }
     CATCH("Fail in isPlayer!")
 }
@@ -385,14 +387,14 @@ Local<Value> EntityClass::toItem(const Arguments& args)
 {
     try {
         Actor* entity = get();
-        if (!entity)
+        if (!entity || !entity->isItemActor())
             return Local<Value>();
 
-        auto it = Raw_ToItem(entity);
+        auto it = (ItemActor*)entity;
         if (!it)
             return Local<Value>();
         else
-            return ItemClass::newItem(it);
+            return ItemClass::newItem(it->getItemStack());
     }
     CATCH("Fail in toItem!");
 }
@@ -404,7 +406,7 @@ Local<Value> EntityClass::getBlockStandingOn(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return BlockClass::newBlock(Raw_GetBlockStandingOn(entity));
+        return BlockClass::newBlock(entity->getBlockPosCurrentlyStandingOn(nullptr), (int)entity->getDimensionId());    //===========?
     }
     CATCH("Fail in getBlockStandingOn!");
 }
@@ -416,7 +418,7 @@ Local<Value> EntityClass::getArmor(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return ContainerClass::newContainer(Raw_GetArmor(entity));
+        return ContainerClass::newContainer(&entity->getArmorContainer());
     }
     CATCH("Fail in getArmor!");
 }
@@ -428,7 +430,7 @@ Local<Value> EntityClass::refreshItems(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RefreshItems(entity));
+        return Boolean::newBoolean(((Mob*)entity)->refreshInventory());
     }
     CATCH("Fail in refreshItems!");
 }
@@ -440,7 +442,8 @@ Local<Value> EntityClass::hasContainer(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_HasContainer(Raw_GetEntityPos(entity)));
+        Vec3 pos = entity->getPosition();
+        return Boolean::newBoolean(Level::hasContainer({ pos.x, pos.y, pos.z }, entity->getDimensionId()));
     }
     CATCH("Fail in hasContainer!");
 }
@@ -452,7 +455,8 @@ Local<Value> EntityClass::getContainer(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        Container* container = Raw_GetContainer(Raw_GetEntityPos(entity));
+        Vec3 pos = entity->getPosition();
+        Container* container = Level::getContainer({ pos.x, pos.y, pos.z }, entity->getDimensionId());
         return container ? ContainerClass::newContainer(container) : Local<Value>();
     }
     CATCH("Fail in getContainer!");
@@ -469,7 +473,7 @@ Local<Value> EntityClass::hurt(const Arguments& args)
             return Local<Value>();
 
         int damage = args[0].toInt();
-        return Boolean::newBoolean(Raw_HurtEntity(entity, damage));
+        return Boolean::newBoolean(entity->hurtEntity(damage));
     }
     CATCH("Fail in hurt!");
 }
@@ -485,7 +489,7 @@ Local<Value> EntityClass::setOnFire(const Arguments& args)
             return Local<Value>();
 
         int time = args[0].toInt();
-        bool result = Raw_SetOnFire(entity, time);
+        bool result = entity->setOnFire(time, true);
         return Boolean::newBoolean(result);
     }
     CATCH("Fail in setOnFire!")
@@ -498,7 +502,7 @@ Local<Value> EntityClass::getNbt(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return NbtCompoundClass::pack(Tag::fromActor(entity));
+        return NbtCompoundClass::pack(entity->getNbt());
     }
     CATCH("Fail in getNbt!")
 }
@@ -516,7 +520,7 @@ Local<Value> EntityClass::setNbt(const Arguments& args)
         if (!nbt)
             return Local<Value>();    //Null
 
-        return Boolean::newBoolean(nbt->setActor(entity));
+        return Boolean::newBoolean(entity->setNbt(nbt));
     }
     CATCH("Fail in setNbt!")
 }
@@ -531,7 +535,7 @@ Local<Value> EntityClass::addTag(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_AddTag(entity,args[0].toStr()));
+        return Boolean::newBoolean(entity->addTag(args[0].toStr()));
     }
     CATCH("Fail in addTag!");
 }
@@ -546,7 +550,7 @@ Local<Value> EntityClass::removeTag(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_RemoveTag(entity, args[0].toStr()));
+        return Boolean::newBoolean(entity->removeTag(args[0].toStr()));
     }
     CATCH("Fail in removeTag!");
 }
@@ -561,7 +565,7 @@ Local<Value> EntityClass::hasTag(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_EntityHasTag(entity, args[0].toStr()));
+        return Boolean::newBoolean(entity->hasTag(args[0].toStr()));
     }
     CATCH("Fail in hasTag!");
 }
@@ -573,7 +577,7 @@ Local<Value> EntityClass::getAllTags(const Arguments& args)
         if (!entity)
             return Local<Value>();
 
-        auto res = Raw_EntityGetAllTags(entity);
+        auto res = entity->getAllTags();
         Local<Array> arr = Array::newArray();
         for (auto& tag : res)
             arr.add(String::newString(tag));
@@ -584,12 +588,12 @@ Local<Value> EntityClass::getAllTags(const Arguments& args)
 
 Local<Value> McClass::getAllEntities(const Arguments& args) {
     try {
-       auto entityList = Raw_GetAllEntities();
-       auto arr = Array::newArray();
-       for (auto i : entityList) {
-           arr.add(EntityClass::newEntity(i));
-       }
-       return arr;
+        auto entityList = Level::getAllEntities();
+        auto arr = Array::newArray();
+        for (auto i : entityList) {
+            arr.add(EntityClass::newEntity(i));
+        }
+        return arr;
     }
     CATCH("Fail in GetAllEntities");
 }
@@ -651,7 +655,7 @@ Local<Value> McClass::spawnMob(const Arguments& args)
             return Local<Value>();
         }
 
-        auto entity = Raw_SpawnMob(name,pos);
+        auto entity = Level::spawnMob(pos.getVec3(), pos.dim, name);
         if (!entity)
             return Local<Value>();    //Null
         else
@@ -731,7 +735,7 @@ Local<Value> McClass::explode(const Arguments& args)
         bool isDestroy = args[beginIndex + 3].asBoolean().value();
         bool isFire = args[beginIndex + 4].asBoolean().value();
 
-        return Boolean::newBoolean(Raw_Explode(pos, source, power, range, isDestroy, isFire));
+        return Boolean::newBoolean(Level::createExplosion(pos.getVec3(), pos.dim, source, power, range, isDestroy, isFire));
     }
     CATCH("Fail in Explode!");
 }

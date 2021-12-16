@@ -19,14 +19,14 @@
 #include <API/GuiAPI.h>
 #include <API/DataAPI.h>
 #include <API/PlayerAPI.h>
-#include <Kernel/Global.h>
+#include <Global.hpp>
 #include <Engine/EngineOwnData.h>
-using namespace script;
+
 using namespace std;
 
 //////////////////// APIs ////////////////////
-
-void PrintValue(std::ostream &out, Local<Value> v)
+template <typename T>
+void PrintValue(T &out, Local<Value> v)
 {
     switch(v.getKind())
     {
@@ -165,7 +165,7 @@ void PrintValue(std::ostream &out, Local<Value> v)
         case ValueKind::kByteBuffer:
         {
             Local<ByteBuffer> bytes = v.asByteBuffer();
-            out.write((const char*)bytes.getRawBytes(),bytes.byteLength());
+            out << ((const char*)bytes.getRawBytes(),bytes.byteLength());
             break;
         }
         case ValueKind::kFunction:
@@ -180,6 +180,7 @@ void PrintValue(std::ostream &out, Local<Value> v)
         }
     }
 }
+
 
 std::string ValueToString(Local<Value> v)
 {
@@ -203,40 +204,40 @@ bool CheckIsFloat(const Local<Value> &num)
 
 ///////////////////// Json To Value /////////////////////
 
-void JsonToValue_Helper(Local<Array> &res, JSON_VALUE &j);
+void JsonToValue_Helper(Local<Array> &res, fifo_json &j);
 
-void JsonToValue_Helper(Local<Object> &res, const string &key, JSON_VALUE &j)
+void JsonToValue_Helper(Local<Object> &res, const string &key, fifo_json &j)
 {
     switch (j.type())
     {
-    case JSON_VALUE::value_t::string:
+    case fifo_json::value_t::string:
         res.set(key, String::newString(j.get<string>()));
         break;
-    case JSON_VALUE::value_t::number_integer:
-    case JSON_VALUE::value_t::number_unsigned:
+    case fifo_json::value_t::number_integer:
+    case fifo_json::value_t::number_unsigned:
         res.set(key, Number::newNumber(j.get<int>()));
         break;
-    case JSON_VALUE::value_t::number_float:
+    case fifo_json::value_t::number_float:
         res.set(key, Number::newNumber(j.get<double>()));
         break;
-    case JSON_VALUE::value_t::boolean:
+    case fifo_json::value_t::boolean:
         res.set(key, Boolean::newBoolean(j.get<bool>()));
         break;
-    case JSON_VALUE::value_t::null:
+    case fifo_json::value_t::null:
         res.set(key, Local<Value>());
         break;
-    case JSON_VALUE::value_t::array:
+    case fifo_json::value_t::array:
     {
         Local<Array> arrToAdd = Array::newArray();
-        for (JSON_VALUE::iterator it = j.begin(); it != j.end(); ++it)
+        for (fifo_json::iterator it = j.begin(); it != j.end(); ++it)
             JsonToValue_Helper(arrToAdd, *it);
         res.set(key, arrToAdd);
         break;
     }
-    case JSON_VALUE::value_t::object:
+    case fifo_json::value_t::object:
     {
         Local<Object> objToAdd = Object::newObject();
-        for (JSON_VALUE::iterator it = j.begin(); it != j.end(); ++it)
+        for (fifo_json::iterator it = j.begin(); it != j.end(); ++it)
             JsonToValue_Helper(objToAdd, it.key(), it.value());
         res.set(key, objToAdd);
         break;
@@ -247,38 +248,38 @@ void JsonToValue_Helper(Local<Object> &res, const string &key, JSON_VALUE &j)
     }
 }
 
-void JsonToValue_Helper(Local<Array> &res, JSON_VALUE &j)
+void JsonToValue_Helper(Local<Array> &res, fifo_json &j)
 {
     switch (j.type())
     {
-    case JSON_VALUE::value_t::string:
+    case fifo_json::value_t::string:
         res.add(String::newString(j.get<string>()));
         break;
-    case JSON_VALUE::value_t::number_integer:
-    case JSON_VALUE::value_t::number_unsigned:
+    case fifo_json::value_t::number_integer:
+    case fifo_json::value_t::number_unsigned:
         res.add(Number::newNumber(j.get<int>()));
         break;
-    case JSON_VALUE::value_t::number_float:
+    case fifo_json::value_t::number_float:
         res.add(Number::newNumber(j.get<double>()));
         break;
-    case JSON_VALUE::value_t::boolean:
+    case fifo_json::value_t::boolean:
         res.add(Boolean::newBoolean(j.get<bool>()));
         break;
-    case JSON_VALUE::value_t::null:
+    case fifo_json::value_t::null:
         res.add(Local<Value>());
         break;
-    case JSON_VALUE::value_t::array:
+    case fifo_json::value_t::array:
     {
         Local<Array> arrToAdd = Array::newArray();
-        for (JSON_VALUE::iterator it = j.begin(); it != j.end(); ++it)
+        for (fifo_json::iterator it = j.begin(); it != j.end(); ++it)
             JsonToValue_Helper(arrToAdd, *it);
         res.add(arrToAdd);
         break;
     }
-    case JSON_VALUE::value_t::object:
+    case fifo_json::value_t::object:
     {
         Local<Object> objToAdd = Object::newObject();
-        for (JSON_VALUE::iterator it = j.begin(); it != j.end(); ++it)
+        for (fifo_json::iterator it = j.begin(); it != j.end(); ++it)
             JsonToValue_Helper(objToAdd, it.key(), it.value());
         res.add(objToAdd);
         break;
@@ -289,40 +290,40 @@ void JsonToValue_Helper(Local<Array> &res, JSON_VALUE &j)
     }
 }
 
-Local<Value> JsonToValue(JSON_VALUE j)
+Local<Value> JsonToValue(fifo_json j)
 {
     Local<Value> res;
 
     switch (j.type())
     {
-    case JSON_VALUE::value_t::string:
+    case fifo_json::value_t::string:
         res = String::newString(j.get<string>());
         break;
-    case JSON_VALUE::value_t::number_integer:
-    case JSON_VALUE::value_t::number_unsigned:
+    case fifo_json::value_t::number_integer:
+    case fifo_json::value_t::number_unsigned:
         res = Number::newNumber(j.get<int>());
         break;
-    case JSON_VALUE::value_t::number_float:
+    case fifo_json::value_t::number_float:
         res = Number::newNumber(j.get<double>());
         break;
-    case JSON_VALUE::value_t::boolean:
+    case fifo_json::value_t::boolean:
         res = Boolean::newBoolean(j.get<bool>());
         break;
-    case JSON_VALUE::value_t::null:
+    case fifo_json::value_t::null:
         res = Local<Value>();
         break;
-    case JSON_VALUE::value_t::array:
+    case fifo_json::value_t::array:
     {
         Local<Array> resArr = Array::newArray();
-        for (JSON_VALUE::iterator it = j.begin(); it != j.end(); ++it)
+        for (fifo_json::iterator it = j.begin(); it != j.end(); ++it)
             JsonToValue_Helper(resArr, *it);
         res = resArr;
         break;
     }
-    case JSON_VALUE::value_t::object:
+    case fifo_json::value_t::object:
     {
         Local<Object> resObj = Object::newObject();
-        for (JSON_VALUE::iterator it = j.begin(); it != j.end(); ++it)
+        for (fifo_json::iterator it = j.begin(); it != j.end(); ++it)
             JsonToValue_Helper(resObj, it.key(), it.value());
         res = resObj;
         break;
@@ -346,9 +347,9 @@ Local<Value> JsonToValue(std::string jsonStr)
         auto j = JSON_VALUE::parse(jsonStr);
         return JsonToValue(j);
     }
-    catch (const JSON_VALUE::exception &e)
+    catch (const fifo_json::exception &e)
     {
-        WARN(_TRS("api.parseJson.fail") + e.what());
+        logger.warn(tr("api.parseJson.fail") + e.what());
         return String::newString(jsonStr);
     }
 }
@@ -356,9 +357,9 @@ Local<Value> JsonToValue(std::string jsonStr)
 
 ///////////////////// Value To Json /////////////////////
 
-void ValueToJson_Obj_Helper(JSON_VALUE& res, const Local<Object>& v);
+void ValueToJson_Obj_Helper(fifo_json& res, const Local<Object>& v);
 
-void ValueToJson_Arr_Helper(JSON_VALUE &res, const Local<Array> &v)
+void ValueToJson_Arr_Helper(fifo_json &res, const Local<Array> &v)
 {
     for (int i = 0; i < v.size(); ++i)
     {
@@ -383,10 +384,10 @@ void ValueToJson_Arr_Helper(JSON_VALUE &res, const Local<Array> &v)
         {
             Local<Array> arrToAdd = v.get(i).asArray();
             if (arrToAdd.size() == 0)
-                res.push_back(JSON_VALUE::array());
+                res.push_back(fifo_json::array());
             else
             {
-                JSON_VALUE arrJson = JSON_VALUE::array();
+                fifo_json arrJson = fifo_json::array();
                 ValueToJson_Arr_Helper(arrJson, arrToAdd);
                 res.push_back(arrJson);
             }
@@ -396,10 +397,10 @@ void ValueToJson_Arr_Helper(JSON_VALUE &res, const Local<Array> &v)
         {
             Local<Object> objToAdd = v.get(i).asObject();
             if (objToAdd.getKeyNames().empty())
-                res.push_back(JSON_VALUE::object());
+                res.push_back(fifo_json::object());
             else
             {
-                JSON_VALUE objJson = JSON_VALUE::object();
+                fifo_json objJson = fifo_json::object();
                 ValueToJson_Obj_Helper(objJson, objToAdd);
                 res.push_back(objJson);
             }
@@ -412,7 +413,7 @@ void ValueToJson_Arr_Helper(JSON_VALUE &res, const Local<Array> &v)
     }
 }
 
-void ValueToJson_Obj_Helper(JSON_VALUE& res, const Local<Object>& v)
+void ValueToJson_Obj_Helper(fifo_json& res, const Local<Object>& v)
 {
     auto keys = v.getKeyNames();
     for (auto &key : keys)
@@ -438,10 +439,10 @@ void ValueToJson_Obj_Helper(JSON_VALUE& res, const Local<Object>& v)
         {
             Local<Array> arrToAdd = v.get(key).asArray();
             if (arrToAdd.size() == 0)
-                res.push_back({ key,JSON_VALUE::array() });
+                res.push_back({ key,fifo_json::array() });
             else
             {
-                JSON_VALUE arrJson = JSON_VALUE::array();
+                fifo_json arrJson = fifo_json::array();
                 ValueToJson_Arr_Helper(arrJson, arrToAdd);
                 res.push_back({ key,arrJson });
             }
@@ -451,10 +452,10 @@ void ValueToJson_Obj_Helper(JSON_VALUE& res, const Local<Object>& v)
         {
             Local<Object> objToAdd = v.get(key).asObject();
             if (objToAdd.getKeyNames().empty())
-                res.push_back({ key,JSON_VALUE::object() });
+                res.push_back({ key,fifo_json::object() });
             else
             {
-                JSON_VALUE objJson = JSON_VALUE::object();
+                fifo_json objJson = fifo_json::object();
                 ValueToJson_Obj_Helper(objJson, objToAdd);
                 res.push_back({ key,objJson });
             }
@@ -489,14 +490,14 @@ std::string ValueToJson(Local<Value> v,int formatIndent)
         break;
     case ValueKind::kArray:
     {
-        JSON_VALUE jsonRes = JSON_VALUE::array();
+        fifo_json jsonRes = fifo_json::array();
         ValueToJson_Arr_Helper(jsonRes, v.asArray());
         result = jsonRes.dump(formatIndent);
         break;
     }
     case ValueKind::kObject:
     {
-        JSON_VALUE jsonRes = JSON_VALUE::object();
+        fifo_json jsonRes = fifo_json::object();
         ValueToJson_Obj_Helper(jsonRes, v.asObject());
         result = jsonRes.dump(formatIndent);
         break;

@@ -1,6 +1,5 @@
 #include "ScriptAPI.h"
 #include "APIHelp.h"
-#include <Kernel/System.h>
 #include <Engine/EngineOwnData.h>
 #include <Engine/LocalShareData.h>
 #include <Engine/GlobalShareData.h>
@@ -21,9 +20,10 @@ Local<Value> Log(const Arguments& args)
     CHECK_ARGS_COUNT(args, 1);
 
     try {
+        auto globalConf = ENGINE_OWN_DATA();
         for (int i = 0; i < args.size(); ++i)
-            PrintValue(std::cout, args[i]);
-        std::cout << std::endl;
+            PrintValue(globalConf->logger.info, args[i]);
+        globalConf->logger.info << Logger::endl;
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in Log!");
