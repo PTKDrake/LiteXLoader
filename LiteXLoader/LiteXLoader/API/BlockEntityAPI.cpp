@@ -3,11 +3,9 @@
 #include "BlockAPI.h"
 #include "BlockEntityAPI.h"
 #include "NbtAPI.h"
-#include <Kernel/Block.h>
-#include <Kernel/BlockEntity.h>
-#include <Kernel/SymbolHelper.h>
-#include <Kernel/Nbt.h>
-using namespace script;
+#include <Global.hpp>
+#include <MC/BlockActor.hpp>
+#include <MC/CompoundTag.hpp>
 
 //////////////////// Class Definition ////////////////////
 
@@ -58,7 +56,7 @@ Local<Value> BlockEntityClass::getRawPtr(const Arguments& args)
 Local<Value> BlockEntityClass::getPos()
 {
 	try {
-		return IntPos::newPos(Raw_GetBlockEntityPos(blockEntity), dim);
+		return IntPos::newPos(blockEntity->getPosition(), dim);
 	}
 	CATCH("Fail in getBlockEntityPos!")
 }
@@ -66,7 +64,7 @@ Local<Value> BlockEntityClass::getPos()
 Local<Value> BlockEntityClass::getType()
 {
 	try {
-		return Number::newNumber((int)Raw_GetBlockEntityType(blockEntity));
+		return Number::newNumber((int)blockEntity->getType());
 	}
 	CATCH("Fail in getBlockEntityType!")
 }
@@ -74,7 +72,7 @@ Local<Value> BlockEntityClass::getType()
 Local<Value> BlockEntityClass::getNbt(const Arguments& args)
 {
 	try {
-		return NbtCompoundClass::pack(Tag::fromBlockEntity(blockEntity), true);
+		return NbtCompoundClass::pack(blockEntity->getNbt(), true);
 	}
 	CATCH("Fail in getNbt!")
 }
@@ -88,7 +86,7 @@ Local<Value> BlockEntityClass::setNbt(const Arguments& args)
 		if (!nbt)
 			return Local<Value>();    //Null
 
-		nbt->setBlockEntity(blockEntity);
+		blockEntity->setNbt(nbt);
 		return Boolean::newBoolean(true);
 	}
 	CATCH("Fail in setNbt!")
@@ -97,8 +95,8 @@ Local<Value> BlockEntityClass::setNbt(const Arguments& args)
 Local<Value> BlockEntityClass::getBlock(const Arguments& args)
 {
 	try {
-		BlockPos bp = Raw_GetBlockEntityPos(blockEntity);
-		return BlockClass::newBlock(Raw_GetBlockByPos(&bp, dim), &bp, dim);
+		BlockPos bp = blockEntity->getPosition();
+		return BlockClass::newBlock(Level::getBlock(bp, dim), &bp, dim);
 	}
 	CATCH("Fail in getBlock!")
 }

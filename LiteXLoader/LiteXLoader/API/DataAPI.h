@@ -1,10 +1,10 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
-using namespace script;
-#include <Kernel/Data.h>
+#include "APIHelp.h"
 #include <string>
 #include <memory>
-
+#include <KVDBAPI.h>
+#include <Tools/JsonHelper.h>
+#include <Tools/IniHelper.h>
 
 //////////////////// Data Static ////////////////////
 
@@ -49,7 +49,7 @@ extern ClassDefine<void> MoneyClassBuilder;
 class DbClass : public ScriptClass
 {
 private:
-    DB_ROOT kvdb;
+    std::unique_ptr<KVDB> kvdb;
 
 public:
 	explicit DbClass(const Local<Object>& scriptObj, const string& dir);
@@ -58,7 +58,9 @@ public:
     static DbClass* constructor(const Arguments& args);
 
     bool isValid()
-    { return kvdb != nullptr; }
+    {
+        return kvdb->isValid();
+    }
 
     Local<Value> get(const Arguments& args);
     Local<Value> set(const Arguments& args);
@@ -94,7 +96,7 @@ public:
 class ConfJsonClass : public ScriptClass, public ConfBaseClass
 {
 private:
-    JSON_ROOT jsonConf;
+    fifo_json jsonConf;
     bool flush() override;
     bool close() override;
     bool reload() override;
@@ -122,7 +124,7 @@ extern ClassDefine<ConfJsonClass> ConfJsonClassBuilder;
 class ConfIniClass : public ScriptClass, public ConfBaseClass
 {
 private:
-    INI_ROOT iniConf;
+    SimpleIni* iniConf;
     bool flush() override;
     bool close() override;
     bool reload() override;

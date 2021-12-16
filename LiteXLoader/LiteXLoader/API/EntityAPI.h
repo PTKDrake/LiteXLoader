@@ -1,6 +1,6 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
-using namespace script;
+#include "APIHelp.h"
+
 
 //////////////////// Classes ////////////////////
 class Actor;
@@ -21,7 +21,6 @@ public:
     Actor* get();
 
     static Local<Object> newEntity(Actor *p);
-    static Local<Object> newEntity(WActor p);
     static Actor* extract(Local<Value> v);
     Local<Value> getRawPtr(const Arguments& args);
 

@@ -1,6 +1,6 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
-using namespace script;
+#include "APIHelp.h"
+
 
 //////////////////// Classes ////////////////////
 class Player;
@@ -10,7 +10,7 @@ class PlayerClass : public ScriptClass
 private:
     ActorUniqueID id;
     bool isValid = true;
-
+    
 public:
     explicit PlayerClass(Player* p);
 
@@ -18,7 +18,6 @@ public:
     Player* get();
 
     static Local<Object> newPlayer(Player *p);
-    static Local<Object> newPlayer(WPlayer p);
     static Player* extract(Local<Value> v);
     Local<Value> getRawPtr(const Arguments& args);
 
@@ -85,7 +84,7 @@ public:
     Local<Value> sendModalForm(const Arguments& args);
     Local<Value> sendCustomForm(const Arguments& args);
     Local<Value> sendForm(const Arguments& args);
-    Local<Value> sendPacket(const Arguments& args);
+    //Local<Value> sendPacket(const Arguments& args);
 
     Local<Value> setExtraData(const Arguments& args);
     Local<Value> getExtraData(const Arguments& args);

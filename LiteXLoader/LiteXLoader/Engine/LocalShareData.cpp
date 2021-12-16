@@ -1,5 +1,6 @@
 #include "LocalShareData.h"
 #include <Configs.h>
+#include <third-party/ThreadPool/ThreadPool.hpp>
 
 //DLL本地共享数据
 LocalDataType* localShareData;

@@ -1,5 +1,5 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 #include <string>
 
 //////////////////// Funcs ////////////////////

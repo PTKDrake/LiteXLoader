@@ -1,9 +1,9 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 #include <map>
 #include <string>
-#include <Kernel/ThirdParty.h>
-using namespace script;
+#include <third-party/ThreadPool/ThreadPool.hpp>
+
 
 
 //////////////////// Structs ////////////////////
@@ -13,7 +13,7 @@ struct CmdCallbackData
 {
 	ScriptEngine* fromEngine;
 	int perm;
-	Global<Function> func;
+	script::Global<Function> func;
 };
 
 //命令延迟注册队列
@@ -36,13 +36,6 @@ static struct CmdCallbackMapCmp
 	}
 };
 
-//设备信息记录
-struct DeviceInfoType
-{
-	std::string DeviceId;
-	int DeviceOS;
-};
-
 //DLL本地共享数据
 struct LocalDataType
 {
@@ -54,9 +47,6 @@ struct LocalDataType
 
 	//控制台命令回调
 	std::map<std::string, CmdCallbackData, CmdCallbackMapCmp> consoleCmdCallbacks;
-
-	//设备信息记录
-	std::unordered_map<uintptr_t , DeviceInfoType> deviceInfoRecord;
 };
 
 

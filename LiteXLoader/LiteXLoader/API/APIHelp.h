@@ -1,25 +1,42 @@
 ﻿#pragma once
 #include <ScriptX/ScriptX.h>
-using namespace script;
+using script::Local;
+using script::Value;
+using script::Number;
+using script::String;
+using script::Boolean;
+using script::ByteBuffer;
+using script::Function;
+using script::Array;
+using script::Object;
+using script::ScriptClass;
+using script::Arguments;
+using script::ClassDefine;
+using script::defineClass;
+using script::selectOverloadedFunc;
+using script::ScriptEngine;
+using script::ScriptEngineImpl;
+using script::EngineScope;
+using script::ExitEngineScope;
+using script::Exception;
+using script::ValueKind;
 
-#include <Kernel/Global.h>
-#include <Kernel/ThirdParty.h>
-#include <Kernel/i18n.h>
+#include <Global.hpp>
 #include <Engine/EngineOwnData.h>
+#include <Tools/JsonHelper.h>
+#include <MC/Level.hpp>
 #include <string>
 #include <vector>
 #include <exception>
+#include <sstream>
 
-// 输出
-extern int lxlLogLevel;
-#define PREFIX "[LiteXLoader." LXL_MODULE_TYPE "]" 
-#define DEBUG(t) { if(lxlLogLevel >= 5) std::cout << PREFIX "[Debug] " << (t) << std::endl; }
-#define INFO(t)  { if(lxlLogLevel >= 4) std::cout << PREFIX "[Info] " << (t) << std::endl; }
-#define WARN(t)  { if(lxlLogLevel >= 3) std::cout << PREFIX "[Warning] " << (t) << std::endl; }
-#define ERROR(t)  { if(lxlLogLevel >= 2) std::cerr << PREFIX "[Error] " << (t) << std::endl; }
-#define FATAL(t)  { if(lxlLogLevel >= 1) std::cerr << PREFIX "[FATAL] " << (t) << std::endl; }
-#define PRINT(t)  { std::cout << t << std::endl; }
-#define ERRPRINT(t)  { if(lxlLogLevel >= 2) std::cerr << t << std::endl; }
+// 输出异常信息
+inline void PrintException(const script::Exception& e)
+{
+    ostringstream sout;
+    sout << e << endl;
+    logger.error(sout.str());
+}
 
 // 方便提取类型
 #define toStr() asString().toString()
@@ -36,9 +53,9 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CHECK_ARGS_COUNT(ARGS,COUNT) \
     if(ARGS.size()<COUNT) \
     { \
-        ERROR("Too Few arguments!"); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Too Few arguments!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     }
 
@@ -46,9 +63,9 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CHECK_ARG_TYPE(ARG,TYPE) \
     if(ARG.getKind() != TYPE) \
     { \
-        ERROR("Wrong type of argument!"); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Wrong type of argument!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     }
 
@@ -56,31 +73,31 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CATCH(LOG) \
     catch(const Exception& e) \
     { \
-        ERROR(LOG##"\n"); ERRPRINT(e); \
-        ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error(LOG##"\n"); PrintException(e); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     } \
     catch(const std::exception &e) \
     { \
-        ERROR("C++ Uncaught Exception Detected!"); \
-        ERRPRINT(e.what()); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("C++ Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     } \
     catch(const seh_exception &e) \
     { \
-        ERROR("SEH Uncaught Exception Detected!"); \
-        ERRPRINT(e.what()); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("SEH Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     } \
     catch(...) \
     { \
-        ERROR("Uncaught Exception Detected!"); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Uncaught Exception Detected!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return Local<Value>(); \
     }
 
@@ -88,9 +105,9 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CHECK_ARGS_COUNT_C(ARGS,COUNT) \
     if(ARGS.size()<COUNT) \
     { \
-        ERROR("Too Few arguments!"); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Too Few arguments!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     }
 
@@ -98,9 +115,9 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CHECK_ARG_TYPE_C(ARG,TYPE) \
     if(ARG.getKind() != TYPE) \
     { \
-        ERROR("Wrong type of argument!"); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Wrong type of argument!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     }
 
@@ -108,31 +125,31 @@ bool inline IsInstanceOf(Local<Value> v)
 #define CATCH_C(LOG) \
     catch(const Exception& e) \
     { \
-        ERROR(LOG##"\n"); ERRPRINT(e); \
-        ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error(LOG##"\n"); PrintException(e); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     } \
     catch(const std::exception &e) \
     { \
-        ERROR("C++ Uncaught Exception Detected!"); \
-        ERRPRINT(e.what()); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("C++ Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     } \
     catch(const seh_exception &e) \
     { \
-        ERROR("SEH Uncaught Exception Detected!"); \
-        ERRPRINT(e.what()); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("SEH Uncaught Exception Detected!"); \
+        logger.error(e.what()); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     } \
     catch(...) \
     { \
-        ERROR("Uncaught Exception Detected!"); \
-        ERROR(std::string("In API: ") + __FUNCTION__); \
-        ERROR("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
+        logger.error("Uncaught Exception Detected!"); \
+        logger.error(std::string("In API: ") + __FUNCTION__); \
+        logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName); \
         return nullptr; \
     }
 
@@ -141,10 +158,15 @@ bool inline IsInstanceOf(Local<Value> v)
 bool CheckIsFloat(const Local<Value>& num);
 
 // 序列化
-void PrintValue(std::ostream &out, Local<Value> v);
+template <typename T>
+void PrintValue(T &out, Local<Value> v);
+
+template void PrintValue(std::ostream & out, Local<Value> v);
+template void PrintValue(Logger::OutputStream & out, Local<Value> v);
+
 std::string ValueToString(Local<Value> v);
 
 // Json 序列化 反序列化
 Local<Value> JsonToValue(std::string jsonStr);
-Local<Value> JsonToValue(JSON_VALUE j);
+Local<Value> JsonToValue(fifo_json j);
 std::string ValueToJson(Local<Value> v,int formatIndent = -1);

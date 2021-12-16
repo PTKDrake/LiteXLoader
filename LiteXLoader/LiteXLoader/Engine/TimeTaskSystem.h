@@ -1,6 +1,6 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
-using namespace script;
+#include <API/APIHelp.h>
+
 #include <vector>
 
 int NewTimeout(Local<Function> func, const std::vector<Local<Value>> paras, int timeout);

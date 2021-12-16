@@ -5,11 +5,13 @@
 #include <sstream>
 #include <exception>
 #include <Engine/EngineOwnData.h>
-#include <Kernel/System.h>
-#include <Kernel/Data.h>
-#include <Kernel/Utils.h>
-
-using namespace script;
+#include <PlayerInfoAPI.h>
+#include <Utils/CryptHelper.h>
+#include <Utils/FileHelper.h>
+#include <Utils/StringHelper.h>
+#include <Tools/JsonHelper.h>
+#include <EconomicSystem.h>
+#include <third-party/cpp-base64/base64.h>
 using namespace std;
 
 
@@ -87,25 +89,16 @@ ClassDefine<ConfIniClass> ConfIniClassBuilder =
 //////////////////// Classes Db ////////////////////
 
 //生成函数
-DbClass::DbClass(const Local<Object>& scriptObj, const string &dir) :ScriptClass(scriptObj)
-{
-    kvdb = Raw_NewDB(dir);
-}
+DbClass::DbClass(const Local<Object>& scriptObj, const string &dir)
+    :ScriptClass(scriptObj),kvdb(KVDB::create(dir))
+{ }
 
 DbClass::DbClass(const string& dir)
-    : ScriptClass(script::ScriptClass::ConstructFromCpp<DbClass>{})
-{
-    kvdb = Raw_NewDB(dir);
-}
+    : ScriptClass(script::ScriptClass::ConstructFromCpp<DbClass>{}), kvdb(KVDB::create(dir))
+{ }
 
 DbClass::~DbClass()
-{
-    if (isValid())
-    {
-        Raw_DBClose(kvdb);
-        kvdb = nullptr;
-    }
-}
+{ }
 
 DbClass* DbClass::constructor(const Arguments& args)
 {
@@ -133,7 +126,7 @@ Local<Value> DbClass::get(const Arguments& args)
             return Local<Value>();
 
         string res;
-        if(!Raw_DBGet(kvdb,args[0].asString().toString(),res))
+        if(!kvdb->get(args[0].asString().toString(), res))
             return Local<Value>();
         
         return JsonToValue(res);
@@ -151,7 +144,8 @@ Local<Value> DbClass::set(const Arguments& args)
         if (!isValid())
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_DBSet(kvdb,args[0].asString().toString(),ValueToJson(args[1])));
+        kvdb->put(args[0].asString().toString(), ValueToJson(args[1]));
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in DbSet!")
 }
@@ -166,7 +160,7 @@ Local<Value> DbClass::del(const Arguments& args)
         if (!isValid())
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_DBDel(kvdb,args[0].asString().toString()));
+        return Boolean::newBoolean(kvdb->del(args[0].asString().toString()));
     }
     CATCH("Fail in DbDel!")
 }
@@ -175,11 +169,6 @@ Local<Value> DbClass::close(const Arguments& args)
 {
     try
     {
-        if (isValid())
-        {
-            Raw_DBClose(kvdb);
-            kvdb = nullptr;
-        }
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in DbClose!")
@@ -192,7 +181,7 @@ Local<Value> DbClass::listKey(const Arguments& args)
         if (!isValid())
             return Local<Value>();
 
-        auto list = Raw_DBListKey(kvdb);
+        auto list = kvdb->getAllKeys();
         Local<Array> arr = Array::newArray();
         for (auto& key : list)
         {
@@ -223,11 +212,11 @@ Local<Value> ConfBaseClass::read(const Arguments& args)
 {
     try
     {
-        string content;
-        if (!Raw_FileReadFrom(confPath, content))
+        auto content = ReadAllFile(confPath);
+        if (!content)
             return Local<Value>();
         else
-            return String::newString(content);
+            return String::newString(*content);
     }
     CATCH("Fail in confRead!")
 }
@@ -238,13 +227,13 @@ Local<Value> ConfBaseClass::read(const Arguments& args)
 ConfJsonClass::ConfJsonClass(const Local<Object>& scriptObj, const string& path, const string& defContent)
     :ScriptClass(scriptObj), ConfBaseClass(path)
 {
-    jsonConf = Raw_JsonOpen(path, defContent);
+    jsonConf = CreateJson(path, defContent);
 }
 
 ConfJsonClass::ConfJsonClass(const string& path, const string& defContent)
     :ScriptClass(ScriptClass::ConstructFromCpp<ConfJsonClass>{}), ConfBaseClass(path)
 {
-    jsonConf = Raw_JsonOpen(path, defContent);
+    jsonConf = CreateJson(path, defContent);
 }
 
 ConfJsonClass::~ConfJsonClass()
@@ -283,13 +272,13 @@ Local<Value> ConfJsonClass::init(const Arguments& args)
     }
     catch (const std::out_of_range& e)
     {
-        jsonConf[args[0].toStr()] = JSON_VALUE::parse(ValueToJson(args[1]));
+        jsonConf[args[0].toStr()] = fifo_json::parse(ValueToJson(args[1]));
         flush();
         return args[1];
     }
-    catch (const JSON_VALUE::exception& e)
+    catch (const fifo_json::exception& e)
     {
-        jsonConf[args[0].toStr()] = JSON_VALUE::parse(ValueToJson(args[1]));
+        jsonConf[args[0].toStr()] = fifo_json::parse(ValueToJson(args[1]));
         flush();
         return args[1];
     }
@@ -309,7 +298,7 @@ Local<Value> ConfJsonClass::get(const Arguments& args)
     {
         return args.size() >= 2 ? args[1] : Local<Value>();
     }
-    catch (const JSON_VALUE::exception& e)
+    catch (const fifo_json::exception& e)
     {
         return args.size() >= 2 ? args[1] : Local<Value>();
     }
@@ -323,10 +312,10 @@ Local<Value> ConfJsonClass::set(const Arguments& args)
 
     try
     {
-        jsonConf[args[0].toStr()] = JSON_VALUE::parse(ValueToJson(args[1]));
+        jsonConf[args[0].toStr()] = fifo_json::parse(ValueToJson(args[1]));
         return Boolean::newBoolean(flush());
     }
-    catch (const JSON_VALUE::exception& e)
+    catch (const fifo_json::exception& e)
     {
         return Boolean::newBoolean(false);
     }
@@ -345,7 +334,7 @@ Local<Value> ConfJsonClass::del(const Arguments& args)
 
         return Boolean::newBoolean(flush());
     }
-    catch (const JSON_VALUE::exception& e)
+    catch (const fifo_json::exception& e)
     {
         return Boolean::newBoolean(false);
     }
@@ -358,10 +347,10 @@ Local<Value> ConfJsonClass::reload(const Arguments& args)
     {
         return Boolean::newBoolean(reload());
     }
-    catch (const JSON_VALUE::exception& e)
+    catch (const fifo_json::exception& e)
     {
-        ERROR("Fail to parse json content in file!");
-        ERRPRINT(e.what());
+        logger.error("Fail to parse json content in file!");
+        logger.error(e.what());
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in confJsonReload!");
@@ -383,7 +372,7 @@ Local<Value> ConfJsonClass::write(const Arguments& args)
 
     try
     {
-        bool res = Raw_FileWriteTo(confPath, args[0].toStr());
+        bool res = WriteAllFile(confPath, args[0].toStr(), false);
         reload();
         return Boolean::newBoolean(res);
     }
@@ -411,11 +400,11 @@ bool ConfJsonClass::close()
 
 bool ConfJsonClass::reload()
 {
-    string jsonTexts;
-    if (!Raw_FileReadFrom(confPath, jsonTexts))
+    auto jsonTexts = ReadAllFile(confPath);
+    if (!jsonTexts)
         return false;
 
-    jsonConf = JSON_VALUE::parse(jsonTexts);
+    jsonConf = fifo_json::parse(*jsonTexts);
     return true;
 }
 
@@ -426,13 +415,13 @@ bool ConfJsonClass::reload()
 ConfIniClass::ConfIniClass(const Local<Object>& scriptObj, const string& path, const string& defContent)
     :ScriptClass(scriptObj), ConfBaseClass(path)
 {
-    iniConf = Raw_IniOpen(path, defContent);
+    iniConf = SimpleIni::create(path, defContent);
 }
 
 ConfIniClass::ConfIniClass(const string& path, const string& defContent)
     :ScriptClass(ScriptClass::ConstructFromCpp<ConfIniClass>{}), ConfBaseClass(path)
 {
-    iniConf = Raw_IniOpen(path, defContent);
+    iniConf = SimpleIni::create(path, defContent);
 }
 
 ConfIniClass::~ConfIniClass()
@@ -470,7 +459,7 @@ bool ConfIniClass::close()
     if (isValid())
     {
         reload();
-        Raw_IniClose(iniConf);
+        delete iniConf;
         iniConf = nullptr;
     }
     return true;
@@ -480,8 +469,8 @@ bool ConfIniClass::reload()
     if (!isValid())
         return false;
 
-    Raw_IniClose(iniConf);
-    iniConf = Raw_IniOpen(confPath);
+    delete iniConf;
+    iniConf = SimpleIni::create(confPath,"");
     return true;
 }
 
@@ -505,10 +494,10 @@ Local<Value> ConfIniClass::init(const Arguments& args)
         case ValueKind::kString:
         {
             string def = args[2].toStr();
-            string data = Raw_IniGetString(iniConf, section, key, def);
+            string data = iniConf->getString(section, key, def);
             if (data == def)
             {
-                Raw_IniSetString(iniConf, section, key, def);
+                iniConf->setString(section, key, def);
                 flush();
             }
             res = String::newString(data);
@@ -520,10 +509,10 @@ Local<Value> ConfIniClass::init(const Arguments& args)
             {
                 //Float
                 float def = args[2].asNumber().toFloat();
-                float data = Raw_IniGetFloat(iniConf, section, key, def);
+                float data = iniConf->getFloat(section, key, def);
                 if (data == def)
                 {
-                    Raw_IniSetFloat(iniConf, section, key, def);
+                    iniConf->setFloat(section, key, def);
                     flush();
                 }
                 res = Number::newNumber(data);
@@ -532,10 +521,10 @@ Local<Value> ConfIniClass::init(const Arguments& args)
             {
                 //Int
                 int def = args[2].toInt();
-                int data = Raw_IniGetInt(iniConf, section, key, def);
+                int data = iniConf->getInt(section, key, def);
                 if (data == def)
                 {
-                    Raw_IniSetInt(iniConf, section, key, def);
+                    iniConf->setInt(section, key, def);
                     flush();
                 }
                 res = Number::newNumber(data);
@@ -545,10 +534,10 @@ Local<Value> ConfIniClass::init(const Arguments& args)
         case ValueKind::kBoolean:
         {
             bool def = args[2].asBoolean().value();
-            bool data = Raw_IniGetBool(iniConf, section, key, def);
+            bool data = iniConf->getBool(section, key, def);
             if (data == def)
             {
-                Raw_IniSetBool(iniConf, section, key, def);
+                iniConf->setBool(section, key, def);
                 flush();
             }
             res = Boolean::newBoolean(data);
@@ -580,16 +569,16 @@ Local<Value> ConfIniClass::set(const Arguments& args)
         switch (args[2].getKind())
         {
         case ValueKind::kString:
-            Raw_IniSetString(iniConf, section, key, args[2].toStr());
+            iniConf->setString(section, key, args[2].toStr());
             break;
         case ValueKind::kNumber:
             if (CheckIsFloat(args[2]))
-                Raw_IniSetFloat(iniConf, section, key, args[2].asNumber().toFloat());
+                iniConf->setFloat(section, key, args[2].asNumber().toFloat());
             else
-                Raw_IniSetInt(iniConf, section, key, args[2].toInt());
+                iniConf->setInt(section, key, args[2].toInt());
             break;
         case ValueKind::kBoolean:
-            Raw_IniSetBool(iniConf, section, key, args[2].asBoolean().value());
+            iniConf->setBool(section, key, args[2].asBoolean().value());
             break;
         default:
             ERROR("Ini file don't support this type of data!");
@@ -615,7 +604,7 @@ Local<Value> ConfIniClass::getStr(const Arguments& args)
         if (!isValid())
             return Local<Value>();
 
-        return String::newString(Raw_IniGetString(iniConf, args[0].toStr(), args[1].toStr(), 
+        return String::newString(iniConf->getString(args[0].toStr(), args[1].toStr(), 
             args.size() >= 3 ? args[2].toStr() : ""));
     }
     CATCH("Fail in confIniGetStr!")
@@ -634,7 +623,7 @@ Local<Value> ConfIniClass::getInt(const Arguments& args)
         if (!isValid())
             return Local<Value>();
 
-        return Number::newNumber(Raw_IniGetInt(iniConf, args[0].toStr(), args[1].toStr(), 
+        return Number::newNumber(iniConf->getInt(args[0].toStr(), args[1].toStr(), 
             args.size() >= 3 ? args[2].asNumber().toInt32() : 0));
     }
     CATCH("Fail in ConfIniGetInt!");
@@ -653,7 +642,7 @@ Local<Value> ConfIniClass::getFloat(const Arguments& args)
         if (!isValid())
             return Local<Value>();
 
-        return Number::newNumber(Raw_IniGetFloat(iniConf, args[0].toStr(), args[1].toStr(), 
+        return Number::newNumber(iniConf->getFloat(args[0].toStr(), args[1].toStr(), 
             args.size() >= 3 ? (float)args[2].asNumber().toDouble() : 0.0));
     }
     CATCH("Fail in ConfIniGetFloat!");
@@ -672,7 +661,7 @@ Local<Value> ConfIniClass::getBool(const Arguments& args)
         if (!isValid())
             return Local<Value>();
 
-        return Boolean::newBoolean(Raw_IniGetBool(iniConf, args[0].toStr(), args[1].toStr(), 
+        return Boolean::newBoolean(iniConf->getBool(args[0].toStr(), args[1].toStr(), 
             args.size() >= 3 ? args[2].asBoolean().value() : false));
     }
     CATCH("Fail in ConfIniGetBool");
@@ -689,7 +678,7 @@ Local<Value> ConfIniClass::del(const Arguments& args)
         if (!isValid())
             return Local<Value>();
 
-        bool res = Raw_IniDeleteKey(iniConf, args[0].toStr(), args[1].toStr());
+        bool res = iniConf->deleteKey(args[0].toStr(), args[1].toStr());
         flush();
         return Boolean::newBoolean(res);
     }
@@ -712,7 +701,7 @@ Local<Value> ConfIniClass::write(const Arguments& args)
 
     try
     {
-        bool res = Raw_FileWriteTo(confPath, args[0].toStr());
+        bool res = WriteAllFile(confPath, args[0].toStr(), false);
         reload();
         return Boolean::newBoolean(res);
     }
@@ -739,18 +728,18 @@ Local<Value> MoneyClass::set(const Arguments& args)
 
     try
     {
-        return Boolean::newBoolean(Raw_SetMoney(stoull(args[0].toStr()), args[1].asNumber().toInt64()));
+        return Boolean::newBoolean(EconomySystem::setMoney(args[0].toStr(), args[1].asNumber().toInt64()));
     }
     catch (const std::invalid_argument& e)
     {
-        ERROR("Bad argument in MoneySet!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneySet!");
+        logger.error(e.what());
         return Boolean::newBoolean(false);
     }
     catch (const std::out_of_range& e)
     {
-        ERROR("Bad argument in MoneySet!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneySet!");
+        logger.error(e.what());
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in MoneySet!");
@@ -763,18 +752,18 @@ Local<Value> MoneyClass::get(const Arguments& args)
 
     try
     {
-        return Number::newNumber(Raw_GetMoney(stoull(args[0].toStr())));
+        return Number::newNumber(EconomySystem::getMoney(args[0].toStr()));
     }
     catch (const std::invalid_argument& e)
     {
-        ERROR("Bad argument in MoneyGet!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyGet!");
+        logger.error(e.what());
         return Number::newNumber(0);
     }
     catch (const std::out_of_range& e)
     {
-        ERROR("Bad argument in MoneyGet!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyGet!");
+        logger.error(e.what());
         return Number::newNumber(0);
     }
     CATCH("Fail in MoneyGet!");
@@ -788,18 +777,18 @@ Local<Value> MoneyClass::add(const Arguments& args)
 
     try
     {
-        return Boolean::newBoolean(Raw_AddMoney(stoull(args[0].toStr()), args[1].asNumber().toInt64()));
+        return Boolean::newBoolean(EconomySystem::addMoney(args[0].toStr(), args[1].asNumber().toInt64()));
     }
     catch (const std::invalid_argument& e)
     {
-        ERROR("Bad argument in MoneyAdd!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyAdd!");
+        logger.error(e.what());
         return Boolean::newBoolean(false);
     }
     catch (const std::out_of_range& e)
     {
-        ERROR("Bad argument in MoneyAdd!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyAdd!");
+        logger.error(e.what());
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in MoneyAdd!");
@@ -813,18 +802,18 @@ Local<Value> MoneyClass::reduce(const Arguments& args)
 
     try
     {
-        return Boolean::newBoolean(Raw_ReduceMoney(stoull(args[0].toStr()), args[1].asNumber().toInt64()));
+        return Boolean::newBoolean(EconomySystem::reduceMoney(args[0].toStr(), args[1].asNumber().toInt64()));
     }
     catch (const std::invalid_argument& e)
     {
-        ERROR("Bad argument in MoneyReduce!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyReduce!");
+        logger.error(e.what());
         return Boolean::newBoolean(false);
     }
     catch (const std::out_of_range& e)
     {
-        ERROR("Bad argument in MoneyReduce!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyReduce!");
+        logger.error(e.what());
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in MoneyReduce!");
@@ -842,19 +831,19 @@ Local<Value> MoneyClass::trans(const Arguments& args)
         string note = "";
         if (args.size() >= 4 && args[3].getKind() == ValueKind::kString)
             note = args[3].toStr();
-        return Boolean::newBoolean(Raw_TransMoney(stoull(args[0].toStr()), stoull(args[1].toStr()),
+        return Boolean::newBoolean(EconomySystem::transMoney(args[0].toStr(), args[1].toStr(),
                 args[2].asNumber().toInt64(), note));
     }
     catch (const std::invalid_argument& e)
     {
-        ERROR("Bad argument in MoneyTrans!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyTrans!");
+        logger.error(e.what());
         return Boolean::newBoolean(false);
     }
     catch (const std::out_of_range& e)
     {
-        ERROR("Bad argument in MoneyTrans!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyTrans!");
+        logger.error(e.what());
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in MoneyTrans!");
@@ -868,7 +857,7 @@ Local<Value> MoneyClass::getHistory(const Arguments& args)
 
     try
     {
-        string res{ Raw_GetMoneyHist(stoull(args[0].toStr()), args[1].asNumber().toInt64()) };
+        string res{ EconomySystem::getMoneyHist(args[0].toStr(), args[1].asNumber().toInt64()) };
         auto list = SplitStrWithPattern(res, "\n");
         // from -> to money time (note)
 
@@ -908,14 +897,14 @@ Local<Value> MoneyClass::getHistory(const Arguments& args)
     }
     catch (const std::invalid_argument& e)
     {
-        ERROR("Bad argument in MoneyGetHintory!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyGetHintory!");
+        logger.error(e.what());
         return Local<Value>();
     }
     catch (const std::out_of_range& e)
     {
-        ERROR("Bad argument in MoneyGetHintory!");
-        ERRPRINT(e.what());
+        logger.error("Bad argument in MoneyGetHintory!");
+        logger.error(e.what());
         return Local<Value>();
     }
     CATCH("Fail in MoneyGetHintory!");
@@ -928,7 +917,7 @@ Local<Value> MoneyClass::clearHistory(const Arguments& args)
 
     try
     {
-        return Boolean::newBoolean(Raw_ClearMoneyHist(args[0].asNumber().toInt64()));
+        return Boolean::newBoolean(EconomySystem::clearMoneyHist(args[0].asNumber().toInt64()));
     }
     CATCH("Fail in MoneyClearHistory!");
 }
@@ -940,7 +929,7 @@ Local<Value> DataClass::xuid2name(const Arguments& args)
 
     try
     {
-        return String::newString(Raw_Xuid2Name(args[0].toStr()));
+        return String::newString(PlayerInfo::fromXuid(args[0].toStr()));
     }
     CATCH("Fail in Xuid2Name!");
 }
@@ -952,7 +941,7 @@ Local<Value> DataClass::name2xuid(const Arguments& args)
 
     try
     {
-        return String::newString(Raw_Name2Xuid(args[0].toStr()));
+        return String::newString(PlayerInfo::getXuid(args[0].toStr()));
     }
     CATCH("Fail in Name2Xuid!");
 }
@@ -1023,7 +1012,7 @@ Local<Value> DataClass::toMD5(const Arguments& args)
             ERROR("Wrong type of argument in ToMD5");
             return Local<Value>();
         }
-        return String::newString(Raw_toMD5(data));
+        return String::newString(CalcMD5(data));
     }
     CATCH("Fail in ToMD5!");
 }
@@ -1046,7 +1035,7 @@ Local<Value> DataClass::toSHA1(const Arguments& args)
             ERROR("Wrong type of argument in ToSHA1");
             return Local<Value>();
         }
-        return String::newString(Raw_toSHA1(data));
+        return String::newString(CalcSHA1(data));
     }
     CATCH("Fail in ToSHA1!");
 }
@@ -1069,7 +1058,7 @@ Local<Value> DataClass::toBase64(const Arguments& args)
             ERROR("Wrong type of argument in ToBase64");
             return Local<Value>();
         }
-        return String::newString(Raw_ToBase64(data));
+        return String::newString(base64_encode(data));
     }
     CATCH("Fail in ToBase64!");
 }
@@ -1080,7 +1069,7 @@ Local<Value> DataClass::fromBase64(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
 
     try {
-        return String::newString(Raw_FromBase64(args[0].toStr()));
+        return String::newString(base64_decode(args[0].toStr()));
     }
     CATCH("Fail in FromBase64!");
 }

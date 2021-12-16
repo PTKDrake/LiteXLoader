@@ -1,10 +1,10 @@
-#include <ScriptX/ScriptX.h>
+#include <API/APIHelp.h>
 #include <vector>
 #include <list>
 #include <string>
 #include <map>
 #include <mutex>
-using namespace script;
+
 
 
 //////////////////// Structs ////////////////////
@@ -14,7 +14,7 @@ struct ExportedFuncData
 {
 	std::string fromEngineType;
 	ScriptEngine* engine;
-	Global<Function> func;
+	script::Global<Function> func;
 };
 
 //远程调用信息
@@ -35,6 +35,10 @@ struct GlobalDataType
 	//所有插件名单
 	std::vector<std::string> pluginsList;
 
+	//注册过的命令
+	std::unordered_map<std::string, std::string> playerRegisteredCmd;
+	std::unordered_map<std::string, std::string> consoleRegisteredCmd;
+
 	//导出函数表
 	std::unordered_map<std::string, ExportedFuncData> exportedFuncs;
 
@@ -51,6 +55,9 @@ struct GlobalDataType
 
 	//fastlog多线程锁
 	std::mutex fastlogLock;
+
+	//OperationCount
+	std::map<std::string, int> operationCountData;
 };
 
 
