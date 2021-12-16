@@ -1039,7 +1039,8 @@ Local<Value> PlayerClass::sendSimpleForm(const Arguments& args)
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), Number::newNumber(chosen));
+                callback.get().call({}, PlayerClass::newPlayer(pl),
+                    chosen >= 0 ? Number::newNumber(chosen) : Local<Value>());
             }
             catch (const Exception& e)
             {
@@ -1080,7 +1081,8 @@ Local<Value> PlayerClass::sendModalForm(const Arguments& args)
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), Number::newNumber(chosen));
+                callback.get().call({}, PlayerClass::newPlayer(pl),
+                    chosen >= 0 ? Number::newNumber(chosen) : Local<Value>());
             }
             catch (const Exception& e)
             {
@@ -1120,7 +1122,8 @@ Local<Value> PlayerClass::sendCustomForm(const Arguments& args)
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), JsonToValue(result));
+                callback.get().call({}, PlayerClass::newPlayer(pl),
+                    result != "null" ? JsonToValue(result) : Local<Value>());
             }
             catch (const Exception& e)
             {

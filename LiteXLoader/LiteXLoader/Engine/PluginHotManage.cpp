@@ -42,7 +42,7 @@ bool ProcessHotManageCmd(const std::string& cmd)
 
     case H("list"):
     {
-        logger.info("=== LiteXLoader-{} Plugins ===");
+        logger.info("=== LiteXLoader-{} Plugins ===", LXL_SCRIPT_LANG_TYPE);
         auto list = LxlListLocalAllPlugins();
         for (auto& name : list)
             logger.info("{}", name);
