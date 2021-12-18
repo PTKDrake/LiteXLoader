@@ -377,9 +377,9 @@ Local<Value> PlayerClass::getDirection()
         Player* player = get();
         if (!player)
             return Local<Value>();
-        
-        auto vec = ((Actor*)player)->getDirection();
-        return DirectionAngle::newAngle(vec->x, vec->z);
+
+        Vec2 rot = player->getRotation();
+        return DirectionAngle::newAngle(rot.x, rot.y);
     }
     CATCH("Fail in getDirection!")
 }
