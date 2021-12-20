@@ -544,7 +544,7 @@ Local<Value> PlayerClass::isOP(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(player->getPlayerPermissionLevel() >= 1);        //==========???
+        return Boolean::newBoolean(player->isOP());
     }
     CATCH("Fail in IsOP!")
 }
