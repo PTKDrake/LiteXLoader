@@ -14,7 +14,6 @@
     class Certificate;
     class Container;
     class CompoundTag;
-    enum GameType;
     #include "ScorePacketInfo.hpp"
 #undef BEFORE_EXTRA
 
