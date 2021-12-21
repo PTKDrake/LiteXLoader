@@ -1382,9 +1382,7 @@ Local<Value> NbtListClass::addTag(const Arguments& args)
         }
         else if (IsInstanceOf<NbtCompoundClass>(args[0]))
         {
-            std::unique_ptr<CompoundTag> tag = CompoundTag::create();
-            NbtCompoundClass::extract(args[0])->deepCopy(*tag.get());
-            nbt->add(std::move(tag));
+            nbt->add(NbtCompoundClass::extract(args[0])->clone());
         }
         else
         {
@@ -1569,9 +1567,7 @@ Local<Value> NbtCompoundClass::pack(CompoundTag* tag)
 {
     try
     {
-        std::unique_ptr<CompoundTag> res = CompoundTag::create();
-        tag->deepCopy(*res.get());
-        return (new NbtCompoundClass(std::move(res)))->getScriptObject();
+        return (new NbtCompoundClass(tag->clone()))->getScriptObject();
     }
     CATCH("Fail in construct NbtCompound!");
 }
