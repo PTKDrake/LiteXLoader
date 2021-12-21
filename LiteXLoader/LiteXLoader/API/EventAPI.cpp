@@ -671,7 +671,7 @@ void InitEventListeners()
     Event::EntityExplodeEvent::subscribe([](const EntityExplodeEvent &ev) {
         IF_LISTENED(EVENT_TYPES::onExplode)
         {
-            CallEvent(EVENT_TYPES::onExplode, EntityClass::newEntity(ev.mActor),
+            CallEvent(EVENT_TYPES::onExplode, ev.mActor ? EntityClass::newEntity(ev.mActor) : Local<Value>(),
                 FloatPos::newPos(ev.mPos, ev.mRegion->getDimensionId()),
                 Number::newNumber(ev.mRadius), Number::newNumber(ev.mMaxResistance),
                 Boolean::newBoolean(ev.mBreaking), Boolean::newBoolean(ev.mFire));
