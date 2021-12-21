@@ -18,6 +18,7 @@
 #include <Engine/MessageSystem.h>
 #include <API/CommandAPI.h>
 #include <Utils/StringHelper.h>
+#include <ScheduleAPI.h>
 
 using namespace std;
 
@@ -246,7 +247,10 @@ string LxlUnloadPlugin(const std::string& name)
             engine->getData().reset();
             lxlModules.erase(lxlModules.begin() + i);
 
-            engine->destroy();
+            //delay request to avoid crash
+            Schedule::nextTick([engine]() {
+                engine->destroy();
+            });
 
             logger.info(name + " unloaded.");
             break;
