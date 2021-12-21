@@ -157,7 +157,7 @@ Local<Value> BlockClass::getRawPtr(const Arguments& args)
 Local<Value> BlockClass::getNbt(const Arguments& args)
 {
     try {
-        return NbtCompoundClass::pack(block->getNbt(), false);
+        return NbtCompoundClass::pack(std::move(block->getNbt()));
     }
     CATCH("Fail in getNbt!");
 }
@@ -180,7 +180,7 @@ Local<Value> BlockClass::setNbt(const Arguments& args)
 Local<Value> BlockClass::getBlockState(const Arguments& args)
 {
     try {
-        CompoundTag* list = block->getNbt();
+        auto list = block->getNbt();
         try
         {
             return Tag2Value((Tag*)list->get<Tag>("states"), true);

@@ -11,6 +11,7 @@
 #include <MC/Level.hpp>
 #include <MC/ItemActor.hpp>
 #include <MC/SimpleContainer.hpp>
+#include <MC/CompoundTag.hpp>
 #include <MC/Mob.hpp>
 
 

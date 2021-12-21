@@ -264,7 +264,6 @@ public:
     static CompoundTag* extract(Local<Value> v);
     static Local<Value> pack(CompoundTag* tag);
     static Local<Value> pack(std::unique_ptr<CompoundTag> tag);
-    static Local<Value> pack(std::unique_ptr<CompoundTag> &&tag);
 
     Local<Value> getType(const Arguments& args);
     Local<Value> getKeys(const Arguments& args);

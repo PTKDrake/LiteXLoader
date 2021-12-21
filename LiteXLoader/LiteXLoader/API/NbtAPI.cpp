@@ -1585,15 +1585,6 @@ Local<Value> NbtCompoundClass::pack(std::unique_ptr<CompoundTag> tag)
     CATCH("Fail in construct NbtCompound!");
 }
 
-Local<Value> NbtCompoundClass::pack(std::unique_ptr<CompoundTag> &&tag)
-{
-    try
-    {
-        return (new NbtCompoundClass(std::move(tag)))->getScriptObject();
-    }
-    CATCH("Fail in construct NbtCompound!");
-}
-
 Local<Value> NbtCompoundClass::getType(const Arguments& args)
 {
     return Number::newNumber((int)Tag::Type::Compound);

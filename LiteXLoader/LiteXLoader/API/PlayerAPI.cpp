@@ -1492,7 +1492,7 @@ Local<Value> PlayerClass::getAttributes(const Arguments& args)
 
         Local<Array> res = Array::newArray();
 
-        CompoundTag* list = player->getNbt();
+        auto list = player->getNbt();
         try
         {
             ListTag* attr = (ListTag*)list->getListTag("Attributes");
