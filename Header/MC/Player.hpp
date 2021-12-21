@@ -22,16 +22,23 @@ class Player : public Mob {
 #define AFTER_EXTRA
 // Add new members to class
 public:
+    enum PositionMode : char{
+        NORMAL,
+        RESPAWN,
+        TELEPORT,
+        HEAD_ROTATION,
+    };
+
     LIAPI std::string getName();
     LIAPI std::string getRealName();
     LIAPI std::string getUuid();
+    LIAPI unsigned char getClientSubId();
     LIAPI string getDeviceTypeName();
     LIAPI int getAvgPing();
     LIAPI int getLastPing();
     LIAPI std::string getIP();
     LIAPI string getLanguageCode();
     LIAPI string getServerAddress();
-    LIAPI UserEntityIdentifierComponent* getUserEntityIdentifierComponent();
     LIAPI NetworkIdentifier* getNetworkIdentifier();
     LIAPI Certificate* getCertificate();
     LIAPI Container* getEnderChestContainer();
@@ -51,8 +58,8 @@ public:
     LIAPI bool transferServer(const string& address, unsigned short port);
     LIAPI bool setSidebar(const std::string& title, const std::vector<std::pair<std::string, int>>& data, ObjectiveSortOrder sortOrder);
     LIAPI bool removeSidebar();
-    LIAPI CompoundTag* getNbt(); 
-    LIAPI bool setNbt(CompoundTag* nbt);
+    LIAPI std::unique_ptr<CompoundTag> getNbt();
+    LIAPI bool setNbt(std::unique_ptr<CompoundTag> nbt);
 
     LIAPI int getScore(const string& key);
     LIAPI bool setScore(const string& key, int value);
