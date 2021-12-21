@@ -248,7 +248,7 @@ Local<Value> McClass::newItem(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong number of arguments in NewItem!");
+                logger.error("Wrong number of arguments in NewItem!");
                 return Local<Value>();
             }
         }
@@ -265,7 +265,7 @@ Local<Value> McClass::newItem(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in NewItem!");
+                logger.error("Wrong type of argument in NewItem!");
                 return Local<Value>();
             }
         }
@@ -308,7 +308,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in SpawnItem!");
+                logger.error("Wrong type of argument in SpawnItem!");
                 return Local<Value>();
             }
         }
@@ -323,7 +323,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong number of arguments in SpawnItem!");
+            logger.error("Wrong number of arguments in SpawnItem!");
             return Local<Value>();
         }
 
@@ -340,7 +340,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in SpawnItem!");
+            logger.error("Wrong type of argument in SpawnItem!");
             return Local<Value>();
         }
     }

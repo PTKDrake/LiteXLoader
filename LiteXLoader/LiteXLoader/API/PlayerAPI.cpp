@@ -492,7 +492,7 @@ Local<Value> PlayerClass::teleport(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in teleport!");
+                logger.error("Wrong type of argument in teleport!");
                 return Local<Value>();
             }
         }
@@ -511,7 +511,7 @@ Local<Value> PlayerClass::teleport(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in teleport!");
+            logger.error("Wrong type of argument in teleport!");
             return Local<Value>();
         }
 
@@ -1169,7 +1169,7 @@ Local<Value> PlayerClass::sendForm(const Arguments& args)
         }
         else
         {
-            ERROR("Unknown Type of Form Parameter!");
+            logger.error("Unknown Type of Form Parameter!");
             return Local<Value>();
         }
         return Boolean::newBoolean(res);

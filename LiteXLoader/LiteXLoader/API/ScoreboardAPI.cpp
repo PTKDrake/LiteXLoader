@@ -109,7 +109,7 @@ Local<Value> ObjectiveClass::setScore(const Arguments& args)
 		}
 		else
 		{
-			ERROR("Wrong type of argument in setScore!");
+			logger.error("Wrong type of argument in setScore!");
 			return Local<Value>();
 		}
 
@@ -143,7 +143,7 @@ Local<Value> ObjectiveClass::addScore(const Arguments& args)
 		}
 		else
 		{
-			ERROR("Wrong type of argument in setScore!");
+			logger.error("Wrong type of argument in setScore!");
 			return Local<Value>();
 		}
 
@@ -177,7 +177,7 @@ Local<Value> ObjectiveClass::reduceScore(const Arguments& args)
 		}
 		else
 		{
-			ERROR("Wrong type of argument in setScore!");
+			logger.error("Wrong type of argument in setScore!");
 			return Local<Value>();
 		}
 
@@ -198,7 +198,7 @@ Local<Value> ObjectiveClass::deleteScore(const Arguments& args)
 			id = PlayerClass::extract(args[0])->getRealName();
 		else
 		{
-			ERROR("Wrong type of argument in deleteScore!");
+			logger.error("Wrong type of argument in deleteScore!");
 			return Local<Value>();
 		}
 
@@ -221,7 +221,7 @@ Local<Value> ObjectiveClass::getScore(const Arguments& args)
 			id = PlayerClass::extract(args[0])->getRealName();
 		else
 		{
-			ERROR("Wrong type of argument in getScore!");
+			logger.error("Wrong type of argument in getScore!");
 			return Local<Value>();
 		}
 

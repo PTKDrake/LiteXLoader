@@ -52,7 +52,7 @@ Local<Value> ColorLog(const Arguments& args)
             case H("pink")     : color = 13; break;
             case H("yellow")   : color = 14; break;
             case H("white")    : color = 15; break;
-            default: ERROR("Invalid color!");break;
+            default: logger.error("Invalid color!");break;
         }
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
         for (int i = 1; i < args.size(); ++i)
@@ -96,7 +96,7 @@ Local<Value> SetTimeout(const Arguments& args)
         bool isFunc = args[0].getKind() == ValueKind::kFunction;
         if (!isFunc && args[0].getKind() != ValueKind::kString)
         {
-            ERROR("Unknown type of time task!");
+            logger.error("Unknown type of time task!");
             return Local<Value>();
         }
 
@@ -121,7 +121,7 @@ Local<Value> SetInterval(const Arguments& args)
         bool isFunc = args[0].getKind() == ValueKind::kFunction;
         if (!isFunc && args[0].getKind() != ValueKind::kString)
         {
-            ERROR("Unknown type of time task!");
+            logger.error("Unknown type of time task!");
             return Local<Value>();
         }
 

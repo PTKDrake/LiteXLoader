@@ -196,7 +196,7 @@ NbtEndClass* NbtEndClass::constructor(const Arguments& args)
         if (args.size() >= 1)
             if (!TagSetValue(Tag::Type::End, tag.get(), args[0]))
             {
-                ERROR("Fail to Set value of EndTag!");
+                logger.error("Fail to Set value of EndTag!");
             }
 
         return new NbtEndClass(args.thiz(), std::move(tag));
@@ -971,7 +971,7 @@ NbtListClass* NbtListClass::constructor(const Arguments& args)
         if (args.size() >= 1)
             if (!TagSetValue(Tag::Type::Compound, tag.get(), args[0]))
             {
-                ERROR("Fail to Set value of CompoundTag!");
+                logger.error("Fail to Set value of CompoundTag!");
             }
 
 
@@ -1052,12 +1052,12 @@ Local<Value> NbtListClass::setEnd(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
         }
 
         if (!((EndTag*)list[index])->set())
         {
-            ERROR("Fail to Set End in NBT List!");
+            logger.error("Fail to Set End in NBT List!");
         }
         return this->getScriptObject();
     }
@@ -1077,12 +1077,12 @@ Local<Value> NbtListClass::setByte(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
         }
 
         if (!((ByteTag*)list[index])->set(args[1].toInt()))
         {
-            ERROR("Fail to Set Byte in NBT List!");
+            logger.error("Fail to Set Byte in NBT List!");
         }
         return this->getScriptObject();
     }
@@ -1102,12 +1102,12 @@ Local<Value> NbtListClass::setInt(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
         }
 
         if (!((IntTag*)list[index])->set(args[1].toInt()))
         {
-            ERROR("Fail to Set Int in NBT List!");
+            logger.error("Fail to Set Int in NBT List!");
         }
         return this->getScriptObject();
     }
@@ -1127,12 +1127,12 @@ Local<Value> NbtListClass::setShort(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
         }
 
         if (!((ShortTag*)list[index])->set(args[1].toInt()))
         {
-            ERROR("Fail to Set Short in NBT List!");
+            logger.error("Fail to Set Short in NBT List!");
         }
         return this->getScriptObject();
     }
@@ -1152,12 +1152,12 @@ Local<Value> NbtListClass::setLong(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
         }
 
         if (!((Int64Tag*)list[index])->set(args[1].asNumber().toInt64()))
         {
-            ERROR("Fail to Set Long in NBT List!");
+            logger.error("Fail to Set Long in NBT List!");
         }
         return this->getScriptObject();
     }
@@ -1177,12 +1177,12 @@ Local<Value> NbtListClass::setFloat(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
         }
 
         if (!((FloatTag*)list[index])->set(args[1].asNumber().toFloat()))
         {
-            ERROR("Fail to Set Float in NBT List!");
+            logger.error("Fail to Set Float in NBT List!");
         }
         return this->getScriptObject();
     }
@@ -1202,12 +1202,12 @@ Local<Value> NbtListClass::setDouble(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
         }
 
         if (!((DoubleTag*)list[index])->set(args[1].asNumber().toDouble()))
         {
-            ERROR("Fail to Set Double in NBT List!");
+            logger.error("Fail to Set Double in NBT List!");
         }
         return this->getScriptObject();
     }
@@ -1227,12 +1227,12 @@ Local<Value> NbtListClass::setString(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
         }
 
         if (!((StringTag*)list[index])->set(args[1].toStr()))
         {
-            ERROR("Fail to Set String in NBT List!");
+            logger.error("Fail to Set String in NBT List!");
         }
         return this->getScriptObject();
     }
@@ -1252,12 +1252,12 @@ Local<Value> NbtListClass::setByteArray(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
         }
 
         if (!TagSetValue(Tag::Type::ByteArray, list[index], args[1]))
         {
-            ERROR("Fail to Set ByteArray in NBT List!");
+            logger.error("Fail to Set ByteArray in NBT List!");
         }
         return this->getScriptObject();
     }
@@ -1276,7 +1276,7 @@ Local<Value> NbtListClass::setTag(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
             return Local<Value>();
         }
 
@@ -1326,7 +1326,7 @@ Local<Value> NbtListClass::setTag(const Arguments& args)
         }
         else
         {
-            ERROR("Unknown type! Cannot set Tag into List");
+            logger.error("Unknown type! Cannot set Tag into List");
             return Local<Value>();
         }
         return this->getScriptObject();
@@ -1386,7 +1386,7 @@ Local<Value> NbtListClass::addTag(const Arguments& args)
         }
         else
         {
-            ERROR("Unknown type! Cannot add Tag into List");
+            logger.error("Unknown type! Cannot add Tag into List");
             return Local<Value>();
         }
         return this->getScriptObject();
@@ -1406,7 +1406,7 @@ Local<Value> NbtListClass::removeTag(const Arguments& args)
 
         if (index >= list.size() || index < 0)
         {
-            ERROR("Bad Index of NBT List!");
+            logger.error("Bad Index of NBT List!");
             return Local<Value>();
         }
 
@@ -1547,7 +1547,7 @@ NbtCompoundClass* NbtCompoundClass::constructor(const Arguments& args)
         if (args.size() >= 1)
             if (!TagSetValue(Tag::Type::Compound, tag.get(), args[0]))
             {
-                ERROR("Fail to Set value of CompoundTag!");
+                logger.error("Fail to Set value of CompoundTag!");
             }
 
         return new NbtCompoundClass(args.thiz(), std::move(tag));
@@ -1829,7 +1829,7 @@ Local<Value> NbtCompoundClass::setTag(const Arguments& args)
         }
         else
         {
-            ERROR("Unknown type! Cannot set Tag into Compound");
+            logger.error("Unknown type! Cannot set Tag into Compound");
             return Local<Value>();
         }
         return this->getScriptObject();
@@ -1852,7 +1852,7 @@ Local<Value> NbtCompoundClass::removeTag(const Arguments& args)
     }
     catch (const out_of_range& e)
     {
-        ERROR("Key no found in NBT Compound!");
+        logger.error("Key no found in NBT Compound!");
         return Local<Value>();
     }
     CATCH("Fail in NBT RemoveTag!");
@@ -2042,7 +2042,7 @@ Local<Value> NbtStatic::newTag(const Arguments& args)
         {
             if (!TagSetValue((Tag::Type)type, tag.get(), args[1]))
             {
-                ERROR("Fail to set value of tag!");
+                logger.error("Fail to set value of tag!");
                 return Local<Value>();
             }
         }
@@ -2382,13 +2382,13 @@ bool TagSetValue_ListHelper(ListTag* listNbt, Tag::Type listType, Local<Array> v
                         TagSetValue_ListHelper(arrTag->asListTag(), Tag::Type::Compound, arr);
                     else
                     {
-                        ERROR("Wrong Type of Data to Set into list!");
+                        logger.error("Wrong Type of Data to Set into list!");
                     }
                 }
             }
             else
             {
-                ERROR("Wrong Type of Data!");
+                logger.error("Wrong Type of Data!");
                 return false;
             }
 
@@ -2412,13 +2412,13 @@ bool TagSetValue_ListHelper(ListTag* listNbt, Tag::Type listType, Local<Array> v
                     }
                     else
                     {
-                        ERROR("Wrong Type of Data to Set into compound!");
+                        logger.error("Wrong Type of Data to Set into compound!");
                     }
                 }
             }
             else
             {
-                ERROR("Wrong Type of Data!");
+                logger.error("Wrong Type of Data!");
                 return false;
             }
 
@@ -2493,7 +2493,7 @@ bool TagSetValue_CompoundHelper(CompoundTag* compNbt, Local<Object> value)
                     TagSetValue_ListHelper(arrTag->asListTag(), Tag::Type::Compound, arr);
                 else
                 {
-                    ERROR("Wrong Type of Data to Set into list!");
+                    logger.error("Wrong Type of Data to Set into list!");
                 }
             }
 
@@ -2514,7 +2514,7 @@ bool TagSetValue_CompoundHelper(CompoundTag* compNbt, Local<Object> value)
                 }
                 else
                 {
-                    ERROR("Wrong Type of Data to Set into compound!");
+                    logger.error("Wrong Type of Data to Set into compound!");
                 }
             }
 
@@ -2522,7 +2522,7 @@ bool TagSetValue_CompoundHelper(CompoundTag* compNbt, Local<Object> value)
         }
         else
         {
-            ERROR("Wrong Type of Data to Set into compound!");
+            logger.error("Wrong Type of Data to Set into compound!");
         }
     }
     return true;
@@ -2593,13 +2593,13 @@ bool TagSetValue(Tag::Type type, Tag* nbt, Local<Value> value)
                     TagSetValue_ListHelper(nbt->asListTag(), Tag::Type::Compound, arr);
                 else
                 {
-                    ERROR("Wrong Type of Data to Set into list!");
+                    logger.error("Wrong Type of Data to Set into list!");
                 }
             }
         }
         else
         {
-            ERROR("Wrong Type of Data!");
+            logger.error("Wrong Type of Data!");
             return false;
         }
         break;
@@ -2619,13 +2619,13 @@ bool TagSetValue(Tag::Type type, Tag* nbt, Local<Value> value)
                 }
                 else
                 {
-                    ERROR("Wrong Type of Data to Set into compound!");
+                    logger.error("Wrong Type of Data to Set into compound!");
                 }
             }
         }
         else
         {
-            ERROR("Wrong Type of Data!");
+            logger.error("Wrong Type of Data!");
             return false;
         }
         break;

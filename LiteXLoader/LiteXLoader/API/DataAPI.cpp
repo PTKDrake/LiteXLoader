@@ -544,7 +544,7 @@ Local<Value> ConfIniClass::init(const Arguments& args)
             break;
         }
         default:
-            ERROR("Ini file don't support this type of data!");
+            logger.error("Ini file don't support this type of data!");
             return Local<Value>();
             break;
         }
@@ -581,7 +581,7 @@ Local<Value> ConfIniClass::set(const Arguments& args)
             iniConf->setBool(section, key, args[2].asBoolean().value());
             break;
         default:
-            ERROR("Ini file don't support this type of data!");
+            logger.error("Ini file don't support this type of data!");
             return Local<Value>();
             break;
         }
@@ -967,7 +967,7 @@ Local<Value> DataClass::toJson(const Arguments& args)
         }
         catch (...)
         {
-            ERROR("Failed to transform into Json.");
+            logger.error("Failed to transform into Json.");
             return Local<Value>();
         }
     }
@@ -987,7 +987,7 @@ Local<Value> DataClass::parseJson(const Arguments& args)
         }
         catch (...)
         {
-            ERROR("Failed to parse from Json.");
+            logger.error("Failed to parse from Json.");
             return Local<Value>();
         }
     }
@@ -1009,7 +1009,7 @@ Local<Value> DataClass::toMD5(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in ToMD5");
+            logger.error("Wrong type of argument in ToMD5");
             return Local<Value>();
         }
         return String::newString(CalcMD5(data));
@@ -1032,7 +1032,7 @@ Local<Value> DataClass::toSHA1(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in ToSHA1");
+            logger.error("Wrong type of argument in ToSHA1");
             return Local<Value>();
         }
         return String::newString(CalcSHA1(data));
@@ -1055,7 +1055,7 @@ Local<Value> DataClass::toBase64(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in ToBase64");
+            logger.error("Wrong type of argument in ToBase64");
             return Local<Value>();
         }
         return String::newString(base64_encode(data));

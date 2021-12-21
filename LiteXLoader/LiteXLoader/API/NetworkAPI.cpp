@@ -154,7 +154,7 @@ void WSClientClass::addListener(const string& event, Local<Function> func)
         listeners[(int)WSClientEvents::onLostConnection].push_back({ EngineScope::currentEngine(), script::Global<Function>(func) });
     else
     {
-        ERROR("WSClient Event \"" + event + "\" No Found!\n");
+        logger.error("WSClient Event \"" + event + "\" No Found!\n");
     }  
 }
 
@@ -197,7 +197,7 @@ Local<Value> WSClientClass::send(const Arguments& args)
             ws.SendBinary((char*)args[0].asByteBuffer().getRawBytes(), args[0].asByteBuffer().byteLength());
         else
         {
-            ERROR("Wrong type of argument in WSClientSend!");
+            logger.error("Wrong type of argument in WSClientSend!");
             return Local<Value>();
         }
         return Boolean::newBoolean(true);

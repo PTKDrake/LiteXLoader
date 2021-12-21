@@ -72,7 +72,7 @@ void RemoteLoadReturnCallback(ModuleMessage& msg)
 {
     if (msg.getData() == "0")
     {
-        ERROR("Romote Load Failed!");
+        logger.error("Romote Load Failed!");
     }
 }
 
@@ -99,7 +99,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         {
             if (!ModuleMessage::sendTo(msg, LXL_LANG_LUA))
             {
-                ERROR("Fail to send remote load request!");
+                logger.error("Fail to send remote load request!");
                 return false;
             }
         }
@@ -107,19 +107,19 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         {
             if (!ModuleMessage::sendTo(msg, LXL_LANG_JS))
             {
-                ERROR("Fail to send remote load request!");
+                logger.error("Fail to send remote load request!");
                 return false;
             }
         }
         else
         {
-            ERROR("Unknown type of Script file!");
+            logger.error("Unknown type of Script file!");
             return false;
         }
 
         if (!ModuleMessage::waitForMessage(backId, LXL_MAXWAIT_REMOTE_LOAD))
         {
-            ERROR("Remote Load Timeout!");
+            logger.error("Remote Load Timeout!");
             return false;
         }
 
@@ -158,7 +158,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         }
         catch (const Exception& e)
         {
-            ERROR("Fail in Binding APIs!\n");
+            logger.error("Fail in Binding APIs!\n");
             throw;
         }
 
@@ -171,7 +171,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         }
         catch (const Exception& e)
         {
-            ERROR("Fail in Loading Dependence Lib!\n");
+            logger.error("Fail in Loading Dependence Lib!\n");
             throw;
         }
 
@@ -182,7 +182,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         }
         catch (const Exception& e)
         {
-            ERROR("Fail in Loading Script Plugin!\n");
+            logger.error("Fail in Loading Script Plugin!\n");
             throw;
         }
         ExitEngineScope exit;
