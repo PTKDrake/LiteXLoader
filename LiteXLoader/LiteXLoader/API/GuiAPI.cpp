@@ -71,7 +71,10 @@ bool SimpleFormClass::sendForm(Form::SimpleForm* form, Player* player, script::L
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), Number::newNumber(chosen));
+                if(chosen < 0)
+                    callback.get().call({}, PlayerClass::newPlayer(pl), Local<Value>());
+                else
+                    callback.get().call({}, PlayerClass::newPlayer(pl), Number::newNumber(chosen));
             }
             catch (const Exception& e)
             {
