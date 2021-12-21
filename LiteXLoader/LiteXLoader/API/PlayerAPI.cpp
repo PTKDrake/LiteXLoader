@@ -1082,7 +1082,7 @@ Local<Value> PlayerClass::sendModalForm(const Arguments& args)
             try
             {
                 callback.get().call({}, PlayerClass::newPlayer(pl),
-                    chosen >= 0 ? Number::newNumber(chosen) : Local<Value>());
+                    chosen >= 0 ? Boolean::newBoolean(chosen) : Local<Value>());
             }
             catch (const Exception& e)
             {
