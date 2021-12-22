@@ -205,11 +205,19 @@ EndTag* NbtEndClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtEndClass::pack(EndTag* tag)
+Local<Value> NbtEndClass::pack(EndTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtEndClass(Tag::asTypedTag<EndTag>(tag->copy())))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<EndTag> nbt(tag);
+            auto *nbtObj = new NbtEndClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtEndClass(Tag::asTypedTag<EndTag>(tag->copy())))->getScriptObject();
     }
     CATCH("Fail in construct NbtEnd!");
 }
@@ -290,11 +298,19 @@ ByteTag* NbtByteClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtByteClass::pack(ByteTag* tag)
+Local<Value> NbtByteClass::pack(ByteTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtByteClass(Tag::asTypedTag<ByteTag>(tag->copy())))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<ByteTag> nbt(tag);
+            auto* nbtObj = new NbtByteClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtByteClass(Tag::asTypedTag<ByteTag>(tag->copy())))->getScriptObject();
     }
     CATCH("Fail in construct NbtByte!");
 }
@@ -375,11 +391,19 @@ IntTag* NbtIntClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtIntClass::pack(IntTag* tag)
+Local<Value> NbtIntClass::pack(IntTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtIntClass(Tag::asTypedTag<IntTag>(tag->copy())))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<IntTag> nbt(tag);
+            auto* nbtObj = new NbtIntClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtIntClass(Tag::asTypedTag<IntTag>(tag->copy())))->getScriptObject();
     }
     CATCH("Fail in construct NbtInt!");
 }
@@ -460,11 +484,19 @@ ShortTag* NbtShortClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtShortClass::pack(ShortTag* tag)
+Local<Value> NbtShortClass::pack(ShortTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtShortClass(Tag::asTypedTag<ShortTag>(tag->copy())))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<ShortTag> nbt(tag);
+            auto* nbtObj = new NbtShortClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtShortClass(Tag::asTypedTag<ShortTag>(tag->copy())))->getScriptObject();
     }
     CATCH("Fail in construct NbtShort!");
 }
@@ -545,11 +577,19 @@ Int64Tag* NbtLongClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtLongClass::pack(Int64Tag* tag)
+Local<Value> NbtLongClass::pack(Int64Tag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtLongClass(Tag::asTypedTag<Int64Tag>(tag->copy())))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<Int64Tag> nbt(tag);
+            auto* nbtObj = new NbtLongClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtLongClass(Tag::asTypedTag<Int64Tag>(tag->copy())))->getScriptObject();
     }
     CATCH("Fail in construct NbtLong!");
 }
@@ -630,11 +670,19 @@ FloatTag* NbtFloatClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtFloatClass::pack(FloatTag* tag)
+Local<Value> NbtFloatClass::pack(FloatTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtFloatClass(Tag::asTypedTag<FloatTag>(tag->copy())))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<FloatTag> nbt(tag);
+            auto* nbtObj = new NbtFloatClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtFloatClass(Tag::asTypedTag<FloatTag>(tag->copy())))->getScriptObject();
     }
     CATCH("Fail in construct NbtFloat!");
 }
@@ -715,11 +763,19 @@ DoubleTag* NbtDoubleClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtDoubleClass::pack(DoubleTag* tag)
+Local<Value> NbtDoubleClass::pack(DoubleTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtDoubleClass(Tag::asTypedTag<DoubleTag>(tag->copy())))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<DoubleTag> nbt(tag);
+            auto* nbtObj = new NbtDoubleClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtDoubleClass(Tag::asTypedTag<DoubleTag>(tag->copy())))->getScriptObject();
     }
     CATCH("Fail in construct NbtDouble!");
 }
@@ -800,11 +856,19 @@ StringTag* NbtStringClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtStringClass::pack(StringTag* tag)
+Local<Value> NbtStringClass::pack(StringTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtStringClass(Tag::asTypedTag<StringTag>(tag->copy())))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<StringTag> nbt(tag);
+            auto* nbtObj = new NbtStringClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtStringClass(Tag::asTypedTag<StringTag>(tag->copy())))->getScriptObject();
     }
     CATCH("Fail in construct NbtString!");
 }
@@ -886,11 +950,19 @@ ByteArrayTag* NbtByteArrayClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtByteArrayClass::pack(ByteArrayTag* tag)
+Local<Value> NbtByteArrayClass::pack(ByteArrayTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtByteArrayClass(Tag::asTypedTag<ByteArrayTag>(tag->copy())))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<ByteArrayTag> nbt(tag);
+            auto* nbtObj = new NbtByteArrayClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtByteArrayClass(Tag::asTypedTag<ByteArrayTag>(tag->copy())))->getScriptObject();
     }
     CATCH("Fail in construct NbtByteArray!");
 }
@@ -1046,11 +1118,19 @@ ListTag* NbtListClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtListClass::pack(ListTag* tag)
+Local<Value> NbtListClass::pack(ListTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtListClass(tag->copyList()))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<ListTag> nbt(tag);
+            auto* nbtObj = new NbtListClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtListClass(tag->copyList()))->getScriptObject();
     }
     CATCH("Fail in construct NbtList!");
 }
@@ -1542,37 +1622,37 @@ Local<Value> NbtListClass::getTag(const Arguments& args)
         switch (list[index]->getTagType())
         {
         case Tag::Type::End:
-            res = NbtEndClass::pack(list[index]->asEndTag());
+            res = NbtEndClass::pack(list[index]->asEndTag(), true);     //share ptr
             break;
         case Tag::Type::Byte:
-            res = NbtByteClass::pack(list[index]->asByteTag());
+            res = NbtByteClass::pack(list[index]->asByteTag(), true);     //share ptr
             break;
         case Tag::Type::Short:
-            res = NbtShortClass::pack(list[index]->asShortTag());
+            res = NbtShortClass::pack(list[index]->asShortTag(), true);     //share ptr
             break;
         case Tag::Type::Int:
-            res = NbtIntClass::pack(list[index]->asIntTag());
+            res = NbtIntClass::pack(list[index]->asIntTag(), true);     //share ptr
             break;
         case Tag::Type::Int64:
-            res = NbtLongClass::pack(list[index]->asInt64Tag());
+            res = NbtLongClass::pack(list[index]->asInt64Tag(), true);     //share ptr
             break;
         case Tag::Type::Float:
-            res = NbtFloatClass::pack(list[index]->asFloatTag());
+            res = NbtFloatClass::pack(list[index]->asFloatTag(), true);     //share ptr
             break;
         case Tag::Type::Double:
-            res = NbtDoubleClass::pack(list[index]->asDoubleTag());
+            res = NbtDoubleClass::pack(list[index]->asDoubleTag(), true);     //share ptr
             break;
         case Tag::Type::String:
-            res = NbtStringClass::pack(list[index]->asStringTag());
+            res = NbtStringClass::pack(list[index]->asStringTag(), true);     //share ptr
             break;
         case Tag::Type::ByteArray:
-            res = NbtByteArrayClass::pack(list[index]->asByteArrayTag());
+            res = NbtByteArrayClass::pack(list[index]->asByteArrayTag(), true);     //share ptr
             break;
         case Tag::Type::List:
-            res = NbtListClass::pack(list[index]->asListTag());
+            res = NbtListClass::pack(list[index]->asListTag(), true);     //share ptr
             break;
         case Tag::Type::Compound:
-            res = NbtCompoundClass::pack(list[index]->asCompoundTag());
+            res = NbtCompoundClass::pack(list[index]->asCompoundTag(), true);     //share ptr
             break;
         default:
             res = Local<Value>();
@@ -1703,11 +1783,19 @@ CompoundTag* NbtCompoundClass::extract(Local<Value> v)
         return nullptr;
 }
 
-Local<Value> NbtCompoundClass::pack(CompoundTag* tag)
+Local<Value> NbtCompoundClass::pack(CompoundTag* tag, bool noDelete)
 {
     try
     {
-        return (new NbtCompoundClass(tag->clone()))->getScriptObject();
+        if (noDelete)           // unique_ptr 共享指针 + noDelete
+        {
+            std::unique_ptr<CompoundTag> nbt(tag);
+            auto* nbtObj = new NbtCompoundClass(std::move(nbt));
+            nbtObj->canDelete = false;
+            return nbtObj->getScriptObject();
+        }
+        else
+            return (new NbtCompoundClass(tag->clone()))->getScriptObject();
     }
     CATCH("Fail in construct NbtCompound!");
 }
@@ -2030,37 +2118,37 @@ Local<Value> NbtCompoundClass::getTag(const Arguments& args)
         switch (nbt->value().at(key).getTagType())
         {
         case Tag::Type::End:
-            res = NbtEndClass::pack(nbt->value().at(key).asEndTag());
+            res = NbtEndClass::pack(nbt->value().at(key).asEndTag(), true);     //share ptr
             break;
         case Tag::Type::Byte:
-            res = NbtByteClass::pack((ByteTag*)nbt->getByteTag(key));
+            res = NbtByteClass::pack((ByteTag*)nbt->getByteTag(key), true);     //share ptr
             break;
         case Tag::Type::Short:
-            res = NbtShortClass::pack((ShortTag*)nbt->getShortTag(key));
+            res = NbtShortClass::pack((ShortTag*)nbt->getShortTag(key), true);     //share ptr
             break;
         case Tag::Type::Int:
-            res = NbtIntClass::pack((IntTag*)nbt->getIntTag(key));
+            res = NbtIntClass::pack((IntTag*)nbt->getIntTag(key), true);     //share ptr
             break;
         case Tag::Type::Int64:
-            res = NbtLongClass::pack((Int64Tag*)nbt->getInt64Tag(key));
+            res = NbtLongClass::pack((Int64Tag*)nbt->getInt64Tag(key), true);     //share ptr
             break;
         case Tag::Type::Float:
-            res = NbtFloatClass::pack((FloatTag*)nbt->getFloatTag(key));
+            res = NbtFloatClass::pack((FloatTag*)nbt->getFloatTag(key), true);     //share ptr
             break;
         case Tag::Type::Double:
-            res = NbtDoubleClass::pack((DoubleTag*)nbt->getDoubleTag(key));
+            res = NbtDoubleClass::pack((DoubleTag*)nbt->getDoubleTag(key), true);     //share ptr
             break;
         case Tag::Type::String:
-            res = NbtStringClass::pack((StringTag*)nbt->getStringTag(key));
+            res = NbtStringClass::pack((StringTag*)nbt->getStringTag(key), true);     //share ptr
             break;
         case Tag::Type::ByteArray:
-            res = NbtByteArrayClass::pack((ByteArrayTag*)nbt->getByteArrayTag(key));
+            res = NbtByteArrayClass::pack((ByteArrayTag*)nbt->getByteArrayTag(key), true);     //share ptr
             break;
         case Tag::Type::List:
-            res = NbtListClass::pack((ListTag*)nbt->getListTag(key));
+            res = NbtListClass::pack((ListTag*)nbt->getListTag(key), true);     //share ptr
             break;
         case Tag::Type::Compound:
-            res = NbtCompoundClass::pack((CompoundTag*)nbt->getCompoundTag(key));
+            res = NbtCompoundClass::pack((CompoundTag*)nbt->getCompoundTag(key), true);     //share ptr
             break;
         default:
             res = Local<Value>();
