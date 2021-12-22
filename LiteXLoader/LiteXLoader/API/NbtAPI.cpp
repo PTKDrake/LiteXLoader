@@ -2024,44 +2024,43 @@ Local<Value> NbtCompoundClass::getTag(const Arguments& args)
 
     try
     {
-        auto& list = nbt->value();
         auto key = args[0].toStr();
 
         Local<Value> res;
-        switch (list.at(key).getTagType())
+        switch (nbt->value().at(key).getTagType())
         {
         case Tag::Type::End:
-            res = NbtEndClass::pack(list.at(key).asEndTag());
+            res = NbtEndClass::pack(nbt->value().at(key).asEndTag());
             break;
         case Tag::Type::Byte:
-            res = NbtByteClass::pack(list.at(key).asByteTag());
+            res = NbtByteClass::pack((ByteTag*)nbt->getByteTag(key));
             break;
         case Tag::Type::Short:
-            res = NbtShortClass::pack(list.at(key).asShortTag());
+            res = NbtShortClass::pack((ShortTag*)nbt->getShortTag(key));
             break;
         case Tag::Type::Int:
-            res = NbtIntClass::pack(list.at(key).asIntTag());
+            res = NbtIntClass::pack((IntTag*)nbt->getIntTag(key));
             break;
         case Tag::Type::Int64:
-            res = NbtLongClass::pack(list.at(key).asInt64Tag());
+            res = NbtLongClass::pack((Int64Tag*)nbt->getInt64Tag(key));
             break;
         case Tag::Type::Float:
-            res = NbtFloatClass::pack(list.at(key).asFloatTag());
+            res = NbtFloatClass::pack((FloatTag*)nbt->getFloatTag(key));
             break;
         case Tag::Type::Double:
-            res = NbtDoubleClass::pack(list.at(key).asDoubleTag());
+            res = NbtDoubleClass::pack((DoubleTag*)nbt->getDoubleTag(key));
             break;
         case Tag::Type::String:
-            res = NbtStringClass::pack(list.at(key).asStringTag());
+            res = NbtStringClass::pack((StringTag*)nbt->getStringTag(key));
             break;
         case Tag::Type::ByteArray:
-            res = NbtByteArrayClass::pack(list.at(key).asByteArrayTag());
+            res = NbtByteArrayClass::pack((ByteArrayTag*)nbt->getByteArrayTag(key));
             break;
         case Tag::Type::List:
-            res = NbtListClass::pack(list.at(key).asListTag());
+            res = NbtListClass::pack((ListTag*)nbt->getListTag(key));
             break;
         case Tag::Type::Compound:
-            res = NbtCompoundClass::pack(list.at(key).asCompoundTag());
+            res = NbtCompoundClass::pack((CompoundTag*)nbt->getCompoundTag(key));
             break;
         default:
             res = Local<Value>();
