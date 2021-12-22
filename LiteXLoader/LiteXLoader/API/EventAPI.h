@@ -1,7 +1,7 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
-#include <Kernel/Data.h>
-using namespace script;
+#include "APIHelp.h"
+
+#include <EconomicSystem.h>
 
 //////////////////// Funcs ////////////////////
 

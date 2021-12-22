@@ -31,43 +31,25 @@
     <ClCompile Include="API\LxlAPI.cpp" />
     <ClCompile Include="API\NbtAPI.cpp" />
     <ClCompile Include="API\NetworkAPI.cpp" />
-    <ClCompile Include="API\PacketAPI.cpp" />
     <ClCompile Include="API\PlayerAPI.cpp" />
     <ClCompile Include="API\ScriptAPI.cpp" />
     <ClCompile Include="API\ServerAPI.cpp" />
     <ClCompile Include="API\SystemAPI.cpp" />
-    <ClCompile Include="AutoUpdate.cpp" />
+    <ClCompile Include="AutoUpgrade.cpp" />
     <ClCompile Include="BindAPIs.cpp" />
-    <ClCompile Include="CheckNotice.cpp" />
     <ClCompile Include="Engine\LocalShareData.cpp" />
     <ClCompile Include="Engine\MessageSystem.cpp" />
+    <ClCompile Include="Engine\OperationCount.cpp" />
     <ClCompile Include="Engine\PluginHotManage.cpp" />
     <ClCompile Include="Engine\TimeTaskSystem.cpp" />
-    <ClCompile Include="Kernel\BlockEntity.cpp" />
-    <ClCompile Include="Kernel\Container.cpp" />
-    <ClCompile Include="Kernel\Device.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Engine\GlobalShareData.cpp" />
     <ClCompile Include="Engine\LoaderHelper.cpp" />
     <ClCompile Include="Engine\RemoteCall.cpp" />
-    <ClCompile Include="Kernel\Base.cpp" />
-    <ClCompile Include="Kernel\Block.cpp" />
-    <ClCompile Include="Kernel\Data.cpp" />
-    <ClCompile Include="Kernel\Entity.cpp" />
-    <ClCompile Include="Kernel\Event.cpp" />
-    <ClCompile Include="Kernel\Global.cpp" />
-    <ClCompile Include="Kernel\Gui.cpp" />
-    <ClCompile Include="Kernel\i18n.cpp" />
-    <ClCompile Include="Kernel\Item.cpp" />
-    <ClCompile Include="Kernel\NBT.cpp" />
-    <ClCompile Include="Kernel\Packet.cpp" />
-    <ClCompile Include="Kernel\Player.cpp" />
-    <ClCompile Include="Kernel\Scoreboard.cpp" />
-    <ClCompile Include="Kernel\Server.cpp" />
-    <ClCompile Include="Kernel\SymbolHelper.cpp" />
-    <ClCompile Include="Kernel\System.cpp" />
-    <ClCompile Include="Kernel\UnlockCmd.cpp" />
-    <ClCompile Include="Kernel\Utils.cpp" />
+    <ClCompile Include="Global.cpp" />
+    <ClCompile Include="EconomySystem.cpp" />
+    <ClCompile Include="Tools\IniHelper.cpp" />
+    <ClCompile Include="Tools\Utils.cpp" />
     <ClCompile Include="LiteXLoader.cpp" />
     <ClCompile Include="Loader.cpp" />
   </ItemGroup>
@@ -91,44 +73,27 @@
     <ClInclude Include="API\NbtAPI.h" />
     <ClInclude Include="API\NetworkAPI.h" />
     <ClInclude Include="API\APIHelp.h" />
-    <ClInclude Include="API\PacketAPI.h" />
     <ClInclude Include="API\PlayerAPI.h" />
     <ClInclude Include="API\ScriptAPI.h" />
     <ClInclude Include="API\ServerAPI.h" />
     <ClInclude Include="API\McAPI.h" />
     <ClInclude Include="API\SystemAPI.h" />
-    <ClInclude Include="AutoUpdate.h" />
-    <ClInclude Include="CheckNotice.h" />
+    <ClInclude Include="AutoUpgrade.h" />
     <ClInclude Include="Configs.h" />
     <ClInclude Include="Engine\GlobalShareData.h" />
     <ClInclude Include="Engine\EngineOwnData.h" />
     <ClInclude Include="Engine\LoaderHelper.h" />
     <ClInclude Include="Engine\LocalShareData.h" />
     <ClInclude Include="Engine\MessageSystem.h" />
+    <ClInclude Include="Engine\OperationCount.h" />
     <ClInclude Include="Engine\PluginHotManage.h" />
     <ClInclude Include="Engine\RemoteCall.h" />
     <ClInclude Include="Engine\TimeTaskSystem.h" />
-    <ClInclude Include="Kernel\Base.h" />
-    <ClInclude Include="Kernel\Block.h" />
-    <ClInclude Include="Kernel\BlockEntity.h" />
-    <ClInclude Include="Kernel\Container.h" />
-    <ClInclude Include="Kernel\Data.h" />
-    <ClInclude Include="Kernel\Device.h" />
-    <ClInclude Include="Kernel\Entity.h" />
-    <ClInclude Include="Kernel\Event.h" />
-    <ClInclude Include="Kernel\Gui.h" />
-    <ClInclude Include="Kernel\i18n.h" />
-    <ClInclude Include="Kernel\Item.h" />
-    <ClInclude Include="Kernel\NBT.h" />
-    <ClInclude Include="Kernel\Packet.h" />
-    <ClInclude Include="Kernel\Global.h" />
-    <ClInclude Include="Kernel\Player.h" />
-    <ClInclude Include="Kernel\Scoreboard.h" />
-    <ClInclude Include="Kernel\Server.h" />
-    <ClInclude Include="Kernel\SymbolHelper.h" />
-    <ClInclude Include="Kernel\System.h" />
-    <ClInclude Include="Kernel\ThirdParty.h" />
-    <ClInclude Include="Kernel\Utils.h" />
+    <ClInclude Include="Global.hpp" />
+    <ClInclude Include="EconomicSystem.h" />
+    <ClInclude Include="Tools\IniHelper.h" />
+    <ClInclude Include="Tools\JsonHelper.h" />
+    <ClInclude Include="Tools\Utils.h" />
     <ClInclude Include="Loader.h" />
     <ClInclude Include="Version.h" />
   </ItemGroup>
@@ -138,11 +103,10 @@
     <Library Include="..\third-party\dyncall\lib\libdyncall_s.lib" />
     <Library Include="..\third-party\dyncall\lib\libdynload_s.lib" />
     <Library Include="..\third-party\LightWebSocketClient\lib\LightWSClient.lib" />
-    <Library Include="..\third-party\LiteLoader\libcrypto.lib" />
-    <Library Include="..\third-party\LiteLoader\libssl.lib" />
-    <Library Include="..\third-party\LiteLoader\LiteLoader.lib" />
     <Library Include="..\third-party\Lua\lib\lua.lib" />
     <Library Include="..\third-party\nbt-cpp\lib\nbt-cpp.lib" />
+    <Library Include="..\third-party\openssl\libcrypto.lib" />
+    <Library Include="..\third-party\openssl\libssl.lib" />
     <Library Include="..\third-party\ScriptX\lib\ScriptX-Js.lib" />
     <Library Include="..\third-party\ScriptX\lib\ScriptX-Lua.lib" />
     <Library Include="..\third-party\V8\lib\v8.lib" />
@@ -162,7 +126,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Lua|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <EnableUnitySupport>false</EnableUnitySupport>
@@ -170,7 +134,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Js|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
     <EnableUnitySupport>false</EnableUnitySupport>
@@ -191,13 +155,13 @@
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Release\</OutDir>
     <TargetName>$(ProjectName).Lua</TargetName>
-    <IncludePath>$(SolutionDir)third-party\ScriptX\src\include\ScriptX;$(SolutionDir)third-party\ScriptX\src\include;$(SolutionDir)third-party\gsl;$(SolutionDir)third-party\LiteLoader;$(SolutionDir)third-party;$(SolutionDir);$(SolutionDir)LiteXLoader;$(SolutionDir)third-party\Lua\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)third-party\ScriptX\src\include\ScriptX;$(SolutionDir)third-party\ScriptX\src\include;$(SolutionDir)third-party\gsl;$(SolutionDir)third-party\LiteLoader\Header\third-party;$(SolutionDir)third-party\LiteLoader\Header;$(SolutionDir)third-party;$(SolutionDir);$(SolutionDir)LiteXLoader;$(SolutionDir)third-party\Lua\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Js|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Release\</OutDir>
     <TargetName>$(ProjectName).Js</TargetName>
-    <IncludePath>$(SolutionDir)third-party\ScriptX\src\include\ScriptX;$(SolutionDir)third-party\ScriptX\src\include;$(SolutionDir)third-party\gsl;$(SolutionDir)third-party\LiteLoader;$(SolutionDir)third-party;$(SolutionDir);$(SolutionDir)LiteXLoader;$(SolutionDir)third-party\V8\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)third-party\ScriptX\src\include\ScriptX;$(SolutionDir)third-party\ScriptX\src\include;$(SolutionDir)third-party\gsl;$(SolutionDir)third-party\LiteLoader\Header\third-party;$(SolutionDir)third-party\LiteLoader\Header;$(SolutionDir)third-party;$(SolutionDir);$(SolutionDir)LiteXLoader;$(SolutionDir)third-party\V8\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Lua|x64'">
     <ClCompile>
@@ -205,7 +169,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;SCRIPTX_BACKEND_TRAIT_PREFIX=../backend/Lua/trait/Trait;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;NDEBUG;_CONSOLE;_AMD64_;NOMINMAX;SCRIPTX_BACKEND_TRAIT_PREFIX=../backend/Lua/trait/Trait;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -219,14 +183,27 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)third-party\LiteLoader\LiteLoader.lib;$(SolutionDir)third-party\ScriptX\lib\ScriptX-Lua.lib;$(SolutionDir)third-party\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)third-party\ScriptX\lib\ScriptX-Lua.lib;$(SolutionDir)third-party\Lua\lib\lua.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>bedrock_server.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>if exist $(LocalDebuggerWorkingDirectory)\plugins\ (
 copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
 )</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_api.lib goto process
+if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_var.lib goto process
+goto end
+
+:process
+cd /d $(SolutionDir)third-party\LiteLoader\Tools
+LibraryBuilder.exe -o ..\Lib
+
+:end
+</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Js|x64'">
     <ClCompile>
@@ -234,7 +211,7 @@ copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;SCRIPTX_BACKEND_TRAIT_PREFIX=../backend/V8/trait/Trait;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>CPPHTTPLIB_OPENSSL_SUPPORT;NDEBUG;_CONSOLE;_AMD64_;NOMINMAX;SCRIPTX_BACKEND_TRAIT_PREFIX=../backend/V8/trait/Trait;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -248,14 +225,27 @@ copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>$(SolutionDir)third-party\LiteLoader\LiteLoader.lib;$(SolutionDir)third-party\ScriptX\lib\ScriptX-Js.lib;$(SolutionDir)third-party\V8\lib\v8.lib;$(SolutionDir)third-party\V8\lib\v8_libbase.lib;$(SolutionDir)third-party\V8\lib\v8_libplatform.lib;$(SolutionDir)third-party\V8\lib\zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
+      <AdditionalDependencies>$(SolutionDir)third-party\ScriptX\lib\ScriptX-Js.lib;$(SolutionDir)third-party\V8\lib\v8.lib;$(SolutionDir)third-party\V8\lib\v8_libbase.lib;$(SolutionDir)third-party\V8\lib\v8_libplatform.lib;$(SolutionDir)third-party\V8\lib\zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DelayLoadDLLs>bedrock_server.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
       <Command>if exist $(LocalDebuggerWorkingDirectory)\plugins\ (
 copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
 )</Command>
     </PostBuildEvent>
+    <PreBuildEvent>
+      <Command>if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_api.lib goto process
+if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_var.lib goto process
+goto end
+
+:process
+cd /d $(SolutionDir)third-party\LiteLoader\Tools
+LibraryBuilder.exe -o ..\Lib
+
+:end
+</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

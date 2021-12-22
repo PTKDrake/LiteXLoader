@@ -2,12 +2,11 @@
 #include "FileSystemAPI.h"
 #include <Engine/TimeTaskSystem.h>
 #include <Engine/LocalShareData.h>
-#include <Kernel/System.h>
-#include <Kernel/Utils.h>
 #include <filesystem>
 #include <fstream>
 #include <string>
-using namespace script;
+#include <Utils/FileHelper.h>
+
 using namespace std::filesystem;
 using namespace std;
 
@@ -97,7 +96,7 @@ FileClass* FileClass::constructor(const Arguments& args)
 
     try {
         string path = args[0].toStr();
-        Raw_AutoCreateDirs(path);
+        CreateDirs(path);
 
         FileOpenMode fMode = (FileOpenMode)(args[1].toInt());
         //Auto Create
@@ -126,14 +125,14 @@ FileClass* FileClass::constructor(const Arguments& args)
         fstream fs(path, mode);
         if (!fs.is_open())
         {
-            ERROR("Fail to Open File " + path + "!\n");
+            logger.error("Fail to Open File " + path + "!\n");
             return nullptr;
         }
         return new FileClass(args.thiz(), std::move(fs), path, isBinary);
     }
     catch (const filesystem_error& e)
     {
-        ERROR("Fail to Open File " + args[0].asString().toString() + "!\n");
+        logger.error("Fail to Open File " + args[0].asString().toString() + "!\n");
         return nullptr;
     }
     CATCH_C("Fail in OpenFile!");
@@ -221,7 +220,7 @@ Local<Value> FileClass::writeSync(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in writeSync!");
+            logger.error("Wrong type of argument in writeSync!");
             return Local<Value>();
         }
         return Boolean::newBoolean(!file.fail() && !file.bad());
@@ -249,7 +248,7 @@ Local<Value> FileClass::read(const Arguments& args)
 
     try {
         int cnt = args[0].toInt();
-        Global<Function> callbackFunc{ args[1].asFunction() };
+        script::Global<Function> callbackFunc{ args[1].asFunction() };
 
         pool.enqueue([cnt, fp{ &file }, isBinary { isBinary }, lock { &lock },
             callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }] ()
@@ -269,9 +268,9 @@ Local<Value> FileClass::read(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("FileRead Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                logger.error("FileRead Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                logger.error << e << logger.endl;
             }
         });
         return Boolean::newBoolean(true);
@@ -285,7 +284,7 @@ Local<Value> FileClass::readLine(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kFunction);
 
     try {
-        Global<Function> callbackFunc{ args[0].asFunction() };
+        script::Global<Function> callbackFunc{ args[0].asFunction() };
 
         pool.enqueue([fp{ &file }, lock{ &lock },
             callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }] ()
@@ -302,9 +301,9 @@ Local<Value> FileClass::readLine(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("FileReadLine Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                logger.error("FileReadLine Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                logger.error << e << logger.endl;
             }
         });
         return Boolean::newBoolean(true);
@@ -318,7 +317,7 @@ Local<Value> FileClass::readAll(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kFunction);
 
     try {
-        Global<Function> callbackFunc{ args[0].asFunction() };
+        script::Global<Function> callbackFunc{ args[0].asFunction() };
 
         pool.enqueue([fp{ &file }, isBinary{ isBinary }, lock{ &lock },
             callback{ std::move(callbackFunc) }, engine{ EngineScope::currentEngine() }]()
@@ -335,9 +334,9 @@ Local<Value> FileClass::readAll(const Arguments& args)
             }
             catch (const Exception& e)
             {
-                ERROR("FileReadAll Callback Failed!");
-                ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                ERRPRINT(e);
+                logger.error("FileReadAll Callback Failed!");
+                logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                logger.error << e << logger.endl;
             }
         });
         return Boolean::newBoolean(true);
@@ -365,11 +364,11 @@ Local<Value> FileClass::write(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in write!");
+            logger.error("Wrong type of argument in write!");
             return Local<Value>();
         }
 
-        Global<Function> callbackFunc;
+        script::Global<Function> callbackFunc;
         if (args.size() >= 2) 
             callbackFunc = args[1].asFunction();
 
@@ -393,9 +392,9 @@ Local<Value> FileClass::write(const Arguments& args)
                 }
                 catch (const Exception& e)
                 {
-                    ERROR("FileWrite Callback Failed!");
-                    ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                    ERRPRINT(e);
+                    logger.error("FileWrite Callback Failed!");
+                    logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                    logger.error << e << logger.endl;
                 }
             }
         });
@@ -414,7 +413,7 @@ Local<Value> FileClass::writeLine(const Arguments& args)
     try {
         string data{ std::move(args[0].toStr()) };
 
-        Global<Function> callbackFunc;
+        script::Global<Function> callbackFunc;
         if (args.size() >= 2)
             callbackFunc = args[1].asFunction();
 
@@ -435,9 +434,9 @@ Local<Value> FileClass::writeLine(const Arguments& args)
                 }
                 catch (const Exception& e)
                 {
-                    ERROR("FileWriteLine Callback Failed!");
-                    ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-                    ERRPRINT(e);
+                    logger.error("FileWriteLine Callback Failed!");
+                    logger.error("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+                    logger.error << e << logger.endl;
                 }
             }
         });
@@ -551,12 +550,12 @@ Local<Value> DirCreate(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
 
     try{
-        Raw_DirCreate(args[0].asString().toString());
+        CreateDirs(args[0].toStr());
         return Boolean::newBoolean(true);
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Create Dir "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Create Dir "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in CreateDir!");
@@ -573,7 +572,7 @@ Local<Value> PathDelete(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Delete "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Delete "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in DeletePath!");
@@ -585,11 +584,11 @@ Local<Value> PathExists(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
 
     try{
-        return Boolean::newBoolean(Raw_PathExists(args[0].asString().toString()));
+        return Boolean::newBoolean(filesystem::exists(args[0].asString().toString()));
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Check "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Check "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in ExistsPath!");
@@ -607,7 +606,7 @@ Local<Value> PathCopy(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Copy "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Copy "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in CopyPath!");
@@ -625,7 +624,7 @@ Local<Value> PathRename(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Rename "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Rename "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in RenamePath!");
@@ -644,7 +643,7 @@ Local<Value> PathMove(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Move "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Move "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in MovePath!");
@@ -664,7 +663,7 @@ Local<Value> CheckIsDir(const Arguments& args)
     }
     catch (const filesystem_error& e)
     {
-        ERROR("Fail to Get Type of " + args[0].asString().toString() + "!\n");
+        logger.error("Fail to Get Type of " + args[0].asString().toString() + "!\n");
         return Local<Value>();
     }
     CATCH("Fail in GetFilesList!");
@@ -687,7 +686,7 @@ Local<Value> GetFileSize(const Arguments& args)
     }
     catch (const filesystem_error& e)
     {
-        ERROR("Fail to Get Size of " + args[0].asString().toString() + "!\n");
+        logger.error("Fail to Get Size of " + args[0].asString().toString() + "!\n");
         return Local<Value>();
     }
     CATCH("Fail in GetFilesList!");
@@ -699,7 +698,7 @@ Local<Value> GetFilesList(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
 
     try {
-        auto fileList = Raw_GetFilesList(args[0].toStr());
+        auto fileList = GetFileNameList(args[0].toStr());
 
         Local<Array> arr = Array::newArray();
         for (auto& file : fileList)
@@ -715,10 +714,10 @@ Local<Value> FileReadFrom(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kString);
     
     try{
-        string texts;
-        if(!Raw_FileReadFrom(args[0].toStr(),texts))
+        auto content = ReadAllFile(args[0].toStr());
+        if(!content)
             return Local<Value>();  //Null
-        return String::newString(texts);
+        return String::newString(*content);
     }
     CATCH("Fail in FileReadAll!");
 }
@@ -731,8 +730,8 @@ Local<Value> FileWriteTo(const Arguments& args)
     
     try{
         string path = args[0].toStr();
-        Raw_AutoCreateDirs(path);
-        return Boolean::newBoolean(Raw_FileWriteTo(path,args[1].toStr()));
+        CreateDirs(path);
+        return Boolean::newBoolean(WriteAllFile(path, args[1].toStr(), false));
     }
     CATCH("Fail in FileWriteAll!");
 }
@@ -745,7 +744,7 @@ Local<Value> FileWriteLine(const Arguments& args)
     
     try{
         string path = args[0].toStr();
-        Raw_AutoCreateDirs(path);
+        CreateDirs(path);
 
         std::ofstream fileWrite(path,std::ios::app);
         if(!fileWrite)
@@ -769,7 +768,7 @@ Local<Value> OpenFile(const Arguments& args)
 
     try {
         string path = args[0].toStr();
-        Raw_AutoCreateDirs(path);
+        CreateDirs(path);
 
         FileOpenMode fMode = (FileOpenMode)(args[1].toInt());
         ios_base::openmode mode = ios_base::in;
@@ -793,14 +792,14 @@ Local<Value> OpenFile(const Arguments& args)
         fstream fs(path, mode);
         if (!fs.is_open())
         {
-            ERROR("Fail to Open File " + path + "!\n");
+            logger.error("Fail to Open File " + path + "!\n");
             return Local<Value>();
         }
         return FileClass::newFile(std::move(fs), path, isBinary);
     }
     catch (const filesystem_error& e)
     {
-        ERROR("Fail to Open File " + args[0].asString().toString() + "!\n");
+        logger.error("Fail to Open File " + args[0].asString().toString() + "!\n");
         return Local<Value>();
     }
     CATCH("Fail in OpenFile!");

@@ -3,12 +3,12 @@
 #include "ItemAPI.h"
 #include "McAPI.h"
 #include "EntityAPI.h"
-#include <Kernel/Item.h>
 #include "NbtAPI.h"
-#include <Kernel/NBT.h>
+#include <MC/CompoundTag.hpp>
+#include <MC/ItemStack.hpp>
 #include <vector>
 #include <string>
-using namespace script;
+
 
 //////////////////// Class Definition ////////////////////
 
@@ -63,14 +63,14 @@ ItemStack* ItemClass::extract(Local<Value> v)
 //成员函数
 void ItemClass::preloadData()
 {
-    name = Raw_GetCustomName(item);
+    name = item->getCustomName();
     if (name.empty())
-        name = Raw_GetItemName(item);
+        name = item->getName();
 
-    type = Raw_GetItemTypeName(item);
-    id = Raw_GetItemId(item);
-    count = Raw_GetCount(item);
-    aux = Raw_GetItemAux(item);
+    type = item->getTypeName();
+    id = item->getId();
+    count = item->getCount();
+    aux = item->getAux();
 }
 
 Local<Value> ItemClass::getName()
@@ -135,7 +135,7 @@ Local<Value> ItemClass::set(const Arguments& args)
         if (!itemNew)
             return Local<Value>();    //Null
 
-        return Boolean::newBoolean(Raw_SetItem(item, itemNew));
+        return Boolean::newBoolean(item->setItem(itemNew));
     }
     CATCH("Fail in set!");
 }
@@ -147,7 +147,7 @@ Local<Value> ItemClass::clone(const Arguments& args)
         if (!item)
             return Local<Value>();    //Null
 
-        return Boolean::newBoolean(Raw_CloneItem(item));
+        return Boolean::newBoolean(item->clone_s());
     }
     CATCH("Fail in cloneItem!");
 }
@@ -155,7 +155,7 @@ Local<Value> ItemClass::clone(const Arguments& args)
 Local<Value> ItemClass::isNull(const Arguments& args)
 {
     try{
-        return Boolean::newBoolean(Raw_IsNull(item));
+        return Boolean::newBoolean(item->isNull());
     }
     CATCH("Fail in isNull!");
 }
@@ -163,7 +163,8 @@ Local<Value> ItemClass::isNull(const Arguments& args)
 Local<Value> ItemClass::setNull(const Arguments& args)
 {
     try {
-        return Boolean::newBoolean(Raw_SetNull(item));
+        item->setNull();
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in setNull!");
 }
@@ -174,7 +175,8 @@ Local<Value> ItemClass::setAux(const Arguments& args)
     CHECK_ARG_TYPE(args[0], ValueKind::kNumber);
 
     try {
-        return Boolean::newBoolean(Raw_SetItemAux(item,args[0].toInt()));
+        item->setAuxValue(args[0].toInt());
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in setAux!");
 }
@@ -196,7 +198,7 @@ Local<Value> ItemClass::setLore(const Arguments& args)
         if(lores.empty())
             return Boolean::newBoolean(false);
         
-        Raw_SetLore(item, lores);
+        item->setLore(lores);
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in SetLore!");
@@ -205,7 +207,7 @@ Local<Value> ItemClass::setLore(const Arguments& args)
 Local<Value> ItemClass::getNbt(const Arguments& args)
 {
     try {
-        return NbtCompoundClass::pack(Tag::fromItem(item));
+        return NbtCompoundClass::pack(std::move(item->getNbt()));
     }
     CATCH("Fail in getNbt!");
 }
@@ -219,7 +221,7 @@ Local<Value> ItemClass::setNbt(const Arguments& args)
         if (!nbt)
             return Local<Value>();    //Null
 
-        nbt->setItem(item);
+        item->setNbt(nbt);
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in setNbt!");
@@ -238,7 +240,7 @@ Local<Value> McClass::newItem(const Arguments& args)
                 string type = args[0].toStr();
                 int cnt = args[1].toInt();
 
-                ItemStack* item = Raw_NewItem(type,cnt);
+                ItemStack* item = ItemStack::create(type,cnt);
                 if (!item)
                     return Local<Value>();    //Null
                 else
@@ -246,16 +248,16 @@ Local<Value> McClass::newItem(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong number of arguments in NewItem!");
+                logger.error("Wrong number of arguments in NewItem!");
                 return Local<Value>();
             }
         }
         else
         {
-            Tag* nbt = NbtCompoundClass::extract(args[0]);
+            CompoundTag* nbt = (CompoundTag*)NbtCompoundClass::extract(args[0]);
             if (nbt)
             {
-                ItemStack* item = Raw_NewItem(nbt);
+                ItemStack* item = ItemStack::create(nbt->clone());
                 if (!item)
                     return Local<Value>();    //Null
                 else
@@ -263,7 +265,7 @@ Local<Value> McClass::newItem(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in NewItem!");
+                logger.error("Wrong type of argument in NewItem!");
                 return Local<Value>();
             }
         }
@@ -306,7 +308,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in SpawnItem!");
+                logger.error("Wrong type of argument in SpawnItem!");
                 return Local<Value>();
             }
         }
@@ -321,7 +323,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong number of arguments in SpawnItem!");
+            logger.error("Wrong number of arguments in SpawnItem!");
             return Local<Value>();
         }
 
@@ -330,7 +332,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
         if (it)
         {
             //By Item
-            Actor* entity = Raw_SpawnItemByItemStack(it, pos);
+            Actor* entity = Level::spawnItem(pos.getVec3(), pos.dim, it);
             if (!entity)
                 return Local<Value>();    //Null
             else
@@ -338,7 +340,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in SpawnItem!");
+            logger.error("Wrong type of argument in SpawnItem!");
             return Local<Value>();
         }
     }

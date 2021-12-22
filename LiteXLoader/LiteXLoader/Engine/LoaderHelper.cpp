@@ -1,9 +1,7 @@
 #include <API/APIHelp.h>
-#include <ScriptX/ScriptX.h>
 #include <Engine/GlobalShareData.h>
 #include <Engine/EngineOwnData.h>
 #include <API/EventAPI.h>
-#include <Kernel/Data.h>
 #include <list>
 #include <string>
 #include <vector>
@@ -19,7 +17,9 @@
 #include <Engine/RemoteCall.h>
 #include <Engine/MessageSystem.h>
 #include <API/CommandAPI.h>
-using namespace script;
+#include <Utils/StringHelper.h>
+#include <ScheduleAPI.h>
+
 using namespace std;
 
 //读取辅助函数
@@ -72,7 +72,7 @@ void RemoteLoadReturnCallback(ModuleMessage& msg)
 {
     if (msg.getData() == "0")
     {
-        ERROR("Romote Load Failed!");
+        logger.error("Romote Load Failed!");
     }
 }
 
@@ -86,7 +86,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
     if (suffix != LXL_PLUGINS_SUFFIX)
     {
         //Remote Load
-        DEBUG("Remote Load begin");
+        logger.debug("Remote Load begin");
 
         ostringstream sout;
         int backId = ModuleMessage::getNextMessageId();
@@ -99,7 +99,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         {
             if (!ModuleMessage::sendTo(msg, LXL_LANG_LUA))
             {
-                ERROR("Fail to send remote load request!");
+                logger.error("Fail to send remote load request!");
                 return false;
             }
         }
@@ -107,19 +107,19 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         {
             if (!ModuleMessage::sendTo(msg, LXL_LANG_JS))
             {
-                ERROR("Fail to send remote load request!");
+                logger.error("Fail to send remote load request!");
                 return false;
             }
         }
         else
         {
-            ERROR("Unknown type of Script file!");
+            logger.error("Unknown type of Script file!");
             return false;
         }
 
         if (!ModuleMessage::waitForMessage(backId, LXL_MAXWAIT_REMOTE_LOAD))
         {
-            ERROR("Remote Load Timeout!");
+            logger.error("Remote Load Timeout!");
             return false;
         }
 
@@ -150,6 +150,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         //setData
         ENGINE_OWN_DATA()->pluginName = pluginName;
         ENGINE_OWN_DATA()->pluginPath = filePath;
+        ENGINE_OWN_DATA()->logger.title = SplitStrWithPattern(pluginName,"\.")[0];
 
         //绑定API
         try {
@@ -157,7 +158,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         }
         catch (const Exception& e)
         {
-            ERROR("Fail in Binding APIs!\n");
+            logger.error("Fail in Binding APIs!\n");
             throw;
         }
 
@@ -170,7 +171,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         }
         catch (const Exception& e)
         {
-            ERROR("Fail in Loading Dependence Lib!\n");
+            logger.error("Fail in Loading Dependence Lib!\n");
             throw;
         }
 
@@ -181,7 +182,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         }
         catch (const Exception& e)
         {
-            ERROR("Fail in Loading Script Plugin!\n");
+            logger.error("Fail in Loading Script Plugin!\n");
             throw;
         }
         ExitEngineScope exit;
@@ -189,7 +190,7 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
         AddToGlobalPluginsList(pluginName);
         if (isHotLoad)
             LxlCallEventsOnHotLoad(engine);
-        INFO(pluginName + " loaded.");
+        logger.info(pluginName + " loaded.");
         return true;
     }
     catch (const Exception& e)
@@ -201,21 +202,21 @@ bool LxlLoadPlugin(const std::string& filePath, bool isHotLoad)
             EngineScope enter(deleteEngine);
 
             deleteEngine->getData().reset();
-            ERROR("Fail to load " + filePath + "!\n");
-            ERRPRINT("[Error] In Plugin: " + ENGINE_OWN_DATA()->pluginName);
-            ERRPRINT(e);
+            logger.error("Fail to load " + filePath + "!\n");
+            logger.error("In Plugin: " + ENGINE_OWN_DATA()->pluginName);
+            PrintException(e);
             ExitEngineScope exit;
         }
         deleteEngine->destroy();
     }
     catch (const std::exception& e)
     {
-        ERROR("Fail to load " + filePath + "!");
-        ERROR(e.what());
+        logger.error("Fail to load " + filePath + "!");
+        logger.error(e.what());
     }
     catch (...)
     {
-        ERROR("Fail to load " + filePath + "!");
+        logger.error("Fail to load " + filePath + "!");
     }
     return false;
 }
@@ -246,9 +247,12 @@ string LxlUnloadPlugin(const std::string& name)
             engine->getData().reset();
             lxlModules.erase(lxlModules.begin() + i);
 
-            engine->destroy();
+            //delay request to avoid crash
+            Schedule::nextTick([engine]() {
+                engine->destroy();
+            });
 
-            INFO(name + " unloaded.")
+            logger.info(name + " unloaded.");
             break;
         }
     }

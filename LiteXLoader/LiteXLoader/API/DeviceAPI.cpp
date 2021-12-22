@@ -1,10 +1,11 @@
 #include "APIHelp.h"
 #include "DeviceAPI.h"
-#include <Kernel/Device.h>
-#include <Kernel/Player.h>
 #include <string>
+#include <MC/Player.hpp>
+#include <MC/Level.hpp>
+#include <MC/NetworkIdentifier.hpp>
 using namespace std;
-using namespace script;
+
 
 //////////////////// Class Definition ////////////////////
 
@@ -33,7 +34,7 @@ void DeviceClass::setPlayer(Player* player)
 {
     __try
     {
-        id = ((Actor*)player)->getUniqueID();
+        id = player->getUniqueID();
     }
     __except (EXCEPTION_EXECUTE_HANDLER)
     {
@@ -46,7 +47,7 @@ Player* DeviceClass::getPlayer()
     if (!isValid)
         return nullptr;
     else
-        return Raw_GetPlayerByUniqueId(id);
+        return ::Global<Level>->getPlayer(id);
 }
 
 Local<Value> DeviceClass::getIP()
@@ -56,7 +57,7 @@ Local<Value> DeviceClass::getIP()
         if (!player)
             return Local<Value>();
 
-        return String::newString(Raw_GetIP(player));
+        return String::newString(player->getNetworkIdentifier()->getIP());
     }
     CATCH("Fail in GetIP!")
 }
@@ -68,7 +69,7 @@ Local<Value> DeviceClass::getAvgPing()
         if (!player)
             return Local<Value>();
 
-        return Number::newNumber(Raw_GetAvgPing(player));
+        return Number::newNumber(player->getAvgPing());
     }
     CATCH("Fail in getAvgPing!")
 }
@@ -80,7 +81,7 @@ Local<Value> DeviceClass::getAvgPacketLoss()
         if (!player)
             return Local<Value>();
 
-        return  Number::newNumber(Raw_GetAvgPacketloss(player));
+        return  Number::newNumber(0);       //=================???
     }
     CATCH("Fail in getAvgPacketLoss!")
 }
@@ -92,7 +93,7 @@ Local<Value> DeviceClass::getOs()
         if (!player)
             return Local<Value>();
 
-        return String::newString(Raw_GetOs(player));
+        return String::newString(player->getDeviceName());
     }
     CATCH("Fail in getOs!")
 }
@@ -104,7 +105,7 @@ Local<Value> DeviceClass::getClientId()
         if (!player)
             return Local<Value>();
 
-        return String::newString(Raw_GetClientId(player));
+        return String::newString(player->getClientId());       //=============???
     }
     CATCH("Fail in getClientId!")
 }

@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
-#include <ScriptX/ScriptX.h>
-using namespace script;
+#include "APIHelp.h"
+
 
 //////////////////// Classes ////////////////////
 class ItemStack;

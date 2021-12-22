@@ -6,13 +6,13 @@
 #include "EntityAPI.h"
 #include "BlockEntityAPI.h"
 #include "NbtAPI.h"
-#include <Kernel/NBT.h>
-#include <Kernel/Block.h>
-#include <Kernel/BlockEntity.h>
-#include <Kernel/Container.h>
-#include <Kernel/SymbolHelper.h>
+#include <MC/Level.hpp>
+#include <MC/Block.hpp>
+#include <MC/CompoundTag.hpp>
+#include <MC/BlockSource.hpp>
+#include <MC/BlockInstance.hpp>
+#include <MC/BlockActor.hpp>
 #include <exception>
-using namespace script;
 
 //////////////////// Class Definition ////////////////////
 
@@ -57,16 +57,6 @@ BlockClass::BlockClass(Block *p, BlockPos bp, int dim)
 }
 
 //生成函数
-Local<Object> BlockClass::newBlock(Block *p)
-{
-    auto newp = new BlockClass(p);
-    return newp->getScriptObject();
-}
-Local<Object> BlockClass::newBlock(Block *p, BlockPos *pos)
-{
-    auto newp = new BlockClass(p,*pos,-1);
-    return newp->getScriptObject();
-}
 Local<Object> BlockClass::newBlock(Block *p, BlockPos *pos, int dim)
 {
     auto newp = new BlockClass(p,*pos,dim);
@@ -74,21 +64,25 @@ Local<Object> BlockClass::newBlock(Block *p, BlockPos *pos, int dim)
 }
 Local<Object> BlockClass::newBlock(BlockPos* pos, int dim)
 {
-    return BlockClass::newBlock(Raw_GetBlockByPos(pos, dim), pos, dim);
+    return BlockClass::newBlock(Level::getBlock(pos,dim), pos, dim);
+}
+Local<Object> BlockClass::newBlock(const BlockPos& pos, int dim)
+{
+    return newBlock((BlockPos*) & pos, dim);
 }
 Local<Object> BlockClass::newBlock(Block *p, BlockPos *pos, BlockSource *bs)
 {
-    auto newp = new BlockClass(p,*pos,Raw_GetBlockDimensionId(bs));
+    auto newp = new BlockClass(p,*pos,bs->getDimensionId());
     return newp->getScriptObject();
-}
-Local<Object> BlockClass::newBlock(WBlock p)
-{
-    return BlockClass::newBlock(p.v);
 }
 Local<Object> BlockClass::newBlock(IntVec4 pos)
 {
     BlockPos bp = { pos.x, pos.y, pos.z };
-    return BlockClass::newBlock(Raw_GetBlockByPos(&pos), &bp, pos.dim);
+    return BlockClass::newBlock(Level::getBlock(bp,pos.dim), &bp, pos.dim);
+}
+Local<Object> BlockClass::newBlock(BlockInstance block)
+{
+    return BlockClass::newBlock(block.getPosition(), block.getDimensionId());
 }
 Block* BlockClass::extract(Local<Value> v)
 {
@@ -101,9 +95,9 @@ Block* BlockClass::extract(Local<Value> v)
 //成员函数
 void BlockClass::preloadData(BlockPos bp, int dim)
 {
-    name = Raw_GetBlockName(block);
-    type = Raw_GetBlockType(block);
-    id = Raw_GetBlockId(block);
+    name = block->getTypeName(); // TODO
+    type = block->getTypeName();
+    id = block->getId();
     pos = { bp.x,bp.y,bp.z,dim };
 }
 
@@ -147,7 +141,7 @@ Local<Value> BlockClass::getTileData()
 {
     try{
         // 已预加载
-        return Number::newNumber(Raw_GetTileData(block));
+        return Number::newNumber(block->getTileData());
     }
     CATCH("Fail in getTileData!");
 }
@@ -163,7 +157,7 @@ Local<Value> BlockClass::getRawPtr(const Arguments& args)
 Local<Value> BlockClass::getNbt(const Arguments& args)
 {
     try {
-        return NbtCompoundClass::pack(Tag::fromBlock(block),false);
+        return NbtCompoundClass::pack(std::move(block->getNbt()));
     }
     CATCH("Fail in getNbt!");
 }
@@ -177,7 +171,7 @@ Local<Value> BlockClass::setNbt(const Arguments& args)
         if (!nbt)
             return Local<Value>();    //Null
         
-        nbt->setBlock(block);
+        block->setNbt(nbt);
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in setNbt!")
@@ -186,10 +180,10 @@ Local<Value> BlockClass::setNbt(const Arguments& args)
 Local<Value> BlockClass::getBlockState(const Arguments& args)
 {
     try {
-        auto list = Tag::fromBlock(block)->asCompound();
+        auto list = block->getNbt();
         try
         {
-            return Tag2Value(&list.at("states"), true);
+            return Tag2Value((Tag*)list->get<Tag>("states"), true);
         }
         catch (...)
         {
@@ -206,7 +200,8 @@ Local<Value> BlockClass::getBlockState(const Arguments& args)
 Local<Value> BlockClass::hasContainer(const Arguments& args)
 {
     try {
-        return Boolean::newBoolean(Raw_HasContainer({ (float)pos.x, (float)pos.y, (float)pos.z, pos.dim }));
+        auto bl = Level::getBlockInstance({ pos.x, pos.y, pos.z }, pos.dim);
+        return Boolean::newBoolean(bl.hasContainer());
     }
     CATCH("Fail in hasContainer!");
 }
@@ -214,7 +209,7 @@ Local<Value> BlockClass::hasContainer(const Arguments& args)
 Local<Value> BlockClass::getContainer(const Arguments& args)
 {
     try {
-        Container* container = Raw_GetContainer({ (float)pos.x, (float)pos.y, (float)pos.z, pos.dim });
+        Container *container = Level::getBlockInstance({ pos.x, pos.y, pos.z }, pos.dim).getContainer();
         return container ? ContainerClass::newContainer(container) : Local<Value>();
     }
     CATCH("Fail in getContainer!");
@@ -223,7 +218,7 @@ Local<Value> BlockClass::getContainer(const Arguments& args)
 Local<Value> BlockClass::hasBlockEntity(const Arguments& args)
 {
     try {
-        return Boolean::newBoolean(Raw_HasBlockEntity(block));
+        return Boolean::newBoolean(block->hasBlockEntity());
     }
     CATCH("Fail in hasBlockEntity!");
 }
@@ -231,7 +226,8 @@ Local<Value> BlockClass::hasBlockEntity(const Arguments& args)
 Local<Value> BlockClass::getBlockEntity(const Arguments& args)
 {
     try {
-        BlockActor* be = Raw_GetBlockEntity(pos);
+        BlockInstance bl = Level::getBlockInstance(pos.getBlockPos(), pos.dim);
+        BlockActor* be = bl.getBlockEntity();
         return be ? BlockEntityClass::newBlockEntity(be,pos.dim) : Local<Value>();
     }
     CATCH("Fail in getBlockEntity!");
@@ -240,7 +236,9 @@ Local<Value> BlockClass::getBlockEntity(const Arguments& args)
 Local<Value> BlockClass::removeBlockEntity(const Arguments& args)
 {
     try {
-        return Boolean::newBoolean(Raw_RemoveBlockEntity(pos));
+        BlockSource* bs = Level::getBlockSource(pos.dim);
+        bs->removeBlockEntity(pos.getBlockPos());       //==========???
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in removeBlockEntity!");
 }
@@ -279,7 +277,7 @@ Local<Value> McClass::getBlock(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in GetBlock!");
+                logger.error("Wrong type of argument in GetBlock!");
                 return Local<Value>();
             }
         }
@@ -294,14 +292,14 @@ Local<Value> McClass::getBlock(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong number of arguments in GetBlock!");
+            logger.error("Wrong number of arguments in GetBlock!");
             return Local<Value>();
         }
 
-        auto block = Raw_GetBlockByPos(&pos);
+        auto block = Level::getBlock(pos.getBlockPos(),pos.dim);
         if (!block)
         {
-            ERROR("Wrong type of argument in SetBlock!");
+            logger.error("Wrong type of argument in SetBlock!");
             return Local<Value>();
         }
         else
@@ -356,7 +354,7 @@ Local<Value> McClass::setBlock(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in SetBlock!");
+                logger.error("Wrong type of argument in SetBlock!");
                 return Local<Value>();
             }
         }
@@ -378,7 +376,7 @@ Local<Value> McClass::setBlock(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong number of arguments in SetBlock!");
+            logger.error("Wrong number of arguments in SetBlock!");
             return Local<Value>();
         }
 
@@ -386,13 +384,13 @@ Local<Value> McClass::setBlock(const Arguments& args)
         if (block.isString())
         {
             //方块名
-            return Boolean::newBoolean(Raw_SetBlockByNameAndTileData(pos, block.toStr(), tileData));
+            return Boolean::newBoolean(Level::setBlock(pos.getBlockPos(), pos.dim, block.toStr(), tileData));
         }
         else if (IsInstanceOf<NbtCompoundClass>(block))
         {
             //Nbt
             Tag* nbt = NbtCompoundClass::extract(block);
-            return Boolean::newBoolean(Raw_SetBlockByNbt(pos, nbt));
+            return Boolean::newBoolean(Level::setBlock(pos.getBlockPos(), pos.dim, (CompoundTag*)nbt));
         }
         else
         {
@@ -400,10 +398,10 @@ Local<Value> McClass::setBlock(const Arguments& args)
             Block* bl = BlockClass::extract(block);
             if (!bl)
             {
-                ERROR("Wrong type of argument in SetBlock!");
+                logger.error("Wrong type of argument in SetBlock!");
                 return Local<Value>();
             }
-            return Boolean::newBoolean(Raw_SetBlockByBlock(pos, bl));
+            return Boolean::newBoolean(Level::setBlock(pos.getBlockPos(), pos.dim, bl));
         }
     }
     CATCH("Fail in SetBlock!")
@@ -452,7 +450,7 @@ Local<Value> McClass::spawnParticle(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in SpawnParticle!");
+                logger.error("Wrong type of argument in SpawnParticle!");
                 return Local<Value>();
             }
         }
@@ -470,11 +468,12 @@ Local<Value> McClass::spawnParticle(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong number of arguments in SpawnParticle!");
+            logger.error("Wrong number of arguments in SpawnParticle!");
             return Local<Value>();
         }
 
-        return Boolean::newBoolean(Raw_SpawnParticle(pos, type.toStr()));
+        Level::spawnParticleEffect(type.toStr(), pos.getVec3(), Level::getDimension(pos.dim));
+        return Boolean::newBoolean(true);
     }
     CATCH("Fail in SpawnParticle!")
 }

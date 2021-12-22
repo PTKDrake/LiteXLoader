@@ -3,14 +3,13 @@
 #include <Engine/GlobalShareData.h>
 #include <Engine/EngineOwnData.h>
 #include <Engine/LoaderHelper.h>
-#include <Kernel/System.h>
-#include <Kernel/Utils.h>
-#include <Engine/LoaderHelper.h>
+#include <Utils/NetworkHelper.h>
+#include <Tools/Utils.h>
 #include <Version.h>
 #include <string>
 #include <filesystem>
 using namespace std;
-using namespace script;
+
 
 //////////////////// Classes ////////////////////
 
@@ -36,7 +35,7 @@ Local<Value> LxlClass::version(const Arguments& args)
         ver.set("major", LXL_VERSION_MAJOR);
         ver.set("minor", LXL_VERSION_MINOR);
         ver.set("revision", LXL_VERSION_REVISION);
-        ver.set("isBeta", LXL_VERSION_IS_BETA);
+        ver.set("isBeta", LL::Version::Status::LXL_VERSION_STATUS != LL::Version::Status::Release);
         return ver;
     }
     CATCH("Fail in LxlGetVersion!")
@@ -97,13 +96,13 @@ Local<Value> LxlClass::require(const Arguments& args)
         }
         if (existing)
         {
-            INFO(thisName + _TRS("lxlapi.require.success") + require);
+            logger.info(thisName + tr("lxlapi.require.success") + require);
             return Boolean::newBoolean(true);
         }
 
         //插件目录
         existing = false;
-        auto list = Raw_GetFilesList(LXL_PLUGINS_LOAD_DIR);
+        auto list = GetFileNameList(LXL_PLUGINS_LOAD_DIR);
         for (auto fileName : list)
         {
             if (fileName == require)
@@ -117,19 +116,19 @@ Local<Value> LxlClass::require(const Arguments& args)
             bool success = LxlLoadPlugin(string(LXL_PLUGINS_LOAD_DIR) + "/" + require);
             if (success)
             {
-                INFO(thisName + _TRS("lxlapi.require.success") + require);
+                logger.info(thisName + tr("lxlapi.require.success") + require);
                 return Boolean::newBoolean(true);
             }
             else
             {
-                ERROR(thisName + _TRS("lxlapi.require.fail"));
+                logger.error(thisName + tr("lxlapi.require.fail"));
                 return Boolean::newBoolean(false);
             }
         }
 
         //依赖库目录
         existing = false;
-        list = Raw_GetFilesList(LXL_DEPENDS_DIR);
+        list = GetFileNameList(LXL_DEPENDS_DIR);
         for (auto fileName : list)
         {
             if (fileName == require)
@@ -143,12 +142,12 @@ Local<Value> LxlClass::require(const Arguments& args)
             bool success = LxlLoadPlugin(string(LXL_DEPENDS_DIR) + "/" + require);
             if (success)
             {
-                INFO(thisName + _TRS("lxlapi.require.success") + require);
+                logger.info(thisName + tr("lxlapi.require.success") + require);
                 return Boolean::newBoolean(true);
             }
             else
             {
-                ERROR(thisName + _TRS("lxlapi.require.fail"));
+                logger.error(thisName + tr("lxlapi.require.fail"));
                 return Boolean::newBoolean(false);
             }
         }
@@ -156,7 +155,7 @@ Local<Value> LxlClass::require(const Arguments& args)
         //HTTP(s)下载
         if (args.size() == 1)
         {
-            ERROR(thisName + _TRS("lxlapi.require.fail"));
+            logger.error(thisName + tr("lxlapi.require.fail"));
             return Boolean::newBoolean(false);
         }
 
@@ -164,25 +163,25 @@ Local<Value> LxlClass::require(const Arguments& args)
         int status;
         string result, downloadPath = string(LXL_DEPENDS_DIR) + "/" + require;
 
-        if (!Raw_HttpGetSync(remotePath, &status, &result) || status != 200)
+        if (!HttpGetSync(remotePath, &status, &result) || status != 200)
         {
-            ERROR(thisName + _TRS("lxlapi.require.network.fail") + to_string(status));
+            logger.error(thisName + tr("lxlapi.require.network.fail") + to_string(status));
             return Boolean::newBoolean(false);
         }
-        Raw_FileWriteTo(downloadPath, result);
+        WriteAllFile(downloadPath, result, false);
 
-        INFO(thisName + _TRS("lxlapi.require.download.success") + downloadPath);
+        logger.info(thisName + tr("lxlapi.require.download.success") + downloadPath);
 
         //下载完毕安装
         bool success = LxlLoadPlugin(downloadPath);
         if (success)
         {
-            INFO(thisName + _TRS("lxlapi.require.success") + require);
+            logger.info(thisName + tr("lxlapi.require.success") + require);
             return Boolean::newBoolean(true);
         }
         else
         {
-            ERROR(thisName + _TRS("lxlapi.require.fail"));
+            logger.error(thisName + tr("lxlapi.require.fail"));
             return Boolean::newBoolean(false);
         }
     }

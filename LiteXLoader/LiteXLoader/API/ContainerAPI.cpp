@@ -1,8 +1,8 @@
 #include "ContainerAPI.h"
-#include <Kernel/Container.h>
-#include <Kernel/Item.h>
 #include "APIHelp.h"
 #include "ItemAPI.h"
+#include <MC/ItemStack.hpp>
+#include <MC/Container.hpp>
 using namespace std;
 
 //////////////////// Class Definition ////////////////////
@@ -54,7 +54,7 @@ Container* ContainerClass::extract(Local<Value> v)
 Local<Value> ContainerClass::getSize()
 {
 	try {
-		return Number::newNumber(Raw_GetContainerSize(container));
+		return Number::newNumber(container->getSize());
 	}
 	CATCH("Fail in getSize!")
 }
@@ -62,7 +62,7 @@ Local<Value> ContainerClass::getSize()
 Local<Value> ContainerClass::getType()
 {
 	try {
-		return String::newString(Raw_GetContainerTypeName(container));
+		return String::newString(container->getTypeName());
 	}
 	CATCH("Fail in getType!")
 }
@@ -83,10 +83,10 @@ Local<Value> ContainerClass::addItem(const Arguments& args)
 		ItemStack* item = ItemClass::extract(args[0]);
 		if (!item)
 		{
-			ERROR("Wrong type of argument in addItem!");
+			logger.error("Wrong type of argument in addItem!");
 			return Local<Value>();
 		}
-		return Boolean::newBoolean(Raw_AddItem(container, item));
+		return Boolean::newBoolean(container->addItem_s(item));
 	}
 	CATCH("Fail in addItem!");
 }
@@ -99,10 +99,10 @@ Local<Value> ContainerClass::addItemToFirstEmptySlot(const Arguments& args)
 		ItemStack* item = ItemClass::extract(args[0]);
 		if (!item)
 		{
-			ERROR("Wrong type of argument in addItemToFirstEmptySlot!");
+			logger.error("Wrong type of argument in addItemToFirstEmptySlot!");
 			return Local<Value>();
 		}
-		return Boolean::newBoolean(Raw_AddItemToFirstEmptySlot(container, item));
+		return Boolean::newBoolean(container->addItemToFirstEmptySlot_s(item));
 	}
 	CATCH("Fail in addItemToFirstEmptySlot!");
 }
@@ -115,10 +115,10 @@ Local<Value> ContainerClass::hasRoomFor(const Arguments& args)
 		ItemStack* item = ItemClass::extract(args[0]);
 		if (!item)
 		{
-			ERROR("Wrong type of argument in hasRoomFor!");
+			logger.error("Wrong type of argument in hasRoomFor!");
 			return Local<Value>();
 		}
-		return Boolean::newBoolean(Raw_HasRoomFor(container, item));
+		return Boolean::newBoolean(container->hasRoomForItem(*item));
 	}
 	CATCH("Fail in hasRoomFor!");
 }
@@ -130,7 +130,8 @@ Local<Value> ContainerClass::removeItem(const Arguments& args)
 	CHECK_ARG_TYPE(args[1], ValueKind::kNumber);
 
 	try {
-		return Boolean::newBoolean(Raw_RemoveItem(container, args[0].toInt(), args[1].toInt()));
+		container->removeItem(args[0].toInt(), args[1].toInt());
+		return Boolean::newBoolean(true);
 	}
 	CATCH("Fail in removeItem!");
 }
@@ -141,10 +142,10 @@ Local<Value> ContainerClass::getItem(const Arguments& args)
 	CHECK_ARG_TYPE(args[0], ValueKind::kNumber);
 
 	try {
-		ItemStack* item = Raw_GetSlot(container, args[0].toInt());
+		ItemStack* item = (ItemStack*) & container->getItem(args[0].toInt());
 		if (!item)
 		{
-			ERROR("Fail to get slot from container!");
+			logger.error("Fail to get slot from container!");
 			return Local<Value>();
 		}
 		return ItemClass::newItem(item);
@@ -161,16 +162,15 @@ Local<Value> ContainerClass::setItem(const Arguments& args)
 		ItemStack* item = ItemClass::extract(args[1]);
 		if (!item)
 		{
-			ERROR("Wrong type of argument in setItem!");
+			logger.error("Wrong type of argument in setItem!");
 			return Local<Value>();
 		}
 
-		ItemStack* itemOld = Raw_GetSlot(container, args[0].toInt());
+		ItemStack* itemOld = (ItemStack*)&container->getItem(args[0].toInt());
 		if (!itemOld)
 			return Boolean::newBoolean(false);
 
-		Raw_SetItem(itemOld, item);
-		return Boolean::newBoolean(true);
+		return Boolean::newBoolean(itemOld->setItem(item));
 	}
 	CATCH("Fail in getItem!");
 }
@@ -178,12 +178,12 @@ Local<Value> ContainerClass::setItem(const Arguments& args)
 Local<Value> ContainerClass::getAllItems(const Arguments& args)
 {
 	try {
-		auto list = Raw_GetAllSlots(container);
+		auto list = container->getAllSlots();
 
 		Local<Array> res = Array::newArray();
 		for (auto& item : list)
 		{
-			res.add(ItemClass::newItem(item));
+			res.add(ItemClass::newItem((ItemStack*)item));
 		}
 		return res;
 	}
@@ -193,7 +193,8 @@ Local<Value> ContainerClass::getAllItems(const Arguments& args)
 Local<Value> ContainerClass::removeAllItems(const Arguments& args)
 {
 	try {
-		return Boolean::newBoolean(Raw_RemoveAllItems(container));
+		container->removeAllItems();
+		return Boolean::newBoolean(true);
 	}
 	CATCH("Fail in removeAllItems!");
 }
@@ -201,7 +202,7 @@ Local<Value> ContainerClass::removeAllItems(const Arguments& args)
 Local<Value> ContainerClass::isEmpty(const Arguments& args)
 {
 	try {
-		return Boolean::newBoolean(Raw_IsEmpty(container));
+		return Boolean::newBoolean(container->isEmpty());
 	}
 	CATCH("Fail in isEmpty!");
 }

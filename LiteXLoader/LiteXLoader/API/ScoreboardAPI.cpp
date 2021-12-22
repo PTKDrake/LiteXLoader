@@ -1,6 +1,7 @@
 #include "APIHelp.h"
-#include <Kernel/Scoreboard.h>
-#include <Kernel/Player.h>
+#include <MC/Scoreboard.hpp>
+#include <MC/Objective.hpp>
+#include <MC/Player.hpp>
 #include "ScoreboardAPI.h"
 #include "McAPI.h"
 #include "PlayerAPI.h"
@@ -44,7 +45,7 @@ void ObjectiveClass::set(Objective* obj)
 Objective* ObjectiveClass::get()
 {
 	if (isValid)
-		return globalScoreBoard->getObjective(objname);
+		return ::Global<Scoreboard>->getObjective(objname);
 	return nullptr;
 }
 
@@ -77,8 +78,8 @@ Local<Value> ObjectiveClass::setDisplay(const Arguments& args)
 		int sort = 0;
 		if (args.size() == 2)
 			sort = args[1].toInt();
-		
-		return Boolean::newBoolean(Raw_SetDisplayObjective(objname, slot, sort));
+
+		return Boolean::newBoolean(Scoreboard::setDisplayObjective(objname, slot, sort));
 	}
 	CATCH("Fail in setDisplay");
 }
@@ -96,19 +97,19 @@ Local<Value> ObjectiveClass::setScore(const Arguments& args)
 		if (args[0].isString())
 		{
 			string id = args[0].toStr();
-			std::optional<int> res = Raw_SetScore(objname, id, score);
+			std::optional<int> res = Scoreboard::setScore(objname, id, score);
 			if (res)
 				rtn = Number::newNumber(*res);
 		}
 		else if (IsInstanceOf<PlayerClass>(args[0]))
 		{
 			auto pl = PlayerClass::extract(args[0]);
-			if(Raw_SetScore(pl, objname, score))
-				rtn = Number::newNumber(Raw_GetScore(pl,objname));
+			if(Scoreboard::setScore(pl,objname,score))
+				rtn = Number::newNumber(Scoreboard::getScore(pl,objname));
 		}
 		else
 		{
-			ERROR("Wrong type of argument in setScore!");
+			logger.error("Wrong type of argument in setScore!");
 			return Local<Value>();
 		}
 
@@ -130,19 +131,19 @@ Local<Value> ObjectiveClass::addScore(const Arguments& args)
 		if (args[0].isString())
 		{
 			string id = args[0].toStr();
-			std::optional<int> res = Raw_AddScore(objname, id, score);
+			std::optional<int> res = Scoreboard::addScore(objname, id, score);
 			if (res)
 				rtn = Number::newNumber(*res);
 		}
 		else if (IsInstanceOf<PlayerClass>(args[0]))
 		{
 			auto pl = PlayerClass::extract(args[0]);
-			if (Raw_AddScore(pl, objname, score))
-				rtn = Number::newNumber(Raw_GetScore(pl, objname));
+			if (Scoreboard::addScore(pl, objname, score))
+				rtn = Number::newNumber(Scoreboard::getScore(pl, objname));
 		}
 		else
 		{
-			ERROR("Wrong type of argument in setScore!");
+			logger.error("Wrong type of argument in setScore!");
 			return Local<Value>();
 		}
 
@@ -164,19 +165,19 @@ Local<Value> ObjectiveClass::reduceScore(const Arguments& args)
 		if (args[0].isString())
 		{
 			string id = args[0].toStr();
-			std::optional<int> res = Raw_ReduceScore(objname, id, score);
+			std::optional<int> res = Scoreboard::reduceScore(objname, id, score);
 			if (res)
 				rtn = Number::newNumber(*res);
 		}
 		else if (IsInstanceOf<PlayerClass>(args[0]))
 		{
 			auto pl = PlayerClass::extract(args[0]);
-			if (Raw_ReduceScore(pl, objname, score))
-				rtn = Number::newNumber(Raw_GetScore(pl, objname));
+			if (Scoreboard::reduceScore(pl, objname, score))
+				rtn = Number::newNumber(Scoreboard::getScore(pl, objname));
 		}
 		else
 		{
-			ERROR("Wrong type of argument in setScore!");
+			logger.error("Wrong type of argument in setScore!");
 			return Local<Value>();
 		}
 
@@ -194,14 +195,14 @@ Local<Value> ObjectiveClass::deleteScore(const Arguments& args)
 		if (args[0].isString())
 			id = args[0].toStr();
 		else if (IsInstanceOf<PlayerClass>(args[0]))
-			id = Raw_GetPlayerName(PlayerClass::extract(args[0]));
+			id = PlayerClass::extract(args[0])->getRealName();
 		else
 		{
-			ERROR("Wrong type of argument in deleteScore!");
+			logger.error("Wrong type of argument in deleteScore!");
 			return Local<Value>();
 		}
 
-		bool res = Raw_RemoveFromObjective(objname, id);
+		bool res = Scoreboard::removeFromObjective(objname, id);
 
 		return Boolean::newBoolean(res);
 	}
@@ -217,14 +218,14 @@ Local<Value> ObjectiveClass::getScore(const Arguments& args)
 		if (args[0].isString())
 			id = args[0].toStr();
 		else if (IsInstanceOf<PlayerClass>(args[0]))
-			id = Raw_GetPlayerName(PlayerClass::extract(args[0]));
+			id = PlayerClass::extract(args[0])->getRealName();
 		else
 		{
-			ERROR("Wrong type of argument in getScore!");
+			logger.error("Wrong type of argument in getScore!");
 			return Local<Value>();
 		}
 
-		int res = Raw_GetScore(objname, id);
+		int res = Scoreboard::getScore(objname, id);
 
 		return Number::newNumber(res);
 	}
@@ -240,10 +241,10 @@ Local<Value> McClass::getDisplayObjective(const Arguments& args)
 
 	try {
 		string slot = args[0].toStr();
-		auto res = Raw_GetDisplayObjective(slot);
+		auto res = ::Global<Scoreboard>->getDisplayObjective(slot);
 
 		if (!res) return Local<Value>();
-		return ObjectiveClass::newObjective(res);
+		return ObjectiveClass::newObjective((Objective*)res);
 	}
 	CATCH("Fail in GetDisplayObjective");
 }
@@ -255,7 +256,7 @@ Local<Value> McClass::clearDisplayObjective(const Arguments& args)
 
 	try {
 		string slot = args[0].toStr();
-		auto res = Raw_ClearDisplayObjective(slot);
+		auto res = ::Global<Scoreboard>->clearDisplayObjective(slot);
 
 		if (!res) return Local<Value>();
 		return ObjectiveClass::newObjective(res);
@@ -270,7 +271,7 @@ Local<Value> McClass::getScoreObjective(const Arguments& args)
 
 	try {
 		string name = args[0].toStr();
-		auto res = globalScoreBoard->getObjective(name);
+		auto res = ::Global<Scoreboard>->getObjective(name);
 
 		if (!res) return Local<Value>();
 		return ObjectiveClass::newObjective(res);
@@ -291,7 +292,7 @@ Local<Value> McClass::newScoreObjective(const Arguments& args)
 		if (args.size() >= 2)
 			display = args[1].toStr();
 
-		auto obj = Raw_NewObjective(name, display);
+		auto obj = Scoreboard::newObjective(name, display);
 		return obj ? ObjectiveClass::newObjective(obj) : Local<Value>();
 	}
 	CATCH("Fail in NewScoreObjective!")
@@ -304,10 +305,10 @@ Local<Value> McClass::removeScoreObjective(const Arguments& args)
 
 	try {
 		string name = args[0].toStr();
-		auto obj = globalScoreBoard->getObjective(name);
+		auto obj = ::Global<Scoreboard>->getObjective(name);
 		if (obj)
 		{
-			globalScoreBoard->removeObjective(obj);
+			::Global<Scoreboard>->removeObjective(obj);
 			return Boolean::newBoolean(true);
 		}
 		return Boolean::newBoolean(false);
@@ -320,11 +321,11 @@ Local<Value> McClass::getAllScoreObjectives(const Arguments& args)
 	try {
 		Local<Array> res = Array::newArray();
 
-		auto objs = globalScoreBoard->getObjectives();
+		auto objs = ::Global<Scoreboard>->getObjectives();
 		for (auto& obj : objs)
 		{
 			if (obj)
-				res.add(ObjectiveClass::newObjective(obj));
+				res.add(ObjectiveClass::newObjective((Objective*)obj));
 		}
 		return res;
 	}

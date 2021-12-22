@@ -1,5 +1,4 @@
-#include <ScriptX/ScriptX.h>
-using namespace script;
+#include <API/APIHelp.h>
 #include <API/BaseAPI.h>
 #include <API/BlockAPI.h>
 #include <API/BlockEntityAPI.h>
@@ -21,7 +20,6 @@ using namespace script;
 #include <API/ScoreboardAPI.h>
 #include <API/SystemAPI.h>
 #include <API/McAPI.h>
-#include <API/PacketAPI.h>
 #include <API/GameUtilsAPI.h>
 
 void BindAPIs(ScriptEngine *engine)
@@ -71,7 +69,7 @@ void BindAPIs(ScriptEngine *engine)
     engine->registerNativeClass<ItemClass>(ItemClassBuilder);
     engine->registerNativeClass<PlayerClass>(PlayerClassBuilder);
     engine->registerNativeClass<ObjectiveClass>(ObjectiveClassBuilder);
-    engine->registerNativeClass<PacketClass>(PacketClassBuilder);
+    //engine->registerNativeClass<PacketClass>(PacketClassBuilder);
     engine->registerNativeClass<NbtEndClass>(NbtEndClassBuilder);
     engine->registerNativeClass<NbtByteClass>(NbtByteClassBuilder);
     engine->registerNativeClass<NbtShortClass>(NbtShortClassBuilder);

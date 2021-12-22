@@ -1,7 +1,7 @@
 #pragma once
-#include <ScriptX/ScriptX.h>
+#include "APIHelp.h"
 #include <string>
-using namespace script;
+
 
 class McClass
 {

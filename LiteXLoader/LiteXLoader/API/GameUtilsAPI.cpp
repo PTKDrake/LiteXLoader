@@ -1,6 +1,6 @@
 #include "APIHelp.h"
 #include "GameUtilsAPI.h"
-using namespace script;
+
 using namespace std;
 
 ClassDefine<void> TextClassBuilder =

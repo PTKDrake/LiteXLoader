@@ -1,10 +1,11 @@
 #include "BaseAPI.h"
 #include "APIHelp.h"
-#include <Kernel/Base.h>
-#include <Kernel/SymbolHelper.h>
+#include <Global.hpp>
+#include <MC/BlockSource.hpp>
+#include <MC/Facing.hpp>
+#include <ServerAPI.h>
 #include "McAPI.h"
 #include <cmath>
-using namespace script;
 
 //////////////////// Class Definition ////////////////////
 
@@ -80,7 +81,7 @@ Local<Object> IntPos::newPos(const BlockPos* b, int dim)
 
 Local<Object> IntPos::newPos(const BlockPos* b, BlockSource* bs)
 {
-    return IntPos::newPos(b->x, b->y, b->z, Raw_GetBlockDimensionId(bs));
+    return IntPos::newPos(b->x, b->y, b->z, (int)bs->getDimensionId());
 }
 
 IntPos* IntPos::extractPos(Local<Value> v)
@@ -146,16 +147,16 @@ Local<Value> FloatPos::getDim()
     switch (dim)
     {
     case 0:
-        name = _TRS("base.getDimName.0");
+        name = tr("base.getDimName.0");
         break;
     case 1:
-        name = _TRS("base.getDimName.1");
+        name = tr("base.getDimName.1");
         break;
     case 2:
-        name = _TRS("base.getDimName.2");
+        name = tr("base.getDimName.2");
         break;
     default:
-        name = _TRS("base.getDimName.unknown");
+        name = tr("base.getDimName.unknown");
         break;
     }
     return String::newString(name);
@@ -182,18 +183,23 @@ DirectionAngle* DirectionAngle::create(const Arguments& args)
 
 Local<Value> DirectionAngle::toFacing()
 {
-    int yaw_u = yaw + 180;
-
-    if (yaw_u > 135 && yaw_u < 225)
-        return Number::newNumber(0);
-    if (yaw_u >= 225 && yaw_u < 315)
-        return Number::newNumber(1);
-    if ((yaw_u >= 315 && yaw_u <= 359) || (yaw_u >= 1 && yaw_u <= 45))
-        return Number::newNumber(2);
-    if (yaw_u > 45 && yaw_u <= 135)
-        return Number::newNumber(3);
-
-    return Number::newNumber(-1);
+    int facing = -1;
+    switch (Facing::convertYRotationToFacingDirection(yaw))
+    {
+        case 2:
+            facing = 0;
+            break;
+        case 3:
+            facing = 2;
+            break;
+        case 4:
+            facing = 3;
+            break;
+        case 5:
+            facing = 1;
+            break;
+    }
+    return Number::newNumber(facing);
 }
 
 Local<Object> DirectionAngle::newAngle(float pitch, float yaw)
@@ -237,7 +243,7 @@ Local<Value> McClass::getBDSVersion(const Arguments& args)
 {
     try
     {
-        return String::newString(Raw_GetBDSVersion());
+        return String::newString(LL::getBdsVersion());
     }
     CATCH("Fail in GetBDSVersion!")
 }
