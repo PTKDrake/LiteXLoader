@@ -20,10 +20,11 @@ Local<Value> Log(const Arguments& args)
     CHECK_ARGS_COUNT(args, 1);
 
     try {
-        auto globalConf = ENGINE_OWN_DATA();
+        auto& infoOut = ENGINE_OWN_DATA()->logger.info;
+
         for (int i = 0; i < args.size(); ++i)
-            PrintValue(globalConf->logger.info, args[i]);
-        globalConf->logger.info << Logger::endl;
+            PrintValue(infoOut, args[i]);
+        infoOut << Logger::endl;
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in Log!");
@@ -55,9 +56,11 @@ Local<Value> ColorLog(const Arguments& args)
             default: logger.error("Invalid color!");break;
         }
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), color);
+
+        auto& infoOut = ENGINE_OWN_DATA()->logger.info;
         for (int i = 1; i < args.size(); ++i)
-            PrintValue(std::cout, args[i]);
-        std::cout << std::endl;
+            PrintValue(infoOut, args[i]);
+        infoOut << Logger::endl;
         SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 15);
         return Boolean::newBoolean(true);
     }
