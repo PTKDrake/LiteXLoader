@@ -1,6 +1,5 @@
 ﻿#pragma once
 #include "APIHelp.h"
-
 #include <MC/Tag.hpp>
 
 extern struct Tag;
@@ -297,4 +296,5 @@ extern ClassDefine<NbtCompoundClass> NbtCompoundClassBuilder;
 //Helper
 bool IsNbtClass(Local<Value> value);
 Local<Value> Tag2Value(Tag* nbt, bool autoExpansion = false);
-bool TagSetValue(Tag::Type type, Tag* nbt, Local<Value> value = Local<Value>());
+void NbtCompoundClassAddHelper(CompoundTag* tag, Local<Object>& obj);
+void NbtListClassAddHelper(ListTag* tag, Local<Array>& arr);
