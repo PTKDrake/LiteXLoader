@@ -988,7 +988,7 @@ Local<Value> PlayerClass::removeBossBar(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        player->sendBossEventPacket(BossEvent::Hide, args[0].toStr(), 0, BossEventColour::Red);     //Remove
+        player->sendBossEventPacket(BossEvent::Hide, "", 0, BossEventColour::Red);     //Remove
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in removeBossBar!")
