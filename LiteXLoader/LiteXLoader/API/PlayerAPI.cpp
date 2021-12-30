@@ -296,7 +296,7 @@ Local<Value> PlayerClass::getUuid()
 
         return String::newString(player->getUuid());
     }
-    CATCH("Fail in getXuid!")
+    CATCH("Fail in getUuid!")
 }
 
 Local<Value> PlayerClass::getRealName()
