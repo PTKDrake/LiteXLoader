@@ -685,8 +685,8 @@ void InitEventListeners()
     Event::BlockExplodeEvent::subscribe([](const BlockExplodeEvent& ev) {
         IF_LISTENED(EVENT_TYPES::onBlockExplode)
         {
-            auto bl = ev.mBlockInstance.createBlockInstance();
-            CallEvent(EVENT_TYPES::onBlockExplode, ev.mBlockInstance,
+            BlockInstance bl(ev.mBlockInstance);
+            CallEvent(EVENT_TYPES::onBlockExplode, BlockClass::newBlock(bl),
                 IntPos::newPos(bl.getPosition(),bl.getDimensionId()),
                 Number::newNumber(ev.mRadius), Number::newNumber(ev.mMaxResistance),
                 Boolean::newBoolean(ev.mBreaking), Boolean::newBoolean(ev.mFire));

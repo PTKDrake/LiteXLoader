@@ -42,13 +42,24 @@
 
 <br>
 
-#### `"onBedExplode"` - 发生由床引起的爆炸
+#### "onBlockExplode"` - 发生由方块引起的爆炸
 
 - 监听函数原型
-  `function(pos)`
+  `function(source,pos,radius,maxResistance,isDestroy,isFire)`
 - 参数：
-  - pos : `IntPos`  
-    爆炸发生的床的坐标
+  - source : `Block`  
+    爆炸来源的方块对象
+  - pos : `FloatPos`  
+    爆炸发生的坐标
+  - radius : `Float`    
+    爆炸波及的半径
+  - maxResistance : `Float`  
+    爆炸可破坏的方块爆炸抗性上限
+  - isDestroy : `Boolean`  
+    爆炸是否破坏方块
+  - isFire : `Boolean`  
+    爆炸是否产生火焰
+
 - 拦截事件：函数返回`false`
 
 <br>
