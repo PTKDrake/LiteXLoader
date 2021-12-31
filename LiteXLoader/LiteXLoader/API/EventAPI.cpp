@@ -49,9 +49,10 @@ enum class EVENT_TYPES : int
     onRespawn, onChangeDim, onJump, onSneak, onAttack, onEat, onMove, onChangeSprinting, onSpawnProjectile,
     onFireworkShootWithCrossbow, onSetArmor, onRide, onStepOnPressurePlate,
     onUseItem, onTakeItem, onDropItem, onUseItemOn, onInventoryChange, onChangeArmorStand,
-    onStartDestroyBlock, onDestroyBlock, onWitherBossDestroy, onPlaceBlock, onBedExplode, onRespawnAnchorExplode, onLiquidFlow,
+    onStartDestroyBlock, onDestroyBlock, onWitherBossDestroy, onPlaceBlock, onLiquidFlow,
     onOpenContainer, onCloseContainer, onContainerChange, onOpenContainerScreen, 
-    onMobDie, onMobHurt, onExplode, onBlockExploded, onCmdBlockExecute, onRedStoneUpdate, onProjectileHitEntity,
+    onExplode, onBlockExploded, onBedExplode, onRespawnAnchorExplode, onEntityExplode, onBlockExplode,
+    onMobDie, onMobHurt, onCmdBlockExecute, onRedStoneUpdate, onProjectileHitEntity,
     onProjectileHitBlock, onBlockInteracted, onUseRespawnAnchor, onFarmLandDecay, onUseFrameBlock,
     onPistonPush, onHopperSearchItem, onHopperPushOut, onFireSpread, onBlockChanged, onNpcCmd,
     onScoreChanged, onServerStarted, onConsoleCmd, onFormSelected, onConsoleOutput, onTick,
@@ -93,8 +94,10 @@ static const std::unordered_map<string, EVENT_TYPES> EventsMap{
     {"onExplode",EVENT_TYPES::onExplode},
     {"onBedExplode",EVENT_TYPES::onBedExplode},
     {"onRespawnAnchorExplode",EVENT_TYPES::onRespawnAnchorExplode},
-    {"onLiquidFlow",EVENT_TYPES::onLiquidFlow},
     {"onBlockExploded",EVENT_TYPES::onBlockExploded},
+    {"onEntityExplode",EVENT_TYPES::onEntityExplode},
+    {"onBlockExplode",EVENT_TYPES::onBlockExplode},
+    {"onLiquidFlow",EVENT_TYPES::onLiquidFlow},
     {"onOpenContainer",EVENT_TYPES::onOpenContainer},
     {"onCloseContainer",EVENT_TYPES::onCloseContainer},
     {"onContainerChangeSlot",EVENT_TYPES::onContainerChange},
@@ -668,6 +671,30 @@ void InitEventListeners()
         IF_LISTENED_END(EVENT_TYPES::onRide);
     });
 
+    Event::EntityExplodeEvent::subscribe([](const EntityExplodeEvent& ev) {
+        IF_LISTENED(EVENT_TYPES::onEntityExplode)
+        {
+            CallEvent(EVENT_TYPES::onEntityExplode, ev.mActor ? EntityClass::newEntity(ev.mActor) : Local<Value>(),
+                FloatPos::newPos(ev.mPos, ev.mDimension->getDimensionId()),
+                Number::newNumber(ev.mRadius), Number::newNumber(ev.mMaxResistance),
+                Boolean::newBoolean(ev.mBreaking), Boolean::newBoolean(ev.mFire));
+        }
+        IF_LISTENED_END(EVENT_TYPES::onEntityExplode);
+    });
+
+    Event::BlockExplodeEvent::subscribe([](const BlockExplodeEvent& ev) {
+        IF_LISTENED(EVENT_TYPES::onBlockExplode)
+        {
+            auto bl = ev.mBlockInstance.createBlockInstance();
+            CallEvent(EVENT_TYPES::onBlockExplode, ev.mBlockInstance,
+                IntPos::newPos(bl.getPosition(),bl.getDimensionId()),
+                Number::newNumber(ev.mRadius), Number::newNumber(ev.mMaxResistance),
+                Boolean::newBoolean(ev.mBreaking), Boolean::newBoolean(ev.mFire));
+        }
+        IF_LISTENED_END(EVENT_TYPES::onBlockExplode);
+    });
+
+    /// Explode events ↓↓ recently deleted.
     Event::EntityExplodeEvent::subscribe([](const EntityExplodeEvent &ev) {
         IF_LISTENED(EVENT_TYPES::onExplode)
         {
@@ -677,6 +704,38 @@ void InitEventListeners()
                 Boolean::newBoolean(ev.mBreaking), Boolean::newBoolean(ev.mFire));
         }
         IF_LISTENED_END(EVENT_TYPES::onExplode);
+    });
+
+    Event::BlockExplodeEvent::subscribe([](const BlockExplodeEvent& ev) {
+
+        BlockInstance bl(ev.mBlockInstance);
+        if (bl.getBlock() == VanillaBlocks::mRespawnAnchor) {
+            IF_LISTENED(EVENT_TYPES::onRespawnAnchorExplode)
+            {
+                CallEvent(EVENT_TYPES::onRespawnAnchorExplode, IntPos::newPos(bl.getPosition(), bl.getDimensionId()),
+                    Local<Value>());
+            }
+            IF_LISTENED_END(EVENT_TYPES::onRespawnAnchorExplode);
+        }
+        else
+        {
+            IF_LISTENED(EVENT_TYPES::onBedExplode)
+            {
+                CallEvent(EVENT_TYPES::onBedExplode, IntPos::newPos(bl.getPosition(), bl.getDimensionId()));
+            }
+            IF_LISTENED_END(EVENT_TYPES::onBedExplode);
+        }
+
+    });
+    /// Explode events ↑↑ recently deleted.
+
+    Event::BlockExplodedEvent::subscribe([](const BlockExplodedEvent& ev) {
+        IF_LISTENED(EVENT_TYPES::onBlockExploded)
+        {
+            CallEvent(EVENT_TYPES::onBlockExploded, BlockClass::newBlock(ev.mBlockInstance),
+                EntityClass::newEntity(ev.mExplodeSource));
+        }
+        IF_LISTENED_END(EVENT_TYPES::onBlockExploded);
     });
 
     Event::CmdBlockExecuteEvent::subscribe([](const CmdBlockExecuteEvent& ev) {
@@ -695,28 +754,6 @@ void InitEventListeners()
             }
         }
         IF_LISTENED_END(EVENT_TYPES::onCmdBlockExecute);
-    });
-
-    Event::BlockExplodeEvent::subscribe([](const BlockExplodeEvent& ev) {
-
-        BlockInstance bl(ev.mBlockInstance);
-        if(bl.getBlock() == VanillaBlocks::mRespawnAnchor){
-            IF_LISTENED(EVENT_TYPES::onRespawnAnchorExplode)
-            {
-                CallEvent(EVENT_TYPES::onRespawnAnchorExplode, IntPos::newPos(bl.getPosition(), bl.getDimensionId()),
-                    Local<Value>());
-            }
-            IF_LISTENED_END(EVENT_TYPES::onRespawnAnchorExplode);
-        }
-        else
-        {
-            IF_LISTENED(EVENT_TYPES::onBedExplode)
-            {
-                CallEvent(EVENT_TYPES::onBedExplode, IntPos::newPos(bl.getPosition(), bl.getDimensionId()));
-            }
-            IF_LISTENED_END(EVENT_TYPES::onBedExplode);
-        }
-
     });
 
     Event::RedStoneUpdateEvent::subscribe([](const RedStoneUpdateEvent& ev) {
@@ -825,16 +862,6 @@ void InitEventListeners()
                 BlockClass::newBlock(ev.mBlockInstance));
         }
         IF_LISTENED_END(EVENT_TYPES::onUseFrameBlock);
-    });
-
-    Event::BlockExplodedEvent::subscribe([](const BlockExplodedEvent& ev) {
-        IF_LISTENED(EVENT_TYPES::onBlockExploded)
-        {
-            CallEvent(EVENT_TYPES::onBlockExploded, BlockClass::newBlock(ev.mBlockInstance), 
-                EntityClass::newEntity(ev.mExplodeSource));
-        }
-        IF_LISTENED_END(EVENT_TYPES::onBlockExploded);
-
     });
 
     Event::BlockInteractedEvent::subscribe([](const BlockInteractedEvent& ev) {

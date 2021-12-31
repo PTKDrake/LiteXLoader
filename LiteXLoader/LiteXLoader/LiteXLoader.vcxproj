@@ -188,21 +188,12 @@
       <DelayLoadDLLs>bedrock_server.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
-      <Command>if exist $(LocalDebuggerWorkingDirectory)\plugins\ (
-copy /Y $(TargetPath) $(LocalDebuggerWorkingDirectory)\plugins\
-)</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
     <PreBuildEvent>
-      <Command>if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_api.lib goto process
-if not exist $(SolutionDir)third-party\LiteLoader\Lib\bedrock_server_var.lib goto process
-goto end
-
-:process
-cd /d $(SolutionDir)third-party\LiteLoader\Tools
-LibraryBuilder.exe -o ..\Lib
-
-:end
-</Command>
+      <Command>
+      </Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Js|x64'">
