@@ -1231,7 +1231,7 @@ Local<Value> PlayerClass::getExtraData(const Arguments& args)
 
         string key = args[0].toStr();
         if (key.empty())
-            return Boolean::newBoolean(false);
+            return Local<Value>();
 
         return ENGINE_OWN_DATA()->playerDataDB.at(player->getRealName() + "-" + key).get();
     }
@@ -1306,7 +1306,7 @@ Local<Value> PlayerClass::refreshChunks(const Arguments& args)
         player->resendAllChunks();
         return Boolean::newBoolean(true);
     }
-    CATCH("Fail in setOnFire!");
+    CATCH("Fail in refreshChunks!");
 }
 
 Local<Value> PlayerClass::giveItem(const Arguments& args)
@@ -1369,7 +1369,7 @@ Local<Value> PlayerClass::setSprinting(const Arguments& args)
         player->setSprinting(args[0].asBoolean().value());
         return Boolean::newBoolean(true);
     }
-    CATCH("Fail in clearItem!");
+    CATCH("Fail in setSprinting!");
 }
 
 Local<Value> PlayerClass::getNbt(const Arguments& args)
