@@ -270,6 +270,9 @@
     <ClInclude Include="Engine\OperationCount.h">
       <Filter>Engine</Filter>
     </ClInclude>
+    <ClInclude Include="CheckUpdate.h">
+      <Filter>Main</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\third-party\Lua\lib\lua.lib">

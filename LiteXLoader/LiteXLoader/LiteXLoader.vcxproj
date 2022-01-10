@@ -37,7 +37,6 @@
     <ClCompile Include="API\SystemAPI.cpp" />
     <ClCompile Include="AutoUpgrade.cpp" />
     <ClCompile Include="BindAPIs.cpp" />
-    <ClCompile Include="CheckUpdate.cpp" />
     <ClCompile Include="Engine\LocalShareData.cpp" />
     <ClCompile Include="Engine\MessageSystem.cpp" />
     <ClCompile Include="Engine\OperationCount.cpp" />
