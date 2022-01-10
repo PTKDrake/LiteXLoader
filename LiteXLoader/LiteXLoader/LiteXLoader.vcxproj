@@ -37,6 +37,7 @@
     <ClCompile Include="API\SystemAPI.cpp" />
     <ClCompile Include="AutoUpgrade.cpp" />
     <ClCompile Include="BindAPIs.cpp" />
+    <ClCompile Include="CheckUpdate.cpp" />
     <ClCompile Include="Engine\LocalShareData.cpp" />
     <ClCompile Include="Engine\MessageSystem.cpp" />
     <ClCompile Include="Engine\OperationCount.cpp" />
@@ -79,6 +80,7 @@
     <ClInclude Include="API\McAPI.h" />
     <ClInclude Include="API\SystemAPI.h" />
     <ClInclude Include="AutoUpgrade.h" />
+    <ClInclude Include="CheckUpdate.h" />
     <ClInclude Include="Configs.h" />
     <ClInclude Include="Engine\GlobalShareData.h" />
     <ClInclude Include="Engine\EngineOwnData.h" />
