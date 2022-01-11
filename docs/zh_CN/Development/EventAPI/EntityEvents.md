@@ -140,13 +140,14 @@
 #### `"onNpcCmd"` - NPC执行命令
 
 - 监听函数原型
-  `function(npc,pl)`
+  `function(npc,pl,cmd)`
 - 参数：
   - npc : `Entity`  
     执行命令的NPC实体对象
   - pl : `Player`  
     触发NPC命令执行的玩家对象
-
+  - cmd : `String`  
+    NPC执行的命令
 - 拦截事件：函数返回`false`
 
 <br>

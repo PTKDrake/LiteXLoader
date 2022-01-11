@@ -806,8 +806,7 @@ Local<Value> PlayerClass::crash(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        player->kick("");
-        return Boolean::newBoolean(true);                 //========???
+        return Boolean::newBoolean(player->crashClient());
     }
     CATCH("Fail in crashPlayer!");
 }
