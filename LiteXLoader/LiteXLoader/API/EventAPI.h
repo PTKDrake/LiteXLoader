@@ -5,7 +5,9 @@
 
 //////////////////// Funcs ////////////////////
 
-void InitEventListeners();
+void InitBasicEventListeners();
+void EnableEventListener(int eventId);
+
 bool LxlAddEventListener(ScriptEngine* engine, const std::string& eventName, const Local<Function>& func);
 bool LxlRemoveAllEventListeners(ScriptEngine* engine);
 bool LxlCallEventsOnHotLoad(ScriptEngine* engine);
