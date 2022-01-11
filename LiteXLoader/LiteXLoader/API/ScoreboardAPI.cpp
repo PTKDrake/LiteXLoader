@@ -85,7 +85,7 @@ Local<Value> ObjectiveClass::setDisplay(const Arguments& args)
 		if (args.size() == 2)
 			sort = args[1].toInt();
 
-		return Boolean::newBoolean(obj->getDisplay(slot, (ObjectiveSortOrder)sort));
+		return Boolean::newBoolean(obj->setDisplay(slot, (ObjectiveSortOrder)sort));
 	}
 	CATCH("Fail in setDisplay");
 }
