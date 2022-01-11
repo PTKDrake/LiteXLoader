@@ -61,6 +61,8 @@ Local<Value> ObjectiveClass::getDisplayName()
 {
 	try {
 		Objective* obj = get();
+		if (!obj)
+			return Local<Value>();
 		return String::newString(obj->getDisplayName());
 	}
 	CATCH("Fail in getDisplayName!")
@@ -74,12 +76,16 @@ Local<Value> ObjectiveClass::setDisplay(const Arguments& args)
 		CHECK_ARG_TYPE(args[1], ValueKind::kNumber)
 
 	try {
+		Objective* obj = get();
+		if (!obj)
+			return Local<Value>();
+
 		string slot = args[0].toStr();
 		int sort = 0;
 		if (args.size() == 2)
 			sort = args[1].toInt();
 
-		return Boolean::newBoolean(Scoreboard::setDisplayObjective(objname, slot, sort));
+		return Boolean::newBoolean(obj->getDisplay(slot, (ObjectiveSortOrder)sort));
 	}
 	CATCH("Fail in setDisplay");
 }
