@@ -125,14 +125,14 @@ FileClass* FileClass::constructor(const Arguments& args)
         fstream fs(path, mode);
         if (!fs.is_open())
         {
-            ERROR("Fail to Open File " + path + "!\n");
+            logger.error("Fail to Open File " + path + "!\n");
             return nullptr;
         }
         return new FileClass(args.thiz(), std::move(fs), path, isBinary);
     }
     catch (const filesystem_error& e)
     {
-        ERROR("Fail to Open File " + args[0].asString().toString() + "!\n");
+        logger.error("Fail to Open File " + args[0].asString().toString() + "!\n");
         return nullptr;
     }
     CATCH_C("Fail in OpenFile!");
@@ -220,7 +220,7 @@ Local<Value> FileClass::writeSync(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in writeSync!");
+            logger.error("Wrong type of argument in writeSync!");
             return Local<Value>();
         }
         return Boolean::newBoolean(!file.fail() && !file.bad());
@@ -364,7 +364,7 @@ Local<Value> FileClass::write(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in write!");
+            logger.error("Wrong type of argument in write!");
             return Local<Value>();
         }
 
@@ -555,7 +555,7 @@ Local<Value> DirCreate(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Create Dir "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Create Dir "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in CreateDir!");
@@ -572,7 +572,7 @@ Local<Value> PathDelete(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Delete "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Delete "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in DeletePath!");
@@ -588,7 +588,7 @@ Local<Value> PathExists(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Check "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Check "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in ExistsPath!");
@@ -606,7 +606,7 @@ Local<Value> PathCopy(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Copy "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Copy "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in CopyPath!");
@@ -624,7 +624,7 @@ Local<Value> PathRename(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Rename "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Rename "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in RenamePath!");
@@ -643,7 +643,7 @@ Local<Value> PathMove(const Arguments& args)
     }
     catch(const filesystem_error& e)
     {
-        ERROR("Fail to Move "+ args[0].asString().toString() +"!\n");
+        logger.error("Fail to Move "+ args[0].asString().toString() +"!\n");
         return Boolean::newBoolean(false);
     }
     CATCH("Fail in MovePath!");
@@ -663,7 +663,7 @@ Local<Value> CheckIsDir(const Arguments& args)
     }
     catch (const filesystem_error& e)
     {
-        ERROR("Fail to Get Type of " + args[0].asString().toString() + "!\n");
+        logger.error("Fail to Get Type of " + args[0].asString().toString() + "!\n");
         return Local<Value>();
     }
     CATCH("Fail in GetFilesList!");
@@ -686,7 +686,7 @@ Local<Value> GetFileSize(const Arguments& args)
     }
     catch (const filesystem_error& e)
     {
-        ERROR("Fail to Get Size of " + args[0].asString().toString() + "!\n");
+        logger.error("Fail to Get Size of " + args[0].asString().toString() + "!\n");
         return Local<Value>();
     }
     CATCH("Fail in GetFilesList!");
@@ -792,14 +792,14 @@ Local<Value> OpenFile(const Arguments& args)
         fstream fs(path, mode);
         if (!fs.is_open())
         {
-            ERROR("Fail to Open File " + path + "!\n");
+            logger.error("Fail to Open File " + path + "!\n");
             return Local<Value>();
         }
         return FileClass::newFile(std::move(fs), path, isBinary);
     }
     catch (const filesystem_error& e)
     {
-        ERROR("Fail to Open File " + args[0].asString().toString() + "!\n");
+        logger.error("Fail to Open File " + args[0].asString().toString() + "!\n");
         return Local<Value>();
     }
     CATCH("Fail in OpenFile!");

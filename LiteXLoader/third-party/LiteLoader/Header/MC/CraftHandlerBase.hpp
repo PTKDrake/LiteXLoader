@@ -5,11 +5,15 @@
 
 #define BEFORE_EXTRA
 // Include Headers or Declare Types Here
+#include  "SimpleSparseContainer.hpp"
 
 #undef BEFORE_EXTRA
 
 class CraftHandlerBase {
-
+public:
+    inline class std::shared_ptr<class SimpleSparseContainer> tryGetSparseContainer(enum ContainerEnumName a0) {
+        return _tryGetSparseContainer(a0);
+    }
 #define AFTER_EXTRA
 // Add Member There
 
@@ -24,10 +28,10 @@ public:
 
 public:
     /*0*/ virtual ~CraftHandlerBase();
-    /*1*/ virtual int /*enum enum ItemStackNetResult*/ handleConsumedItem(int /*enum enum ContainerEnumName*/, unsigned char, class ItemStack const&);
-    /*2*/ virtual int /*enum enum ItemStackNetResult*/ preHandleAction(int /*enum enum ItemStackRequestActionType*/);
+    /*1*/ virtual enum ItemStackNetResult handleConsumedItem(enum ContainerEnumName, unsigned char, class ItemStack const&);
+    /*2*/ virtual enum ItemStackNetResult preHandleAction(enum ItemStackRequestActionType);
     /*3*/ virtual void endRequestBatch();
-    /*4*/ virtual int /*enum enum ItemStackNetResult*/ _handleCraftAction(class ItemStackRequestActionCraftBase const&) = 0;
+    /*4*/ virtual enum ItemStackNetResult _handleCraftAction(class ItemStackRequestActionCraftBase const&) = 0;
     /*5*/ virtual void _postCraftRequest(bool);
     /*6*/ virtual class Recipes const* _getLevelRecipes() const;
     /*

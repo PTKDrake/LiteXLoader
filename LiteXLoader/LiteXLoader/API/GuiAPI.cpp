@@ -71,7 +71,10 @@ bool SimpleFormClass::sendForm(Form::SimpleForm* form, Player* player, script::L
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), Number::newNumber(chosen));
+                if(chosen < 0)
+                    callback.get().call({}, PlayerClass::newPlayer(pl), Local<Value>());
+                else
+                    callback.get().call({}, PlayerClass::newPlayer(pl), Number::newNumber(chosen));
             }
             catch (const Exception& e)
             {
@@ -148,30 +151,33 @@ CustomForm* CustomFormClass::extract(Local<Value> v)
         return nullptr;
 }
 
-vector<string> CustomFormResultToString(const std::map<string, std::shared_ptr<CustomFormElement>>& data, Local<Array> &arr)
+vector<string> CustomFormResultToString(std::shared_ptr<Form::CustomForm> form, const std::map<string, std::shared_ptr<CustomFormElement>>& data, Local<Array> &arr)
 {
+    if (data.empty())
+        return { "null" };
+
     vector<string> res;
-    for (auto& [k, v] : data)
+    for (int i=0;i< form->elements.size(); ++i)
     {
-        switch (v->getType())
+        switch (form->getType(i))
         {
         case CustomFormElement::Type::Label:
             arr.add(Local<Value>());
             break;
         case CustomFormElement::Type::Input:
-            arr.add(String::newString(std::dynamic_pointer_cast<Input>(v)->getData()));
+            arr.add(String::newString(form->getData<Input, std::string>(i)));
             break;
         case CustomFormElement::Type::Toggle:
-            arr.add(Boolean::newBoolean(std::dynamic_pointer_cast<Toggle>(v)->getData()));
+            arr.add(Boolean::newBoolean(form->getData<Toggle, bool>(i)));
             break;
         case CustomFormElement::Type::Dropdown:
-            arr.add(Number::newNumber(std::dynamic_pointer_cast<Dropdown>(v)->getData()));
+            arr.add(Number::newNumber(form->getData<Dropdown, int>(i)));
             break;
         case CustomFormElement::Type::Slider:
-            arr.add(Number::newNumber(std::dynamic_pointer_cast<Slider>(v)->getData()));
+            arr.add(Number::newNumber(form->getData<Slider, int>(i)));
             break;
         case CustomFormElement::Type::StepSlider:
-            arr.add(Number::newNumber(std::dynamic_pointer_cast<StepSlider>(v)->getData()));
+            arr.add(Number::newNumber(form->getData<StepSlider, int>(i)));
             break;
         }
     }
@@ -184,7 +190,8 @@ bool CustomFormClass::sendForm(Form::CustomForm* form, Player* player, script::L
     script::Global<Function> callbackFunc{ callback };
 
     return form->sendTo((ServerPlayer*)player,
-        [id{ player->getUniqueID() }, engine{ EngineScope::currentEngine() }, callback{ std::move(callbackFunc) }]
+        [form {make_shared<Form::CustomForm>(*form)}, id{player->getUniqueID()}, engine{EngineScope::currentEngine()},
+        callback{std::move(callbackFunc)}]
     (const std::map<string, std::shared_ptr<CustomFormElement>>& data)
     {
         Player* pl = Level::getPlayer(id);
@@ -194,8 +201,12 @@ bool CustomFormClass::sendForm(Form::CustomForm* form, Player* player, script::L
         EngineScope scope(engine);
         try
         {
+            if (data.size() == 0) {
+                callback.get().call({}, PlayerClass::newPlayer(pl), Local<Value>());
+                return;
+            }
             Local<Array> arr = Array::newArray();
-            CustomFormResultToString(data, arr);        //========================= Change =========================
+            CustomFormResultToString(form, data, arr);        //========================= Change =========================
             callback.get().call({}, PlayerClass::newPlayer(pl), arr);
         }
         catch (const Exception& e)

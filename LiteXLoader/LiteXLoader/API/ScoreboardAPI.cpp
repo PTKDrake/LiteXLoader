@@ -61,6 +61,8 @@ Local<Value> ObjectiveClass::getDisplayName()
 {
 	try {
 		Objective* obj = get();
+		if (!obj)
+			return Local<Value>();
 		return String::newString(obj->getDisplayName());
 	}
 	CATCH("Fail in getDisplayName!")
@@ -74,12 +76,16 @@ Local<Value> ObjectiveClass::setDisplay(const Arguments& args)
 		CHECK_ARG_TYPE(args[1], ValueKind::kNumber)
 
 	try {
+		Objective* obj = get();
+		if (!obj)
+			return Local<Value>();
+
 		string slot = args[0].toStr();
 		int sort = 0;
 		if (args.size() == 2)
 			sort = args[1].toInt();
 
-		return Boolean::newBoolean(Scoreboard::setDisplayObjective(objname, slot, sort));
+		return Boolean::newBoolean(obj->setDisplay(slot, (ObjectiveSortOrder)sort));
 	}
 	CATCH("Fail in setDisplay");
 }
@@ -109,7 +115,7 @@ Local<Value> ObjectiveClass::setScore(const Arguments& args)
 		}
 		else
 		{
-			ERROR("Wrong type of argument in setScore!");
+			logger.error("Wrong type of argument in setScore!");
 			return Local<Value>();
 		}
 
@@ -143,7 +149,7 @@ Local<Value> ObjectiveClass::addScore(const Arguments& args)
 		}
 		else
 		{
-			ERROR("Wrong type of argument in setScore!");
+			logger.error("Wrong type of argument in setScore!");
 			return Local<Value>();
 		}
 
@@ -177,7 +183,7 @@ Local<Value> ObjectiveClass::reduceScore(const Arguments& args)
 		}
 		else
 		{
-			ERROR("Wrong type of argument in setScore!");
+			logger.error("Wrong type of argument in setScore!");
 			return Local<Value>();
 		}
 
@@ -198,7 +204,7 @@ Local<Value> ObjectiveClass::deleteScore(const Arguments& args)
 			id = PlayerClass::extract(args[0])->getRealName();
 		else
 		{
-			ERROR("Wrong type of argument in deleteScore!");
+			logger.error("Wrong type of argument in deleteScore!");
 			return Local<Value>();
 		}
 
@@ -221,7 +227,7 @@ Local<Value> ObjectiveClass::getScore(const Arguments& args)
 			id = PlayerClass::extract(args[0])->getRealName();
 		else
 		{
-			ERROR("Wrong type of argument in getScore!");
+			logger.error("Wrong type of argument in getScore!");
 			return Local<Value>();
 		}
 

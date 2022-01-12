@@ -72,7 +72,7 @@ Local<Value> BlockEntityClass::getType()
 Local<Value> BlockEntityClass::getNbt(const Arguments& args)
 {
 	try {
-		return NbtCompoundClass::pack(blockEntity->getNbt(), true);
+		return NbtCompoundClass::pack(std::move(blockEntity->getNbt()));
 	}
 	CATCH("Fail in getNbt!")
 }

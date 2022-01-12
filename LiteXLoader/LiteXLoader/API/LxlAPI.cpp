@@ -165,7 +165,7 @@ Local<Value> LxlClass::require(const Arguments& args)
 
         if (!HttpGetSync(remotePath, &status, &result) || status != 200)
         {
-            ERROR(thisName + tr("lxlapi.require.network.fail") + to_string(status));
+            logger.error(thisName + tr("lxlapi.require.network.fail") + to_string(status));
             return Boolean::newBoolean(false);
         }
         WriteAllFile(downloadPath, result, false);

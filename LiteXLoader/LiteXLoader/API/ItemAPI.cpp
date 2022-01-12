@@ -4,6 +4,7 @@
 #include "McAPI.h"
 #include "EntityAPI.h"
 #include "NbtAPI.h"
+#include <MC/CompoundTag.hpp>
 #include <MC/ItemStack.hpp>
 #include <vector>
 #include <string>
@@ -206,7 +207,7 @@ Local<Value> ItemClass::setLore(const Arguments& args)
 Local<Value> ItemClass::getNbt(const Arguments& args)
 {
     try {
-        return NbtCompoundClass::pack(item->getNbt());
+        return NbtCompoundClass::pack(std::move(item->getNbt()));
     }
     CATCH("Fail in getNbt!");
 }
@@ -247,7 +248,7 @@ Local<Value> McClass::newItem(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong number of arguments in NewItem!");
+                logger.error("Wrong number of arguments in NewItem!");
                 return Local<Value>();
             }
         }
@@ -256,7 +257,7 @@ Local<Value> McClass::newItem(const Arguments& args)
             CompoundTag* nbt = (CompoundTag*)NbtCompoundClass::extract(args[0]);
             if (nbt)
             {
-                ItemStack* item = ItemStack::create(nbt);
+                ItemStack* item = ItemStack::create(nbt->clone());
                 if (!item)
                     return Local<Value>();    //Null
                 else
@@ -264,7 +265,7 @@ Local<Value> McClass::newItem(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in NewItem!");
+                logger.error("Wrong type of argument in NewItem!");
                 return Local<Value>();
             }
         }
@@ -307,7 +308,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in SpawnItem!");
+                logger.error("Wrong type of argument in SpawnItem!");
                 return Local<Value>();
             }
         }
@@ -322,7 +323,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong number of arguments in SpawnItem!");
+            logger.error("Wrong number of arguments in SpawnItem!");
             return Local<Value>();
         }
 
@@ -339,7 +340,7 @@ Local<Value> McClass::spawnItem(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in SpawnItem!");
+            logger.error("Wrong type of argument in SpawnItem!");
             return Local<Value>();
         }
     }

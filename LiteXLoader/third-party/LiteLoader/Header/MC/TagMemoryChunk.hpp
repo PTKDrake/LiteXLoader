@@ -16,12 +16,12 @@ struct TagMemoryChunk {
 public:
     size_t capacity = 0;
     size_t size = 0;
-    std::unique_ptr<char*> data;
+    std::unique_ptr<char[]> data;
 
 #define DISABLE_CONSTRUCTOR_PREVENTION_TAGMEMORYCHUNK
     TagMemoryChunk() = delete;
 
-    LIAPI TagMemoryChunk(char* data, size_t size);
+    LIAPI TagMemoryChunk(char data[], size_t size);
     LIAPI TagMemoryChunk(const TagMemoryChunk& a1);
     LIAPI TagMemoryChunk(TagMemoryChunk&& a1);
 
@@ -39,7 +39,7 @@ public:
 
 public:
     MCAPI struct TagMemoryChunk copy() const;
-    MCAPI bool operator!=(struct TagMemoryChunk const&);
+    MCAPI bool operator!=(struct TagMemoryChunk const&) const;
     MCAPI ~TagMemoryChunk();
 
 protected:

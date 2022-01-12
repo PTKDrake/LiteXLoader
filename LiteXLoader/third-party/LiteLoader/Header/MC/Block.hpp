@@ -5,7 +5,8 @@
 
 #define BEFORE_EXTRA
 // Add include headers & pre-declares
-class CompoundTag;
+#include "CompoundTag.hpp"
+
 #undef BEFORE_EXTRA
 
 class Block {
@@ -13,13 +14,13 @@ class Block {
 #define AFTER_EXTRA
 // Add new members to class
 public:
-	LIAPI static Block* create(string str, unsigned short tileData);
+	LIAPI static Block* create(const string& str, unsigned short tileData);
 	LIAPI static Block* create(CompoundTag* nbt);
 
-    LIAPI string getTypeName();
-	LIAPI int getId();
+    LIAPI string getTypeName() const;
+	LIAPI int getId() const;
 	LIAPI unsigned short getTileData();
-    LIAPI CompoundTag* getNbt();
+    LIAPI std::unique_ptr<CompoundTag> getNbt();
     LIAPI bool setNbt(CompoundTag* nbt);
 #undef AFTER_EXTRA
 
@@ -32,7 +33,7 @@ public:
 
 public:
     /*0*/ virtual ~Block();
-    /*1*/ virtual int /*enum enum BlockRenderLayer*/ getRenderLayer() const;
+    /*1*/ virtual enum BlockRenderLayer getRenderLayer() const;
     MCAPI Block(unsigned short, class gsl::not_null<class BlockLegacy* >, class CompoundTag, unsigned int const&);
     MCAPI void addAABBs(class BlockSource&, class BlockPos const&, class AABB const*, std::vector<class AABB>&) const;
     MCAPI bool addCollisionShapes(class BlockSource&, class BlockPos const&, class AABB const*, std::vector<class AABB>&, class optional_ref<struct IActorMovementProxy>) const;
@@ -168,8 +169,8 @@ public:
     MCAPI void onStepOn(class Actor&, class BlockPos const&) const;
     MCAPI void onStructureBlockPlace(class BlockSource&, class BlockPos const&) const;
     MCAPI void onStructureNeighborBlockPlace(class BlockSource&, class BlockPos const&) const;
-    MCAPI bool operator!=(class Block const&);
-    MCAPI bool operator==(class Block const&);
+    MCAPI bool operator!=(class Block const&) const;
+    MCAPI bool operator==(class Block const&) const;
     MCAPI void playerDestroy(class Player&, class BlockPos const&) const;
     MCAPI bool playerWillDestroy(class Player&, class BlockPos const&) const;
     MCAPI class ItemActor* popResource(class BlockSource&, class BlockPos const&, class ItemInstance const&) const;

@@ -270,7 +270,7 @@ Local<Value> PlayerClass::getBlockPos()
         if (!player)
             return Local<Value>();
 
-        return IntPos::newPos(player->getBlockPos());
+        return IntPos::newPos(player->getBlockPos(),player->getDimensionId());
     }
     CATCH("Fail in getPlayerBlockPos!")
 }
@@ -296,7 +296,7 @@ Local<Value> PlayerClass::getUuid()
 
         return String::newString(player->getUuid());
     }
-    CATCH("Fail in getXuid!")
+    CATCH("Fail in getUuid!")
 }
 
 Local<Value> PlayerClass::getRealName()
@@ -377,9 +377,9 @@ Local<Value> PlayerClass::getDirection()
         Player* player = get();
         if (!player)
             return Local<Value>();
-        
-        auto vec = ((Actor*)player)->getDirection();
-        return DirectionAngle::newAngle(vec->x, vec->z);
+
+        Vec2 rot = player->getRotation();
+        return DirectionAngle::newAngle(rot.x, rot.y);
     }
     CATCH("Fail in getDirection!")
 }
@@ -492,7 +492,7 @@ Local<Value> PlayerClass::teleport(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in teleport!");
+                logger.error("Wrong type of argument in teleport!");
                 return Local<Value>();
             }
         }
@@ -511,7 +511,7 @@ Local<Value> PlayerClass::teleport(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong type of argument in teleport!");
+            logger.error("Wrong type of argument in teleport!");
             return Local<Value>();
         }
 
@@ -544,7 +544,7 @@ Local<Value> PlayerClass::isOP(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        return Boolean::newBoolean(player->getPlayerPermissionLevel() >= 1);        //==========???
+        return Boolean::newBoolean(player->isOP());
     }
     CATCH("Fail in IsOP!")
 }
@@ -563,7 +563,7 @@ Local<Value> PlayerClass::setPermLevel(const Arguments& args)
         int newPerm = args[0].asNumber().toInt32();
         if (newPerm >= 0 || newPerm <= 4)
         {
-            player->setPermissions(newPerm);
+            player->setPermissions((CommandPermissionLevel)newPerm);
             res = true;
         }
         return Boolean::newBoolean(res);
@@ -585,7 +585,7 @@ Local<Value> PlayerClass::setGameMode(const Arguments& args)
         int newMode = args[0].asNumber().toInt32();
         if (newMode >= 0 || newMode <= 3)
         {
-            player->setPlayerGameType(newMode);
+            player->setPlayerGameType((GameType)newMode);
             res = true;
         }
         return Boolean::newBoolean(res);
@@ -806,8 +806,7 @@ Local<Value> PlayerClass::crash(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        player->kick("");
-        return Boolean::newBoolean(true);                 //========???
+        return Boolean::newBoolean(player->crashClient());
     }
     CATCH("Fail in crashPlayer!");
 }
@@ -988,7 +987,7 @@ Local<Value> PlayerClass::removeBossBar(const Arguments& args)
         if (!player)
             return Local<Value>();
 
-        player->sendBossEventPacket(BossEvent::Hide, args[0].toStr(), 0, BossEventColour::Red);     //Remove
+        player->sendBossEventPacket(BossEvent::Hide, "", 0, BossEventColour::Red);     //Remove
         return Boolean::newBoolean(true);
     }
     CATCH("Fail in removeBossBar!")
@@ -1039,7 +1038,8 @@ Local<Value> PlayerClass::sendSimpleForm(const Arguments& args)
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), Number::newNumber(chosen));
+                callback.get().call({}, PlayerClass::newPlayer(pl),
+                    chosen >= 0 ? Number::newNumber(chosen) : Local<Value>());
             }
             catch (const Exception& e)
             {
@@ -1080,7 +1080,8 @@ Local<Value> PlayerClass::sendModalForm(const Arguments& args)
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), Number::newNumber(chosen));
+                callback.get().call({}, PlayerClass::newPlayer(pl),
+                    chosen >= 0 ? Boolean::newBoolean(chosen) : Local<Value>());
             }
             catch (const Exception& e)
             {
@@ -1120,7 +1121,8 @@ Local<Value> PlayerClass::sendCustomForm(const Arguments& args)
             EngineScope scope(engine);
             try
             {
-                callback.get().call({}, PlayerClass::newPlayer(pl), JsonToValue(result));
+                callback.get().call({}, PlayerClass::newPlayer(pl),
+                    result != "null" ? JsonToValue(result) : Local<Value>());
             }
             catch (const Exception& e)
             {
@@ -1166,7 +1168,7 @@ Local<Value> PlayerClass::sendForm(const Arguments& args)
         }
         else
         {
-            ERROR("Unknown Type of Form Parameter!");
+            logger.error("Unknown Type of Form Parameter!");
             return Local<Value>();
         }
         return Boolean::newBoolean(res);
@@ -1228,7 +1230,7 @@ Local<Value> PlayerClass::getExtraData(const Arguments& args)
 
         string key = args[0].toStr();
         if (key.empty())
-            return Boolean::newBoolean(false);
+            return Local<Value>();
 
         return ENGINE_OWN_DATA()->playerDataDB.at(player->getRealName() + "-" + key).get();
     }
@@ -1303,7 +1305,7 @@ Local<Value> PlayerClass::refreshChunks(const Arguments& args)
         player->resendAllChunks();
         return Boolean::newBoolean(true);
     }
-    CATCH("Fail in setOnFire!");
+    CATCH("Fail in refreshChunks!");
 }
 
 Local<Value> PlayerClass::giveItem(const Arguments& args)
@@ -1366,7 +1368,7 @@ Local<Value> PlayerClass::setSprinting(const Arguments& args)
         player->setSprinting(args[0].asBoolean().value());
         return Boolean::newBoolean(true);
     }
-    CATCH("Fail in clearItem!");
+    CATCH("Fail in setSprinting!");
 }
 
 Local<Value> PlayerClass::getNbt(const Arguments& args)
@@ -1489,7 +1491,7 @@ Local<Value> PlayerClass::getAttributes(const Arguments& args)
 
         Local<Array> res = Array::newArray();
 
-        CompoundTag* list = player->getNbt();
+        auto list = player->getNbt();
         try
         {
             ListTag* attr = (ListTag*)list->getListTag("Attributes");

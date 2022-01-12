@@ -2,7 +2,7 @@ name: Create Release
 
 on:
   push:
-    tags: v*
+    tags: [v*]
 
 env:
   SOLUTION_FILE_PATH: .
@@ -21,7 +21,7 @@ jobs:
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: |
         mkdir Tools/Server
-        ServerLink=$(curl -s https://raw.githubusercontent.com/LiteLDev/LiteLoaderBDS/main/LINK.txt)
+        ServerLink=$(curl -s https://raw.githubusercontent.com/LiteLDev/LiteLoaderBDS/main/Scripts/LINK.txt)
         curl -L -o Tools/Server/server.zip "$ServerLink"
         unzip -q Tools/Server/server.zip -d Tools/Server/ 
       shell: bash
@@ -59,11 +59,6 @@ jobs:
     - name: Build LiteXLoader
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run: MSBuild.exe ./LiteXLoader/LiteXLoader.sln -property:Configuration=Js
-      shell: bash
-      
-    - name: Build LiteXLoader.Lua
-      working-directory: ${{env.GITHUB_WORKSPACE}}
-      run: MSBuild.exe ./LiteXLoader/LiteXLoader.sln -property:Configuration=Lua
       shell: bash
       
     - name: MkDirs

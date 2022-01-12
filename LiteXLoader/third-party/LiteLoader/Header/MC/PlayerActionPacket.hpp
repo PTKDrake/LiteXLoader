@@ -6,6 +6,37 @@
 
 #define BEFORE_EXTRA
 // Include Headers or Declare Types Here
+// Refer to https://github.com/LiteLDev/BEProtocolGolang/blob/master/minecraft/protocol/player.go
+enum PlayerActionType {
+    StartBreak,
+    AbortBreak,
+    StopBreak,
+    GetUpdatedBlock,
+    DropItem,
+    StartSleeping,
+    StopSleeping,
+    Respawn,
+    Jump,
+    StartSprint,
+    StopSprint,
+    StartSneak,
+    StopSneak,
+    CreativePlayerDestroyBlock,
+    DimensionChangeDone,
+    StartGlide,
+    StopGlide,
+    BuildDenied,
+    CrackBreak,
+    ChangeSkin,
+    SetEnchantmentSeed,
+    StartSwimming,
+    StopSwimming,
+    StartSpinAttack,
+    StopSpinAttack,
+    StartBuildingBlock,
+    PredictDestroyBlock,
+    ContinueDestroyBlock,
+};
 
 #undef BEFORE_EXTRA
 
@@ -13,6 +44,17 @@ class PlayerActionPacket : public Packet {
 
 #define AFTER_EXTRA
 // Add Member There
+public:
+    BlockPos position;           //48
+    FaceID blockFace;            //60
+    PlayerActionType actionType; //64
+    ActorRuntimeID runtimeID;    //72
+
+    inline std::string toDebugString() {
+        return fmt::format("{}: position: ({}), blockFace: {}, actionType: {}, runtimeID: {}",
+            __super::toDebugString(),
+            position.toString(), (int)blockFace, (int)actionType, runtimeID.id);
+    }
 
 #undef AFTER_EXTRA
 
@@ -24,11 +66,11 @@ public:
 
 public:
     /*0*/ virtual ~PlayerActionPacket();
-    /*1*/ virtual int /*enum enum MinecraftPacketIds*/ getId() const;
+    /*1*/ virtual enum MinecraftPacketIds getId() const;
     /*2*/ virtual std::string getName() const;
     /*3*/ virtual void write(class BinaryStream&) const;
     /*4*/ virtual bool disallowBatching() const;
-    /*5*/ virtual int /*enum enum StreamReadResult*/ _read(class ReadOnlyBinaryStream&);
+    /*5*/ virtual enum StreamReadResult _read(class ReadOnlyBinaryStream&);
     /*
     inline  ~PlayerActionPacket(){
          (PlayerActionPacket::*rv)();

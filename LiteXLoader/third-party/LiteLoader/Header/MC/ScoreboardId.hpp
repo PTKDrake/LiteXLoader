@@ -13,7 +13,7 @@ struct ScoreboardId {
 #define AFTER_EXTRA
 // Add Member There
 public:
-    int id;
+    __int64 id;
     void* null;
 #undef AFTER_EXTRA
 
@@ -24,9 +24,9 @@ public:
     MCAPI unsigned __int64 getHash() const;
     MCAPI class IdentityDefinition const& getIdentityDef() const;
     MCAPI bool isValid() const;
-    MCAPI bool operator!=(struct ScoreboardId const&);
+    MCAPI bool operator!=(struct ScoreboardId const&) const;
     MCAPI struct ScoreboardId& operator=(struct ScoreboardId const&);
-    MCAPI bool operator==(struct ScoreboardId const&);
+    MCAPI bool operator==(struct ScoreboardId const&) const;
 
 protected:
 

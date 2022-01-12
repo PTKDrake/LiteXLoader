@@ -104,7 +104,7 @@ void entry()
     LoadDebugEngine();
 
     //初始化事件监听
-    InitEventListeners();
+    InitBasicEventListeners();
 
     //UnlockCmd
     extern bool isUnlockCmdEnabled;

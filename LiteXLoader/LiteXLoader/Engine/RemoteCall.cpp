@@ -63,7 +63,7 @@ void RemoteCallCallback(ModuleMessage& msg)
         ModuleMessage msgBack(backId, ModuleMessage::MessageType::RemoteCallReturn, "[null]");
         if (!msg.sendBack(msgBack))
         {
-            ERROR(string("Fail to post remote call result return! Error Code: ") + to_string(GetLastError()));
+            logger.error(string("Fail to post remote call result return! Error Code: ") + to_string(GetLastError()));
         }
     }
     catch (...)
@@ -172,7 +172,7 @@ Local<Value> LxlClass::importFunc(const Arguments &args)
             }
             catch (const std::out_of_range& e)
             {
-                ERROR(string("Fail to import! Function [") + funcName + "] has not been exported!");
+                logger.error(string("Fail to import! Function [") + funcName + "] has not been exported!");
                 return Local<Value>();
             }
 

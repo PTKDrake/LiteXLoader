@@ -71,7 +71,7 @@ void LoadDebugEngine()
     }
     catch (const Exception& e)
     {
-        ERROR("Fail in binding Debug Engine!\n");
+        logger.error("Fail in binding Debug Engine!\n");
         throw;
     }
 
@@ -84,7 +84,7 @@ void LoadDebugEngine()
     }
     catch (const Exception& e)
     {
-        ERROR("Fail in Loading Dependence Lib!\n");
+        logger.error("Fail in Loading Dependence Lib!\n");
         throw;
     }
 }

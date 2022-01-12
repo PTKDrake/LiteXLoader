@@ -226,7 +226,7 @@ bool InitMessageSystem()
     HANDLE hThread = (HANDLE)_beginthreadex(NULL, 0, ModuleMessageLoop, NULL, 0, &threadId);
     if (hThread == NULL)
     {
-        ERROR("模块消息循环系统初始化失败");
+        logger.error("模块消息循环系统初始化失败");
         return false;
     }
     CloseHandle(hThread);

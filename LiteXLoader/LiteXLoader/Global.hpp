@@ -6,7 +6,7 @@
 #define CPPHTTPLIB_OPENSSL_SUPPORT
 
 #include <Configs.h>
-#include <LiteLoader/Header/Global.h>
+#include <Global.h>
 #include <TranslationAPI.h>
 #include <MC/Types.hpp>
 #include <LoggerAPI.h>

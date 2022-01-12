@@ -11,6 +11,7 @@
 #include <MC/Level.hpp>
 #include <MC/ItemActor.hpp>
 #include <MC/SimpleContainer.hpp>
+#include <MC/CompoundTag.hpp>
 #include <MC/Mob.hpp>
 
 
@@ -249,7 +250,7 @@ Local<Value> EntityClass::getDirection()
             return Local<Value>();
 
         Vec2 *vec = entity->getDirection();
-        return DirectionAngle::newAngle(vec->x, vec->z); 
+        return DirectionAngle::newAngle(vec->x, vec->y); 
     }
     CATCH("Fail in getDirection!")
 }
@@ -297,7 +298,7 @@ Local<Value> EntityClass::teleport(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in teleport!");
+                logger.error("Wrong type of argument in teleport!");
                 return Local<Value>();
             }
         }
@@ -316,7 +317,7 @@ Local<Value> EntityClass::teleport(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong number of arguments in teleport!");
+            logger.error("Wrong number of arguments in teleport!");
             return Local<Value>();
         }
         
@@ -636,7 +637,7 @@ Local<Value> McClass::spawnMob(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in SpawnMob!");
+                logger.error("Wrong type of argument in SpawnMob!");
                 return Local<Value>();
             }
         }
@@ -651,7 +652,7 @@ Local<Value> McClass::spawnMob(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong number of arguments in SpawnMob!");
+            logger.error("Wrong number of arguments in SpawnMob!");
             return Local<Value>();
         }
 
@@ -703,7 +704,7 @@ Local<Value> McClass::explode(const Arguments& args)
             }
             else
             {
-                ERROR("Wrong type of argument in Explode!");
+                logger.error("Wrong type of argument in Explode!");
                 return Local<Value>();
             }
         }
@@ -719,7 +720,7 @@ Local<Value> McClass::explode(const Arguments& args)
         }
         else
         {
-            ERROR("Wrong number of arguments in Explode!");
+            logger.error("Wrong number of arguments in Explode!");
             return Local<Value>();
         }
 

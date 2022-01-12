@@ -206,7 +206,7 @@ bool ProcessDebugEngine(const string& cmd)
         else
         {
             //StartDebug
-            logger.info("Debug mode begin");
+            logger.info("Debug mode begins");
             globalDebug = true;
             OUTPUT_DEBUG_SIGN();
         }

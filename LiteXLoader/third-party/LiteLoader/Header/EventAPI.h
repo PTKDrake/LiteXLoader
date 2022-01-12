@@ -7,6 +7,8 @@
 #include <iterator>
 #include <list>
 #include <string>
+#include <LLAPI.h>
+#include <Utils/WinHelper.h>
 
 using std::function;
 using std::string;
@@ -34,6 +36,8 @@ namespace Event {
 constexpr bool Ok = true;
 constexpr bool Cancel = false;
 
+LIAPI void OutputEventError(const string& errorMsg, const string& eventName, const string& pluginName);
+
 template <typename ListenersContainer>
 class EventListener {
 private:
@@ -60,7 +64,7 @@ template <typename EVENT>
 class EventTemplate {
 public:
     using Callback = std::function<bool(const EVENT&)>;
-    using ListenersContainer = std::list<Callback>;
+    using ListenersContainer = std::list<std::pair<string,Callback>>;   // pluginName & callback
     using Listener = EventListener<ListenersContainer>;
 
 protected:
@@ -68,7 +72,9 @@ protected:
 
 public:
     static Listener subscribe(Callback callback) {
-        listeners.emplace_back(callback);
+        auto plugin = LL::getPlugin(GetCurrentModule());
+        std::string pluginName = plugin == nullptr ? "" : plugin->name;
+        listeners.emplace_back(std::make_pair(pluginName, callback));
         return Listener(&listeners, --listeners.end());
     }
 
@@ -80,18 +86,25 @@ public:
         return !listeners.empty();
     }
 
-    bool call() {
+    bool call()
+    {
         bool passToBDS = true;
+        auto i = listeners.begin();
         try {
-            for (auto& callback : listeners) {
-                if (!callback(*(EVENT*)this))
+            for (; i != listeners.end(); ++i)
+            {
+                if (!i->second(*(EVENT*)this))
                     passToBDS = false;
             }
             return passToBDS;
-        } catch (const seh_exception& e) {
-            Logger("Event").error("Uncaught SEH Exception in Event({})!", typeid(EVENT).name());
-        } catch (const std::exception& e) {
-            Logger("Event").error("Uncaught Exception in Event({})!", typeid(EVENT).name());
+        }
+        catch (const seh_exception& e)
+        {
+            OutputEventError("Uncaught SEH Exception Detected!", typeid(EVENT).name(), i->first);
+        }
+        catch (const std::exception& e)
+        {
+            OutputEventError(string("Uncaught Exception Detected! ") + e.what(), typeid(EVENT).name(), i->first);
         }
         return passToBDS;
     }
@@ -165,6 +178,13 @@ public:
     Player* mPlayer;
     Actor* mTarget;
     int mAttackDamage;
+};
+
+class PlayerAttackBlockEvent : public EventTemplate<PlayerAttackBlockEvent> {
+public:
+    Player* mPlayer;
+    ItemStack* mItemStack;
+    BlockInstance mBlockInstance;
 };
 
 class PlayerDieEvent : public EventTemplate<PlayerDieEvent> {
@@ -312,14 +332,8 @@ public:
 
 class BlockChangedEvent : public EventTemplate<BlockChangedEvent> {
 public:
-    BlockInstance mPerviousBlockInstance;
+    BlockInstance mPreviousBlockInstance;
     BlockInstance mNewBlockInstance;
-};
-
-class RespawnAnchorExplodeEvent : public EventTemplate<RespawnAnchorExplodeEvent> {
-public:
-    BlockInstance mBlockInstance;
-    Player* mPlayer;
 };
 
 class BlockExplodedEvent : public EventTemplate<BlockExplodedEvent> {
@@ -337,10 +351,11 @@ public:
 class ContainerChangeEvent : public EventTemplate<ContainerChangeEvent> {
 public:
     Player* mPlayer;
+    Actor* mActor;
     BlockInstance mBlockInstance;
     Container* mContainer;
     int mSlot;
-    ItemStack* mPerviousItemStack;
+    ItemStack* mPreviousItemStack;
     ItemStack* mNewItemStack;
 };
 
@@ -401,6 +416,10 @@ public:
 class BlockExplodeEvent : public EventTemplate<BlockExplodeEvent> {
 public:
     BlockInstance mBlockInstance;
+    float mRadius;
+    float mMaxResistance;
+    bool mBreaking;
+    bool mFire;
 };
 
 
@@ -410,11 +429,11 @@ class EntityExplodeEvent : public EventTemplate<EntityExplodeEvent> {
 public:
     Actor* mActor;
     Vec3 mPos;
-    int mDimensionId;
+    BlockSource* mDimension;
     float mRadius;
-    float mRange;
-    bool mIsDestroy;
-    bool mIsFire;
+    float mMaxResistance;
+    bool mBreaking;
+    bool mFire;
 };
 
 class MobHurtEvent : public EventTemplate<MobHurtEvent> {

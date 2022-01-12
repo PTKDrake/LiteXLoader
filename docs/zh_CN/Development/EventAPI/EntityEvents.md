@@ -32,19 +32,19 @@
 
 <br>
 
-#### `"onExplode"` - 发生由实体引起的爆炸
+#### `"onEntityExplode"` - 发生由实体引起的爆炸
 
 - 监听函数原型
-  `function(source,pos,power,range,isDestroy,isFire)`
+  `function(source,pos,radius,maxResistance,isDestroy,isFire)`
 - 参数：
   - source : `Entity`  
     爆炸来源的实体对象
   - pos : `FloatPos`  
     爆炸发生的坐标
-  - power : `Float`    
-  爆炸的威力值
-  - range : `Float`  
-    爆炸的波及范围
+  - radius : `Float`    
+  爆炸波及的半径
+  - maxResistance : `Float`  
+    爆炸可破坏的方块爆炸抗性上限
   - isDestroy : `Boolean`  
     爆炸是否破坏方块
   - isFire : `Boolean`  
@@ -140,13 +140,14 @@
 #### `"onNpcCmd"` - NPC执行命令
 
 - 监听函数原型
-  `function(npc,pl)`
+  `function(npc,pl,cmd)`
 - 参数：
   - npc : `Entity`  
     执行命令的NPC实体对象
   - pl : `Player`  
     触发NPC命令执行的玩家对象
-
+  - cmd : `String`  
+    NPC执行的命令
 - 拦截事件：函数返回`false`
 
 <br>

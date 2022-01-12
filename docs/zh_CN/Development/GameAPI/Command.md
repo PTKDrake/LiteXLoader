@@ -80,7 +80,6 @@ mc.regPlayerCmd("fly on","Turn on the fly mode",function(pl,args){
     pl.tell("Flying enabled.");
     //......
 });
-[Lua]
 
 ```
 
@@ -111,8 +110,7 @@ mc.regPlayerCmd("fly on","Turn on the fly mode",function(pl,args){
 mc.regConsoleCmd("backup","Start the backup",function(args){
     log("ID of this backup is:",args[0]);
     //......
-},1);
-[Lua]
+});
 
 ```
 
@@ -121,7 +119,7 @@ mc.regConsoleCmd("backup","Start the backup",function(args){
 设置了回调函数之后，在你注册的这个命令被执行的时候，回调函数就会被调用。  
 在调用之前，LXL会自动帮你把命令参数分割成数组。  
 
-以Js语言为例：执行注册`mc.regPlayerCmd("land buy", "购买领地", function(args){ .... }, 0 );` 之后，  
+以Js语言为例：执行注册`mc.regPlayerCmd("land buy", "购买领地", function(pl,args){ .... }, 0 );` 之后，  
 当你使用命令`/land buy abcde 12345`的时候，这个回调函数就会被调用。  
 回调函数的参数args被传入一个数组：[ "abcde" , "12345" ]  
 正如所见，`args` 中包含的值是被 **按顺序分割好的** 命令参数。  
