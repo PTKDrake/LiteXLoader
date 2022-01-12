@@ -82,7 +82,8 @@ Local<Object> BlockClass::newBlock(IntVec4 pos)
 }
 Local<Object> BlockClass::newBlock(BlockInstance block)
 {
-    return BlockClass::newBlock(block.getPosition(), block.getDimensionId());
+    BlockPos bp = block.getPosition();
+    return BlockClass::newBlock(block.getBlock(), &bp, block.getDimensionId());
 }
 Block* BlockClass::extract(Local<Value> v)
 {
